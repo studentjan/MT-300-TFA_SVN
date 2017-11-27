@@ -1,0 +1,12 @@
+welding_adapter\arm_const_structs.o: ..\DSP_Lib\Source\CommonTables\arm_const_structs.c
+welding_adapter\arm_const_structs.o: ../Drivers/CMSIS/Include/arm_const_structs.h
+welding_adapter\arm_const_structs.o: ../Drivers/CMSIS/Include/arm_math.h
+welding_adapter\arm_const_structs.o: ../Drivers/CMSIS/Include/core_cm4.h
+welding_adapter\arm_const_structs.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+welding_adapter\arm_const_structs.o: ../Drivers/CMSIS/Include/core_cmInstr.h
+welding_adapter\arm_const_structs.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
+welding_adapter\arm_const_structs.o: ../Drivers/CMSIS/Include/core_cmFunc.h
+welding_adapter\arm_const_structs.o: ../Drivers/CMSIS/Include/core_cmSimd.h
+welding_adapter\arm_const_structs.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+welding_adapter\arm_const_structs.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+welding_adapter\arm_const_structs.o: ../Drivers/CMSIS/Include/arm_common_tables.h

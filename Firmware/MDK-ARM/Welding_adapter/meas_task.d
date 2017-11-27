@@ -1,0 +1,14 @@
+welding_adapter\meas_task.o: ..\Src\meas_task.c
+welding_adapter\meas_task.o: ../Inc/do_task.h
+welding_adapter\meas_task.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+welding_adapter\meas_task.o: ../Inc/defines.h
+welding_adapter\meas_task.o: ../Inc/os.h
+welding_adapter\meas_task.o: ../Inc/tasks.h
+welding_adapter\meas_task.o: ../Inc/rel_driver.h
+welding_adapter\meas_task.o: ../Inc/comunication.h
+welding_adapter\meas_task.o: ../Inc/meas_task.h
+welding_adapter\meas_task.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+welding_adapter\meas_task.o: ../Inc/serial_com.h
+welding_adapter\meas_task.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+welding_adapter\meas_task.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+welding_adapter\meas_task.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
