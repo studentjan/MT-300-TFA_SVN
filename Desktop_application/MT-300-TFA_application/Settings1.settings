@@ -1,0 +1,72 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="MT_300_TFA_application" GeneratedClassName="Settings1">
+  <Profiles />
+  <Settings>
+    <Setting Name="TRANSMIT_COMMAND_CHECK" Type="System.UInt32" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="QUEUE_FAIL" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="QUEUE_PASS" Type="System.UInt32" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="QUEUE_FREE" Type="System.UInt32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="_ANS_MESSAGE_ACK_RECIEVED" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">2</Value>
+    </Setting>
+    <Setting Name="_ANS_MESSAGE_NACK_RECIEVED" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">3</Value>
+    </Setting>
+    <Setting Name="_ANS_MESSAGE_ACK" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="_ANS_MESSAGE_NACK" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="_MESSAGE_ACK" Type="System.String" Scope="User">
+      <Value Profile="(Default)">ACK</Value>
+    </Setting>
+    <Setting Name="_MESSAGE_NACK" Type="System.String" Scope="User">
+      <Value Profile="(Default)">NACK</Value>
+    </Setting>
+    <Setting Name="_MESSAGE_WAR" Type="System.String" Scope="User">
+      <Value Profile="(Default)">WARNING</Value>
+    </Setting>
+    <Setting Name="_MESSAGE_COM_ERR" Type="System.String" Scope="User">
+      <Value Profile="(Default)">COMMUNICATION ERROR</Value>
+    </Setting>
+    <Setting Name="_COMMUNICATION_DIR_PORT1" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="_COMMUNICATION_DIR_PORT2" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">2</Value>
+    </Setting>
+    <Setting Name="_COMMUNICATION_DIR_PORT3" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">3</Value>
+    </Setting>
+    <Setting Name="_ID_DEBUG" Type="System.Char" Scope="User">
+      <Value Profile="(Default)">T</Value>
+    </Setting>
+    <Setting Name="_ID_TFA" Type="System.Char" Scope="User">
+      <Value Profile="(Default)">A</Value>
+    </Setting>
+    <Setting Name="_ID_MT" Type="System.Char" Scope="User">
+      <Value Profile="(Default)">M</Value>
+    </Setting>
+    <Setting Name="_SER_START_SIGN" Type="System.Char" Scope="User">
+      <Value Profile="(Default)">&gt;</Value>
+    </Setting>
+    <Setting Name="_COM_PORT1_REC_TRANS" Type="System.String" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="_COM_PORT2_REC_TRANS" Type="System.String" Scope="User">
+      <Value Profile="(Default)">1</Value>
+    </Setting>
+    <Setting Name="TRANSMIT_SLOT_FREE" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
