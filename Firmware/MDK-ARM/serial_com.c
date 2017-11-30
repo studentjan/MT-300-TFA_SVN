@@ -39,6 +39,8 @@
 //-----------ZUNANJE SPREMENLJIVKE-----------------------
 extern uint8_t event_status; 
 extern uint32_t connection_control;
+extern uint32_t meas_task_control;
+extern int start_cord_count;
 //-----------GLOBALNE SPREMENLJIVKE----------------------
 uint8_t SERIAL_direction;
 uint8_t event_status; 
@@ -47,6 +49,12 @@ volatile uint32_t RxFifoIndex = 0;
 static uint8_t INPUT_Buffer[RxBufferSize_MAX];
 int int_from_str;
 char* float_from_str;
+
+int indikator1;
+int indikator2;
+int indikator3;
+int indikator4;
+int indikator5;
 
 
 typedef enum {
@@ -86,7 +94,7 @@ uint32_t read_count=0;
 uint32_t g;
 #endif
 
-//funkcija za razbijanje stringov po delimiterjih
+//funkcija za razbijanje stringov po delimiterjih - nadomesti delimiter z 0 zato jih moramo nekako dat nazaj
 static char *strtok_single (char * str, char const * delims)
 {
   static char  * src = NULL;
@@ -103,7 +111,8 @@ static char *strtok_single (char * str, char const * delims)
     ret = src;
     src = ++p;
 
-  } else if (*src) {
+  } 
+	else if (*src) {
     ret = src;
     src = NULL;
   }
@@ -585,11 +594,21 @@ static void command_analyze(uint8_t dir)
 	{ 
 		if(!strcmp(&additionalCode[0][0][0],__START_NORM__))
 		{
-			set_event(START_CORD_NORMAL,start_cord_normal);
+			if(!(meas_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+			{
+					meas_task_control |= __CORD_MEAS_IN_PROG;
+					if(!strcmp(m_value,__1_PHASE__))
+						set_phase_num(1);
+					else
+						set_phase_num(3);
+					start_cord_count = 0;
+					set_event(START_CORD_NORMAL,start_cord_normal);
+			}
 		}
 		else if(!strcmp(&additionalCode[0][0][0],__STOP_C__))
 		{
-			set_event(STOP_CORD,stop_cord);
+			if(meas_task_control & __CORD_MEAS_IN_PROG)	//se izvede samo ce je meritev v teku
+				set_event(STOP_CORD,stop_cord);
 		}
 		else if(!strcmp(&additionalCode[0][0][0],__INIT_C__))
 		{
@@ -597,7 +616,8 @@ static void command_analyze(uint8_t dir)
 		}
 		else if(!strcmp(&additionalCode[0][0][0],__RPE_RESISTANCE__))
 		{
-			set_cord_resistance(&additionalCode[1][0][0]);
+			if((meas_task_control & __CORD_MEAS_IN_PROG) && (meas_task_control & __CORD_RES_REQUESTED))	//se izvede samo ce je meritev v teku
+				set_cord_resistance(&additionalCode[1][0][0]);
 		}
 	}
 /*******************************************************************************/
@@ -805,28 +825,36 @@ static int CalculateCRC(char *message)
 	
 	int podpi = 0;
 	int vsota = 0;
+	indikator3 = strlen(message);
 	for(int a =0;a < strlen(message); a++)
 	{
 		if (message[a] == ':')
 		{
 			delimiterArray[podpi] = a;
 			podpi++;
+			indikator2= a;
 		}		
 	}
 	delimiterArray[podpi] =  strlen((char*)message);
 	for(signed int a =0; (a <  delimiterArray[6]+1 && a < (signed int)strlen(message)); a++)
+	{
 		vsota = vsota+message[a];
+		indikator4= vsota;
+		indikator5 = message[a];
+	}
 	
 	return (vsota%256);
 }
 
 static bool CheckCRC(unsigned char isCRC, unsigned char CRCvalue, char *message)
 {
+	int CRCresult=0;
 	if(isCRC == 1)
 	{
 		if(CRCvalue<=255) //CRCvalue>=0 && CRCvalue<=255
 		{
-			int CRCresult= CalculateCRC(message);	   // racunamo crc do petega delimiterja
+			CRCresult= CalculateCRC(message);	   // racunamo crc do petega delimiterja
+			indikator1 = CRCresult;
 			if(CRCresult ==	CRCvalue)
 				return true;
 			else
@@ -948,6 +976,7 @@ void SendConstructedProtocolMessage(char * ProtocolMsg, int Receiver,MESSAGE_CON
 static int ParseMessage(char *m_msg, int transmitter)
 {
 		char message[200];
+//		char message2[200];//
 		int crc;
 		int crcVal;
 		char *IN_START_TAG;
@@ -1030,7 +1059,7 @@ static int ParseMessage(char *m_msg, int transmitter)
 	
 	crc = atoi((char*)m_is_crc);
 	crcVal = atoi((char*)m_crc_value);
-	if (!CheckCRC(crc, crcVal, message))
+	if (!CheckCRC(crc, crcVal, m_msg))
 		return 1;
 	
 	return 0;

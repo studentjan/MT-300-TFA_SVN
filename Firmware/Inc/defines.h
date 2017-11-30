@@ -224,6 +224,7 @@
 #define ULN_MEAS_FS							5555.5f	//frekvenca vzorcenja
 #define IL_MEAS_FS							5555.5f	//frekvenca vzorcenja
 #define PHASE_UNCERTANTY				50			//n*10u :za koliko lahko neka faza odstopa da recemo da je se v fazi z drugo
+#define PHASE_AVARAGE_CNT				5
 #define sdadc2_il								0.0009009009f
 //vklop filtrov
 #define SDADC1_high_pass_filter _ON 	// vklop HPF
@@ -602,6 +603,7 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define __CON_OK_		"OK"
 #define __CON_NOK_		"NOK"
 
+
 //CORD
 //--additionalcode
 #define __START_NORM__ 			"START_NORMAL"
@@ -620,7 +622,10 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define __PASS__						"PASS"
 #define __PASS_1P__					"PASS_1P"
 #define __FAIL__						"FAIL"
-#define __FAIL_1P__						"FAIL_1P"
+#define __FAIL_1P__					"FAIL_1P"
+#define __STOPED_C__				"STOPPED"
+#define __1_PHASE__					"1_P"
+#define __3_PHASE__					"3_P"
 
 #define __MULTIFAULT__			"MULTIFLT"
 #define __CROSSED_AND_SHORTED__	"CROS_N_SHOR"

@@ -31,8 +31,12 @@ struct SDADC_struct{
 	float32_t sum;
 	uint32_t sample_count;
 	int16_t max;
-	uint16_t peak_at;
+	int32_t peak_at;
 	float32_t max_float;
+	float32_t max_float_sum;
+	int32_t peak_sum;
+	uint32_t peak_sum_count;
+	uint32_t aux_count;
 };
 
 uint16_t stevec2;
@@ -1062,6 +1066,7 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 	{
 		case ULN1_CHANNEL: 
 		{
+			test2_on;
 			SDADC1_sample = ConvertionResult*uln1_temp;
 			#if	THD_COMPUTATION_METHOD == CORELATION
 			if(meas_control & __THD_MEASURING)
@@ -1141,6 +1146,7 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 		}
 		case ULN2_CHANNEL: 
 		{
+			test3_on;
 			SDADC1_sample = ConvertionResult*uln2_temp; 
 			#if	THD_COMPUTATION_METHOD == CORELATION
 			if(meas_control & __THD_MEASURING)
@@ -1218,6 +1224,7 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 		}
 		case ULN3_CHANNEL: 
 		{
+			test4_on;
 			SDADC1_sample = ConvertionResult*uln3_temp;
 			#if	THD_COMPUTATION_METHOD == CORELATION
 			if(meas_control & __THD_MEASURING)
@@ -1306,16 +1313,35 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 				{
 					//koda za detektiranje faznega zaporedja napetosti
 					if(SDADC1_CH1s.sample_count==0) test1_on;
-					if((SDADC1_CH1s.sample_count<(uint32_t)(ULN_MEAS_FS*0.02f))&&(compute_control2 & __GET_PHASES)&&(!(compute_control2 & __PHASE1_MEASURED)))//samo 1. periodo gledamo za maksimum
+					if((SDADC1_CH1s.sample_count<(PHASE_AVARAGE_CNT*(uint32_t)(ULN_MEAS_FS*0.02f)))&&(compute_control2 & __GET_PHASES)&&(!(compute_control2 & __PHASE1_MEASURED)))//samo 1. periodo gledamo za maksimum
 					{
 						if(SDADC1_CH1s.sempl > SDADC1_CH1s.max_float)
 						{
 							SDADC1_CH1s.peak_at = (htim6.Instance -> CNT)+12;//timer ki steje tece na 10 us ker je frekvenca vzorcenja 16,666 za vse kanale je 60us zakasnitve med vzorcenji kanalov
 							SDADC1_CH1s.max_float=SDADC1_CH1s.sempl;
 						}
+						if(SDADC1_CH1s.aux_count>=110)//toliko je vzorcev v eni periodi
+						{
+							SDADC1_CH1s.peak_sum += (SDADC1_CH1s.peak_at-(2000*SDADC1_CH1s.peak_sum_count));	//od stevca odstejemo stevilo stetja, ki jih counter naredi v eni periodi
+							SDADC1_CH1s.peak_sum_count++;
+							SDADC1_CH1s.max_float_sum+=SDADC1_CH1s.max_float;
+							SDADC1_CH1s.max_float = 0;
+							SDADC1_CH1s.peak_at=0;
+							SDADC1_CH1s.aux_count=0;
+						}
+						else
+							SDADC1_CH1s.aux_count++;
 					}
-					else if((SDADC1_CH1s.sample_count>=(uint32_t)(ULN_MEAS_FS*0.02f))&&(compute_control2 & __GET_PHASES)&&(!(compute_control2 & __PHASE1_MEASURED)))
-					{compute_control2 |= __PHASE1_MEASURED;test1_off;}
+					else if((compute_control2 & __GET_PHASES)&&(!(compute_control2 & __PHASE1_MEASURED)))
+					{
+						compute_control2 |= __PHASE1_MEASURED;
+						test1_off;
+						SDADC1_CH1s.aux_count=0;
+						SDADC1_CH1s.peak_sum_count=0;
+						SDADC1_CH1s.max_float=SDADC1_CH1s.max_float_sum/PHASE_AVARAGE_CNT;
+						SDADC1_CH1s.peak_at=SDADC1_CH1s.peak_sum/PHASE_AVARAGE_CNT;//izracunamo povprecje
+						SDADC1_CH1s.peak_sum=0;
+					}
 					SDADC1_CH1s.sempl=SDADC1_sample;
 					SDADC1_CH1s.sum += (SDADC1_CH1s.sempl*SDADC1_CH1s.sempl);
 					if(SDADC1_CH1s.sample_count>=SDADC1_ULN_SAMPLE_CNT)
@@ -1327,6 +1353,7 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 						meas_control |= __ULN1_MEASURED;
 					}
 					else SDADC1_CH1s.sample_count++;
+					test2_off;
 				}
 				break;
 			}
@@ -1335,16 +1362,34 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 				if((!(meas_control & __ULN2_MEASURED))||(meas_control & __NO_THD_MEAS)||(THD_COMPUTATION_METHOD==FFT))
 				{
 					//koda za detektiranje faznega zaporedja napetosti
-					if((SDADC1_CH2s.sample_count<(uint32_t)(ULN_MEAS_FS*0.02f))&&(compute_control2 & __GET_PHASES)&&(!(compute_control2 & __PHASE2_MEASURED)))//samo 1. periodo gledamo za maksimum
+					if((SDADC1_CH2s.sample_count<(PHASE_AVARAGE_CNT*(uint32_t)(ULN_MEAS_FS*0.02f)))&&(compute_control2 & __GET_PHASES)&&(!(compute_control2 & __PHASE2_MEASURED)))//samo 1. periodo gledamo za maksimum
 					{
 						if(SDADC1_CH2s.sempl > SDADC1_CH2s.max_float)
 						{
 							SDADC1_CH2s.peak_at = (htim6.Instance -> CNT)+6;//timer ki steje tece na 10 us ker je frekvenca vzorcenja 16,666 za vse kanale je 60us zakasnitve med vzorcenji kanalov
 							SDADC1_CH2s.max_float=SDADC1_CH2s.sempl;
 						}
+						if(SDADC1_CH2s.aux_count>=110)//toliko je vzorcev v eni periodi
+						{
+							SDADC1_CH2s.peak_sum += (SDADC1_CH2s.peak_at-(2000*SDADC1_CH2s.peak_sum_count));	//od stevca odstejemo stevilo stetja, ki jih counter naredi v eni periodi
+							SDADC1_CH2s.peak_sum_count++;
+							SDADC1_CH2s.max_float_sum+=SDADC1_CH2s.max_float;
+							SDADC1_CH2s.max_float = 0;
+							SDADC1_CH2s.peak_at=0;
+							SDADC1_CH2s.aux_count=0;
+						}
+						else
+							SDADC1_CH2s.aux_count++;
 					}
-					else if((SDADC1_CH2s.sample_count>=(uint32_t)(ULN_MEAS_FS*0.02f))&&(compute_control2 & __GET_PHASES)&&(!(compute_control2 & __PHASE2_MEASURED)))
+					else if((compute_control2 & __GET_PHASES)&&(!(compute_control2 & __PHASE2_MEASURED)))
+					{
 						compute_control2 |= __PHASE2_MEASURED;
+						SDADC1_CH2s.aux_count=0;
+						SDADC1_CH2s.peak_sum_count=0;
+						SDADC1_CH2s.max_float=SDADC1_CH2s.max_float_sum/PHASE_AVARAGE_CNT;
+						SDADC1_CH2s.peak_at=SDADC1_CH2s.peak_sum/PHASE_AVARAGE_CNT;//izracunamo povprecje
+						SDADC1_CH2s.peak_sum=0;
+					}
 					SDADC1_CH2s.sempl=SDADC1_sample;
 					SDADC1_CH2s.sum += (SDADC1_CH2s.sempl*SDADC1_CH2s.sempl);
 					if(SDADC1_CH2s.sample_count>=SDADC1_ULN_SAMPLE_CNT)
@@ -1356,6 +1401,7 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 						meas_control |= __ULN2_MEASURED;
 					}
 					else SDADC1_CH2s.sample_count++;
+					test3_off;
 				}
 				break;
 			}
@@ -1364,16 +1410,34 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 				if((!(meas_control & __ULN3_MEASURED))||(meas_control & __NO_THD_MEAS)||(THD_COMPUTATION_METHOD==FFT))
 				{
 					//koda za detektiranje faznega zaporedja napetosti
-					if((SDADC1_CH3s.sample_count<(uint32_t)(ULN_MEAS_FS*0.02f))&&(compute_control2 & __GET_PHASES)&&(!(compute_control2 & __PHASE3_MEASURED)))//samo 1. periodo gledamo za maksimum
+					if((SDADC1_CH3s.sample_count<(PHASE_AVARAGE_CNT*(uint32_t)(ULN_MEAS_FS*0.02f)))&&(compute_control2 & __GET_PHASES)&&(!(compute_control2 & __PHASE3_MEASURED)))//samo 1. periodo gledamo za maksimum
 					{
 						if(SDADC1_CH3s.sempl > SDADC1_CH3s.max_float)
 						{
 							SDADC1_CH3s.peak_at = htim6.Instance -> CNT;
 							SDADC1_CH3s.max_float=SDADC1_CH3s.sempl;
 						}
+						if(SDADC1_CH2s.aux_count>=110)//toliko je vzorcev v eni periodi pri zadnjem ne brisemo
+						{
+							SDADC1_CH3s.peak_sum += (SDADC1_CH3s.peak_at-(2000*SDADC1_CH3s.peak_sum_count));	//od stevca odstejemo stevilo stetja, ki jih counter naredi v eni periodi
+							SDADC1_CH3s.max_float_sum+=SDADC1_CH3s.max_float;
+							SDADC1_CH3s.peak_sum_count++;
+							SDADC1_CH3s.max_float = 0;
+							SDADC1_CH3s.peak_at=0;
+							SDADC1_CH3s.aux_count=0;
+						}
+						else
+							SDADC1_CH3s.aux_count++;
 					}
-					else if((SDADC1_CH3s.sample_count>=(uint32_t)(ULN_MEAS_FS*0.02f))&&(compute_control2 & __GET_PHASES)&&(!(compute_control2 & __PHASE3_MEASURED)))
+					else if((compute_control2 & __GET_PHASES)&&(!(compute_control2 & __PHASE3_MEASURED)))
+					{
 						compute_control2 |= __PHASE3_MEASURED;
+						SDADC1_CH3s.aux_count=0;
+						SDADC1_CH3s.peak_sum_count=0;
+						SDADC1_CH3s.max_float=SDADC1_CH3s.max_float_sum/PHASE_AVARAGE_CNT;
+						SDADC1_CH3s.peak_at=SDADC1_CH3s.peak_sum/PHASE_AVARAGE_CNT;//izracunamo povprecje
+						SDADC1_CH3s.peak_sum=0;
+					}
 					SDADC1_CH3s.sempl=SDADC1_sample;
 					SDADC1_CH3s.sum += (SDADC1_CH3s.sempl*SDADC1_CH3s.sempl);
 					if(SDADC1_CH3s.sample_count>=SDADC1_ULN_SAMPLE_CNT)
@@ -1385,6 +1449,7 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 						meas_control |= __ULN3_MEASURED;
 					}
 					else SDADC1_CH3s.sample_count++;
+					test4_off;
 				}
 				break;
 			}

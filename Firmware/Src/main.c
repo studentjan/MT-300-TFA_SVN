@@ -90,6 +90,7 @@ extern SDADC_HandleTypeDef hsdadc1;
 extern SDADC_HandleTypeDef hsdadc2;
 extern SDADC_HandleTypeDef hsdadc3;
 extern  uint32_t meas_control;
+extern uint32_t init_test_counter;
 uint32_t global_control=0;
 uint32_t connection_control=0;
 
@@ -139,6 +140,7 @@ int main(void)
 //	set_event(OS_TEST,test_task);
 //	if(set_REL(37)!=_OK) _Error_Handler(__FILE__, __LINE__);
 	set_timer(TEST_LED,10,Led_flash_task);
+	init_test_counter=0;
 	set_event(POWER_ON_TEST,power_on_test);
 	set_timer(SEND_TFA_MAINS_STATUS,2,send_mains_status);
   run_OS();

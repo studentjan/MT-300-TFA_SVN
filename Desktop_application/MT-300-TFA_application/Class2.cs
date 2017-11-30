@@ -32,7 +32,7 @@ namespace MT_300_TFA_application
         private const int QUEUE_PASS = 1;
         private const int NUMBER_OF_DELIMITERS = 8; //stevilo delimiterjev(:) v komandi
         private int[] delimiterArray = new int[NUMBER_OF_DELIMITERS + 1];
-        private const int MAX_ADDITIONAL_COMMANDS = 5;
+        private const int MAX_ADDITIONAL_COMMANDS = 10;
         private const int _ANS_MESSAGE_NACK = 1;
         private const int _ANS_MESSAGE_ACK = 0;
         private const int INPUT_BUFFER_LENGTH = 300;
@@ -79,6 +79,8 @@ namespace MT_300_TFA_application
         private int transmitt_handle_write_count = 0;
         private int transmitt_handle_read_count = 0;
 
+       
+
         //+++++++++++++++++++++++++++++++++++++++++KOMANDE ZA PREJEMANJE IN POSILJANJE+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         private const int MAX_VALID_COMMANDS = 50;
         //                                                  0           1           2           3           4           5           6           7           8           9           10          11          12          13          14          15          16          17          18          19          20          21          22          23          24          25          26          27          28          29          30          31          32          33          34          35          36       
@@ -89,7 +91,10 @@ namespace MT_300_TFA_application
         public static String[] CONNECTION_CODE_NAMES = {"CONNECT_REQUEST", "CONNECTION_ESTABLED", "CONNECTION_CHECK"};
         public static String[] CONNECTION_ADD_NAMES = {"MT-310", "OK", "NOK"};
         public static String[] TEST_CODE_NAMES = {"PROTOCOL_TEST"};
-        public static String[] CORD_CODE_NAMES = {"START_NORMAL", "STOP", "INIT", "RPE_RES_GET", "RPE_RES"};
+        public static String[] CORD_CODE_NAMES = {"START_NORMAL", "STOP", "INIT", "RPE_RES_GET", "RPE_RES", "STOPPED"};
+        public static String[] CORD_LEFTOVER_NAMES = { "L1_L1", "L1_L2", "L1_L3", "L1_N", "L1_PE", "L2_L1", "L2_L2", "L2_L3", "L2_N", "L2_PE",
+                                                        "L3_L1","L3_L2", "L3_L3", "L3_N", "L3_PE", "N_L1" , "N_L2" , "N_L3" , "N_N" , "N_PE" ,
+                                                        "PE_L1", "PE_L2", "PE_L3", "PE_N","PE_PE", "1_P","3_P"};
         public static String[] STATUS_CODE_NAMES = {""};
         public static String[] STATUS_VALUE_NAMES = {""};
         public static String[] WARNING_CODE_NAMES = {"COMMAND_SEND_ERROR"};
@@ -587,7 +592,7 @@ namespace MT_300_TFA_application
                 }
             }
             delimiterArray[podpi] = message.Length;
-            for (int a = 0; (a < delimiterArray[6] + 1 && a < message.Length); a++)
+            for (int a = 0; ((a < delimiterArray[6] + 1) && (a < message.Length)); a++)
                 vsota = vsota + (int)message[a];//message[a];
 
             return (vsota % 256);
@@ -637,15 +642,26 @@ namespace MT_300_TFA_application
                 /*******************************************************************************/
                 /**									CORD          							  **/
                 /*******************************************************************************/
-                else if (String.Equals(m_command, COMMAND_TYPE_NAMES[5]))//communication
+                else if (String.Equals(m_command, COMMAND_TYPE_NAMES[5]))//cord
                 {
-                    if (String.Equals(additionalCode[0, 0], CORD_CODE_NAMES[3])) //connected
+                    if (String.Equals(additionalCode[0, 0], CORD_CODE_NAMES[3])) //get resistance
                     {
-                        cord_object.cord_return_result(m_leftover);
+                        cord_return_event(m_leftover, additionalCode[0, 0]);
+                    }
+                    else if (String.Equals(additionalCode[0, 0], CORD_CODE_NAMES[5])) //stopped
+                    {
+                        cord_return_event(m_leftover, additionalCode[0, 0]);
                     }
                 }
              }
         }
+        public delegate void cord_return_result(object sender, string meas_con, string cmd);
+        public event cord_return_result cordReturnEventHandler = delegate { };
+        public void cord_return_event(string return_string, string cmd)
+        {
+            this.cordReturnEventHandler(this, return_string,cmd);
+        }
+
         private void send_message()
         {
             if (message_to_send == 1)
@@ -800,7 +816,7 @@ namespace MT_300_TFA_application
             //preveri ce je buffer prazen
             do
             {
-                Thread.Sleep(100);
+                Thread.Sleep(300);
                 if (transmitt_handle_read_count == transmitt_handle_write_count)
                 {
                     task2_ex_flag = false;
@@ -888,6 +904,7 @@ namespace MT_300_TFA_application
                             else i++;
                         }
                     }
+
                 }
             } while (task2_ex_flag == true);
         }

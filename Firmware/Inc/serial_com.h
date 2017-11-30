@@ -65,8 +65,8 @@ static void communication_init(void);
 #define _MESSAGE_WAR								"WARNING"
 #define _MESSAGE_COM_ERR						"COMMUNICATION ERROR"
 
-#define _ANS_MESSAGE_NACK       			0
-#define _ANS_MESSAGE_ACK       				1 
+#define _ANS_MESSAGE_NACK       			1
+#define _ANS_MESSAGE_ACK       				0 
 #define _ANS_MESSAGE_ACK_RECIEVED			2
 #define _ANS_MESSAGE_NACK_RECIEVED		3
 

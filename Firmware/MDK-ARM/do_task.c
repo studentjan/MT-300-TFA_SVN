@@ -24,6 +24,7 @@ extern uint32_t SDADC1_ch_cnt;
 extern uint32_t SDADC2_ch_cnt;
 extern uint32_t current_THD_sampling;
 extern uint32_t last_THD_MEASURED;
+uint32_t init_test_counter=0;
 #if THD_COMPUTATION_METHOD
 extern float32_t THD_buffer1[CORELATION_THD_BUFFER_SIZE];
 float THD_correlation_buffer[CORELATION_THD_BUFFER_SIZE];
@@ -154,6 +155,7 @@ void stop_measure(void)
 	HAL_SDADC_IRQHandler(&hsdadc1);
 	HAL_SDADC_IRQHandler(&hsdadc2);
 	HAL_SDADC_IRQHandler(&hsdadc3);
+	compute_control2 &= (~__POWER_MEAS_ON);
 	compute_control=0;
 	last_THD_MEASURED=0;
 	#if THD_COMPUTATION_METHOD == CORELATION
@@ -512,14 +514,13 @@ void compute_THD_with_FFT(void)
 //izvaja se cca 300ms da dobimo rezultat ki je shranjen v global_control registru
 void power_on_test(void)
 {
-	static uint32_t count=0;
+	static uint32_t init_test_counter=0;
 	float temp1, temp2, temp3, temp4, temp5;
 //	global_control &= (~(__ULN3_OUT_OF_RANGE|__ULN2_OUT_OF_RANGE|__ULN1_OUT_OF_RANGE|__INIT_TEST_FAIL|__3P_CONNECTION|__1P_CONNECTION|__PE_DISCONNECTED|
 //										__WRONG_CONNECTION|__VOLTAGES_IN_PHASE|__INPUT_PHASES_DET|__ON_TEST_IN_PROG|__IN_CONNECTION_OK|__INIT_TEST_PASS|__N_DISCONECTED));
 //	compute_control2 &=(~(__INIT_MEASURED));
-	if(count==0)
+	if(init_test_counter==0)
 	{
-		test3_on;
 		global_control &= (~(__ULN3_OUT_OF_RANGE|__ULN2_OUT_OF_RANGE|__ULN1_OUT_OF_RANGE|__INIT_TEST_FAIL|__3P_CONNECTION|__1P_CONNECTION|__PE_DISCONNECTED|
 										__WRONG_CONNECTION|__VOLTAGES_IN_PHASE|__INPUT_PHASES_DET|__ON_TEST_IN_PROG|__IN_CONNECTION_OK|__INIT_TEST_PASS|__N_DISCONECTED));
 		compute_control2 &=(~(__INIT_MEASURED));
@@ -564,7 +565,7 @@ void power_on_test(void)
 			global_control |= __L_ON_N;
 			if((global_control & __VOLTAGES_IN_PHASE)||(global_control & __PHASE_SEQ_INPHASE))	//ce je faza na N potem je vse vredu ce so vse napetosti v fazi -> glej hardver
 			{global_control |= __IN_CONNECTION_OK; global_control |= __1P_CONNECTION;}
-			else if((!(global_control & __VOLTAGES_IN_PHASE))||(!(global_control & __PHASE_SEQ_INPHASE)))	//ce napetosti niso v fazi je velika verjetnost da gre za trofazni sistem s fazo na N
+			else	//ce napetosti niso v fazi je velika verjetnost da gre za trofazni sistem s fazo na N
 			{global_control |= __WRONG_CONNECTION;global_control |= __3P_CONNECTION;}
 		}
 		else global_control |= __WRONG_CONNECTION;
@@ -620,13 +621,12 @@ void power_on_test(void)
 		stop_measure();
 		global_control &= (~__ON_TEST_IN_PROG);
 		global_control &= (~__INPUT_PHASES_DET);
-		count=0;
-		test3_off;
+		init_test_counter=0;
 	}
 	else 
 	{
-		set_timer(POWER_ON_TEST,5,power_on_test);
-		count++;
+		restart_timer(POWER_ON_TEST,5,power_on_test);
+		init_test_counter++;
 	}
 }
 

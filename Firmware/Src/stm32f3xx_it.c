@@ -305,7 +305,6 @@ void EXTI9_5_IRQHandler(void)
 	static float perm_temp3=0;
 	static uint32_t count=0;
 	static uint32_t count2=0;
-	test4_tog;
 	if(((meas_control & __SDADC2_START_MASK) || (meas_control & __SDADC1_START_MASK) || (meas_control & __SDADC3_START_MASK))&&(!(meas_control & __START_TIMER_ON)))
 	{
 			//zakasnitev z timerjem 7

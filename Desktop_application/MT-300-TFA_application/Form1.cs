@@ -232,7 +232,7 @@ namespace MT_300_TFA_application
         private void cord_button_Click(object sender, EventArgs e)
         {
             //Serial_class.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[2], "");
-            Cord_form cordForm = new Cord_form();
+            Cord_form cordForm = new Cord_form(Serial_class);
             cordForm.Show();
         }
 

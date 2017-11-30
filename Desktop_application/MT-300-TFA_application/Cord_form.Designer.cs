@@ -114,7 +114,16 @@
             "CABLE OK",
             "L - N CROSSED",
             "N - L CROSSED",
-            "N - OPEN"});
+            "N - OPEN",
+            "L1 - N SHORTED",
+            "L1 - PE SHORTED",
+            "L1 - L3 CROSSED",
+            "1P_L - N SHORTED",
+            "1P_L OPEN",
+            "L1-L2, L3-N CROSSED",
+            "PE-L1, L2-N SHORTED",
+            "ALL CROSSED",
+            "PE-L1 CROSSED AND OPEN"});
             this.Cable_state_comboBox.Location = new System.Drawing.Point(58, 167);
             this.Cable_state_comboBox.Name = "Cable_state_comboBox";
             this.Cable_state_comboBox.Size = new System.Drawing.Size(121, 21);

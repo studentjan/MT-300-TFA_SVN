@@ -53,4 +53,6 @@ void compute_rms(void);
 void set_SDADC_zero(void);
 void write_THD(float32_t value, uint32_t place);
 float get_inst_value(uint32_t param);
+
+
 #endif

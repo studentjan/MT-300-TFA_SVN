@@ -8,14 +8,23 @@
 
 void start_cord_normal(void);
 void stop_cord(void);
+void stop_cord_and_transmitt(uint32_t dir, char device_ID);
 void cord_meas_normal(void);
 void set_cord_init(void);
 void set_cord_resistance(char* value);
+void set_phase_num(int phase_num);
 
 //ne spreminjaj makrojev!!!
+//----------------------------NASTAVITVE--------------------------------------
+//avtomatsko detektiranje za kolk polni kabl gre
+#define AUTO_DETECT_P_NUM	true
+//----------------------------------------------------------------------------
+
+//
 #define _1_PHASE true
 #define _3_PHASE false
-	
+
+//+++++++++++++++++++++++++++zastavice za connection_reg+++++++++++++++++++++++++++++
 #define L1_L1		0x00000001
 #define L1_L2		0x00000002
 #define L1_L3		0x00000004
@@ -42,6 +51,8 @@ void set_cord_resistance(char* value);
 #define N_L3		0x00400000
 #define PE_L3		0x00800000
 #define PE_N		0x01000000
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 
 #define PASS_MASK 					0x00007801
 #define L1_OPEN_MASK 				0x00007800
@@ -75,7 +86,7 @@ void set_cord_resistance(char* value);
 #define PE_CROSSED_MASK2		0x01A40000
 
 
-
+//++++++++++++++++++++zastavice za connection_status++++++++++++++++++++++++++++++++++
 #define L1_OPEN 				0x00000001
 #define L1_L2_CROSSED		0x00000002
 #define L1_L2_SHORTED		0x00000004
@@ -106,11 +117,13 @@ void set_cord_resistance(char* value);
 #define N_OK						0x08000000
 #define PE_OK						0x10000000
 #define N_PE_SHORTED		0x20000000
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #define L1_SHORTED_MASK	0x00000154
 #define L2_SHORTED_MASK	0x00005404
 #define L3_SHORTED_MASK	0x00050410
 #define N_SHORTED_MASK	0x20011040
+#define PE_SHORTED_MASK	0x20044180
 #define ALL_SHORTED_MASKS	0x20055554
 #define ALL_CROSSED_MASKS	0x0082AAAA
 #define STATUS_FAULT_MASK	0x20FFFFFF
@@ -129,10 +142,17 @@ void set_cord_resistance(char* value);
 #define N_CROSS_CON_MASK	0x00808820
 #define PE_CROSS_CON_MASK	0x00822080
 
-#define CABLE_1P_MASK		0x39E001E1	//vse kar se tice enofaznega kabla pazi L2_open in L3_OPEN nista upostevana
+#define CABLE_1P_MASK					0x39E001E1	//vse kar se tice enofaznega kabla pazi L2_open in L3_OPEN nista upostevana
+#define CABLE_1P_FAULT_MASK_S1	0x20E001E1
+#define CABLE_1P_FAULT_MASK_S2	0x00832480
+#define CABLE_3P_FAULT_MASK_S1	0x20FFFFFF
+#define CABLE_3P_FAULT_MASK_S2	0x00FFC000
+#define CABLE_1P_CROSSED_LOW_MASKS 	0x008000A0
+#define CABLE_1P_CROSSED_HIGH_MASKS 0x00830000
+#define CABLE_3P_CROSSED_LOW_MASKS 	0x0082AAAA
+#define CABLE_3P_CROSSED_HIGH_MASKS 0x00FFC000
 
-
-
+//++++++++++++++++++++++++++++++zastavice za connection_status2+++++++++++++++++++++++++++++++
 #define MULTI_FAULT					0x00000001
 #define CROSSED_AND_SHORTED			0x00000002
 #define MULTI_SHORTED				0x00000004
@@ -160,7 +180,7 @@ void set_cord_resistance(char* value);
 #define SHORTED_AND_OPEN			0x01000000
 #define MULTI_CROSSED				0x02000000
 #define MULTI_OPENED				0x04000000
-
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 #define MULTI_FAULT_CONTINUE  _ON		//ce je tole vklopljeno se meritev izvede do konca tudi ce ze ugotovi multifault
 #define MAX_ERROR_ADD_COMMAND	7
