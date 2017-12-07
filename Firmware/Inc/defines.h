@@ -456,7 +456,8 @@ enum CONNECTION_MASKS
 enum MEAS_TASK_MASKS
 {
 	__CORD_MEAS_IN_PROG		=0x00000001,
-	__CORD_RES_REQUESTED	=0x00000002,
+	__CORD_RPE_RES_REQUESTED	=0x00000002,
+	__CORD_RISO_RES_REQUESTED	=0x00000004,
 
 };
 
@@ -609,7 +610,7 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define __START_NORM__ 			"START_NORMAL"
 #define __STOP_C__					"STOP"
 #define __INIT_C__					"INIT"
-#define __START_RPE_5A__		"RPE_5A_START"
+#define __START_RPE_5A__		"RPE_START"
 #define __GET_RPE_RES__			"RPE_RES_GET"
 #define __L1_OPEN__					"L1_OPEN"
 #define __L1_1P_OPEN__			"L1_1P_OPEN"

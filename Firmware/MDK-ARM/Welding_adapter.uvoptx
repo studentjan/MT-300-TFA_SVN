@@ -276,15 +276,15 @@
         <Mm>
           <WinNumber>2</WinNumber>
           <SubType>8</SubType>
-          <ItemText>0x200069a0</ItemText>
+          <ItemText>0x20006C58</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow2>
       <MemoryWindow3>
         <Mm>
           <WinNumber>3</WinNumber>
-          <SubType>0</SubType>
-          <ItemText>\\Welding_adapter\../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Src/usbd_cdc.c\USBD_CDC_SetTxBuffer\pdev-&gt;pClassData</ItemText>
+          <SubType>8</SubType>
+          <ItemText>0x20006000</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow3>

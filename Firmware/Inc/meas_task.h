@@ -9,20 +9,25 @@
 void start_cord_normal(void);
 void stop_cord(void);
 void stop_cord_and_transmitt(uint32_t dir, char device_ID);
-void cord_meas_normal(void);
-void set_cord_init(void);
+void cord_meas_continuity(void);
+void cord_continuity_init(void);
+void cord_RISO_init(void);
+void cord_meas_RISO(void);
 void set_cord_resistance(char* value);
 void set_phase_num(int phase_num);
 
 //ne spreminjaj makrojev!!!
 //----------------------------NASTAVITVE--------------------------------------
 //avtomatsko detektiranje za kolk polni kabl gre
-#define AUTO_DETECT_P_NUM	true
+#define AUTO_DETECT_P_NUM	false				//avtomatska detekcija stevila faz
+#define MULTI_FAULT_CONTINUE  _OFF		//ce je tole vklopljeno se meritev izvede do konca tudi ce ze ugotovi multifault
+#define MAX_ERROR_ADD_COMMAND	7				//stevilo oddanih errorjev locenih z ',' v koncnem sporocilu
+#define RISO_TEST_ON_FLAG				_ON		//ali gremo na RISO test ali ne
 //----------------------------------------------------------------------------
 
 //
-#define _1_PHASE true
-#define _3_PHASE false
+#define _1_PHASE 1
+#define _3_PHASE 3
 
 //+++++++++++++++++++++++++++zastavice za connection_reg+++++++++++++++++++++++++++++
 #define L1_L1		0x00000001
@@ -124,6 +129,7 @@ void set_phase_num(int phase_num);
 #define L3_SHORTED_MASK	0x00050410
 #define N_SHORTED_MASK	0x20011040
 #define PE_SHORTED_MASK	0x20044180
+#define ALL_OPEN_MASKS	0x00780001
 #define ALL_SHORTED_MASKS	0x20055554
 #define ALL_CROSSED_MASKS	0x0082AAAA
 #define STATUS_FAULT_MASK	0x20FFFFFF
@@ -182,6 +188,5 @@ void set_phase_num(int phase_num);
 #define MULTI_OPENED				0x04000000
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-#define MULTI_FAULT_CONTINUE  _ON		//ce je tole vklopljeno se meritev izvede do konca tudi ce ze ugotovi multifault
-#define MAX_ERROR_ADD_COMMAND	7
+
 #endif

@@ -68,5 +68,8 @@
     <Setting Name="TRANSMIT_SLOT_FREE" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">0</Value>
     </Setting>
+    <Setting Name="_TIME_FOR_ACK" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">5</Value>
+    </Setting>
   </Settings>
 </SettingsFile>

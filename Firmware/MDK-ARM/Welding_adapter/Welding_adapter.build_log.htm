@@ -27,30 +27,21 @@ Project File Date:  11/29/2017
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 5 (build 528)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'Welding_adapter'
-compiling meas_task.c...
-compiling serial_com.c...
-serial_com.c(256): warning:  #177-D: variable "i"  was declared but never referenced
-  	uint32_t i;
-serial_com.c(282): warning:  #550-D: variable "temp_array"  was set but never used
-  	char temp_array[3];
-serial_com.c(421): warning:  #177-D: variable "direction"  was declared but never referenced
-   uint8_t direction;
-serial_com.c(941): warning:  #177-D: variable "krneki"  was declared but never referenced
-  	int krneki;
-serial_com.c(942): warning:  #177-D: variable "krneki2"  was declared but never referenced
-  	int krneki2;
-serial_com.c(982): warning:  #177-D: variable "IN_START_TAG"  was declared but never referenced
-  		char *IN_START_TAG;
-serial_com.c(1124): warning:  #177-D: variable "cnt"  was declared but never referenced
-   uint32_t cnt;
-serial_com.c(1125): warning:  #177-D: variable "cc"  was declared but never referenced
-   uint8_t cc,cd,d1,d2,d3;
-serial_com.c(1126): warning:  #177-D: variable "dir_tmp"  was declared but never referenced
-   uint8_t dir_tmp; 
-serial_com.c: 9 warnings, 0 errors
+compiling do_task.c...
+do_task.c(311): warning:  #177-D: variable "j"  was declared but never referenced
+  	uint32_t i, j;
+do_task.c(312): warning:  #177-D: variable "temp2"  was declared but never referenced
+  	float temp1, temp2, temp3;
+do_task.c(312): warning:  #177-D: variable "temp3"  was declared but never referenced
+  	float temp1, temp2, temp3;
+do_task.c(313): warning:  #177-D: variable "table_ptr"  was declared but never referenced
+  	const float * table_ptr;
+do_task.c(314): warning:  #177-D: variable "table_ptr2"  was declared but never referenced
+  	float * table_ptr2;
+do_task.c: 5 warnings, 0 errors
 linking...
-Program Size: Code=69304 RO-data=14692 RW-data=708 ZI-data=28564  
-"Welding_adapter\Welding_adapter.axf" - 0 Error(s), 9 Warning(s).
+Program Size: Code=68524 RO-data=14692 RW-data=712 ZI-data=28096  
+"Welding_adapter\Welding_adapter.axf" - 0 Error(s), 5 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -73,7 +64,7 @@ Package Vendor: Keil
 <h2>Collection of Component Files used:</h2>
 
    * Component: ARM::CMSIS:CORE:5.0.1
-Build Time Elapsed:  00:00:03
+Build Time Elapsed:  00:00:04
 </pre>
 </body>
 </html>

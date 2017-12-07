@@ -3,7 +3,7 @@
 <title>Static Call Graph - [Welding_adapter\Welding_adapter.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image Welding_adapter\Welding_adapter.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Thu Nov 30 23:59:53 2017
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Wed Dec 06 17:59:15 2017
 <BR><P>
 <H3>Maximum Stack Usage =        616 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -1549,7 +1549,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[5f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[123]"></a>MX_USART3_UART_Init</STRONG> (Thumb, 60 bytes, Stack size 8 bytes, comunication.o(i.MX_USART3_UART_Init))
+<P><STRONG><a name="[123]"></a>MX_USART3_UART_Init</STRONG> (Thumb, 62 bytes, Stack size 8 bytes, comunication.o(i.MX_USART3_UART_Init))
 <BR><BR>[Stack]<UL><LI>Max Depth = 112<LI>Call Chain = MX_USART3_UART_Init &rArr; HAL_RS485Ex_Init &rArr; HAL_UART_MspInit &rArr; HAL_GPIO_Init
 </UL>
 <BR>[Calls]<UL><LI><a href="#[117]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_Error_Handler
@@ -1655,7 +1655,7 @@ Global Symbols
 <P><STRONG><a name="[1b]"></a>SVC_Handler</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32f3xx_it.o(i.SVC_Handler))
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f373xc.o(RESET)
 </UL>
-<P><STRONG><a name="[13e]"></a>SendComMessage</STRONG> (Thumb, 88 bytes, Stack size 320 bytes, serial_com.o(i.SendComMessage))
+<P><STRONG><a name="[13e]"></a>SendComMessage</STRONG> (Thumb, 90 bytes, Stack size 320 bytes, serial_com.o(i.SendComMessage))
 <BR><BR>[Stack]<UL><LI>Max Depth = 400<LI>Call Chain = SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
 <BR>[Calls]<UL><LI><a href="#[9d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
@@ -1769,7 +1769,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[fe]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_TIM_IC_ConfigChannel
 </UL>
 
-<P><STRONG><a name="[73]"></a>Transmit_results_task</STRONG> (Thumb, 860 bytes, Stack size 120 bytes, comunication.o(i.Transmit_results_task))
+<P><STRONG><a name="[73]"></a>Transmit_results_task</STRONG> (Thumb, 862 bytes, Stack size 120 bytes, comunication.o(i.Transmit_results_task))
 <BR><BR>[Stack]<UL><LI>Max Depth = 520<LI>Call Chain = Transmit_results_task &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
 <BR>[Calls]<UL><LI><a href="#[149]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_value
@@ -1814,7 +1814,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[d9]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_CheckIdleState
 </UL>
 
-<P><STRONG><a name="[a6]"></a>USBConnected_Handler</STRONG> (Thumb, 72 bytes, Stack size 16 bytes, comunication.o(i.USBConnected_Handler))
+<P><STRONG><a name="[a6]"></a>USBConnected_Handler</STRONG> (Thumb, 70 bytes, Stack size 16 bytes, comunication.o(i.USBConnected_Handler))
 <BR><BR>[Stack]<UL><LI>Max Depth = 16<LI>Call Chain = USBConnected_Handler
 </UL>
 <BR>[Calls]<UL><LI><a href="#[111]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
@@ -2391,8 +2391,8 @@ Global Symbols
 <LI><a href="#[187]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;arm_cfft_radix8by2_f32
 </UL>
 
-<P><STRONG><a name="[6e]"></a>compute_THD_with_FFT</STRONG> (Thumb, 598 bytes, Stack size 56 bytes, do_task.o(i.compute_THD_with_FFT))
-<BR><BR>[Stack]<UL><LI>Max Depth = 396<LI>Call Chain = compute_THD_with_FFT &rArr; arm_cfft_f32 &rArr; arm_cfft_radix8by4_f32 &rArr; arm_radix8_butterfly_f32
+<P><STRONG><a name="[6e]"></a>compute_THD_with_FFT</STRONG> (Thumb, 656 bytes, Stack size 48 bytes, do_task.o(i.compute_THD_with_FFT))
+<BR><BR>[Stack]<UL><LI>Max Depth = 388<LI>Call Chain = compute_THD_with_FFT &rArr; arm_cfft_f32 &rArr; arm_cfft_radix8by4_f32 &rArr; arm_radix8_butterfly_f32
 </UL>
 <BR>[Calls]<UL><LI><a href="#[199]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;write_THD
 <LI><a href="#[18b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;arm_cmplx_mag_f32
@@ -2416,7 +2416,7 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[6b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cord_meas_normal
 </UL>
 
-<P><STRONG><a name="[6b]"></a>cord_meas_normal</STRONG> (Thumb, 15380 bytes, Stack size 56 bytes, meas_task.o(i.cord_meas_normal))
+<P><STRONG><a name="[6b]"></a>cord_meas_normal</STRONG> (Thumb, 14100 bytes, Stack size 56 bytes, meas_task.o(i.cord_meas_normal))
 <BR><BR>[Stack]<UL><LI>Max Depth = 616<LI>Call Chain = cord_meas_normal &rArr; transmitt_cable_state &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
 <BR>[Calls]<UL><LI><a href="#[194]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rst_REL
@@ -2432,7 +2432,7 @@ Global Symbols
 <BR>[Address Reference Count : 2]<UL><LI> meas_task.o(i.cord_meas_normal)
 <LI> meas_task.o(i.start_cord_normal)
 </UL>
-<P><STRONG><a name="[14f]"></a>disconnect_function</STRONG> (Thumb, 50 bytes, Stack size 0 bytes, comunication.o(i.disconnect_function))
+<P><STRONG><a name="[14f]"></a>disconnect_function</STRONG> (Thumb, 52 bytes, Stack size 0 bytes, comunication.o(i.disconnect_function))
 <BR><BR>[Called By]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;USBConnected_Handler
 <LI><a href="#[18d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;command_analyze
 </UL>
@@ -2455,7 +2455,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[191]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;stop_measure
 </UL>
 
-<P><STRONG><a name="[19c]"></a>get_connected_device</STRONG> (Thumb, 50 bytes, Stack size 12 bytes, do_task.o(i.get_connected_device))
+<P><STRONG><a name="[19c]"></a>get_connected_device</STRONG> (Thumb, 60 bytes, Stack size 12 bytes, do_task.o(i.get_connected_device))
 <BR><BR>[Stack]<UL><LI>Max Depth = 12<LI>Call Chain = get_connected_device
 </UL>
 <BR>[Called By]<UL><LI><a href="#[6a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;stop_cord
@@ -2519,7 +2519,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[191]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;stop_measure
 </UL>
 
-<P><STRONG><a name="[72]"></a>led_blinking_task</STRONG> (Thumb, 80 bytes, Stack size 16 bytes, do_task.o(i.led_blinking_task))
+<P><STRONG><a name="[72]"></a>led_blinking_task</STRONG> (Thumb, 90 bytes, Stack size 16 bytes, do_task.o(i.led_blinking_task))
 <BR><BR>[Stack]<UL><LI>Max Depth = 36<LI>Call Chain = led_blinking_task &rArr; set_timer
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_TogglePin
@@ -2565,7 +2565,7 @@ Global Symbols
 <LI><a href="#[6b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cord_meas_normal
 </UL>
 
-<P><STRONG><a name="[6d]"></a>power_on_test</STRONG> (Thumb, 626 bytes, Stack size 32 bytes, do_task.o(i.power_on_test))
+<P><STRONG><a name="[6d]"></a>power_on_test</STRONG> (Thumb, 788 bytes, Stack size 32 bytes, do_task.o(i.power_on_test))
 <BR><BR>[Stack]<UL><LI>Max Depth = 136<LI>Call Chain = power_on_test &rArr; set_REL &rArr; SPI1_Send_data &rArr; HAL_SPI_Transmit &rArr; SPI_EndRxTxTransaction &rArr; SPI_WaitFifoStateUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[193]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_REL
@@ -2629,7 +2629,7 @@ Global Symbols
 <LI><a href="#[5f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[68]"></a>send_mains_status</STRONG> (Thumb, 322 bytes, Stack size 136 bytes, do_task.o(i.send_mains_status))
+<P><STRONG><a name="[68]"></a>send_mains_status</STRONG> (Thumb, 472 bytes, Stack size 136 bytes, do_task.o(i.send_mains_status))
 <BR><BR>[Stack]<UL><LI>Max Depth = 536<LI>Call Chain = send_mains_status &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
 <BR>[Calls]<UL><LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendComMessage
@@ -2640,7 +2640,7 @@ Global Symbols
 <LI> meas_task.o(i.start_cord_normal)
 <LI> serial_com.o(i.command_analyze)
 </UL>
-<P><STRONG><a name="[67]"></a>send_warning_MSG</STRONG> (Thumb, 86 bytes, Stack size 24 bytes, comunication.o(i.send_warning_MSG))
+<P><STRONG><a name="[67]"></a>send_warning_MSG</STRONG> (Thumb, 134 bytes, Stack size 24 bytes, comunication.o(i.send_warning_MSG))
 <BR><BR>[Stack]<UL><LI>Max Depth = 424<LI>Call Chain = send_warning_MSG &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
 <BR>[Calls]<UL><LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendComMessage
@@ -2746,7 +2746,7 @@ Global Symbols
 <BR>[Address Reference Count : 2]<UL><LI> meas_task.o(i.start_cord_normal)
 <LI> serial_com.o(i.command_analyze)
 </UL>
-<P><STRONG><a name="[190]"></a>start_measure</STRONG> (Thumb, 156 bytes, Stack size 8 bytes, do_task.o(i.start_measure))
+<P><STRONG><a name="[190]"></a>start_measure</STRONG> (Thumb, 192 bytes, Stack size 8 bytes, do_task.o(i.start_measure))
 <BR><BR>[Stack]<UL><LI>Max Depth = 28<LI>Call Chain = start_measure &rArr; set_SDADC_zero
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_SDADC_zero
@@ -2758,7 +2758,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[18d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;command_analyze
 </UL>
 
-<P><STRONG><a name="[18f]"></a>start_measure_no_THD</STRONG> (Thumb, 114 bytes, Stack size 8 bytes, do_task.o(i.start_measure_no_THD))
+<P><STRONG><a name="[18f]"></a>start_measure_no_THD</STRONG> (Thumb, 146 bytes, Stack size 8 bytes, do_task.o(i.start_measure_no_THD))
 <BR><BR>[Stack]<UL><LI>Max Depth = 28<LI>Call Chain = start_measure_no_THD &rArr; set_SDADC_zero
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1b3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_SDADC_zero
@@ -2794,7 +2794,7 @@ Global Symbols
 <LI><a href="#[18d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;command_analyze
 </UL>
 
-<P><STRONG><a name="[19f]"></a>transmitt_cable_state</STRONG> (Thumb, 3894 bytes, Stack size 160 bytes, meas_task.o(i.transmitt_cable_state))
+<P><STRONG><a name="[19f]"></a>transmitt_cable_state</STRONG> (Thumb, 3848 bytes, Stack size 160 bytes, meas_task.o(i.transmitt_cable_state))
 <BR><BR>[Stack]<UL><LI>Max Depth = 560<LI>Call Chain = transmitt_cable_state &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
 <BR>[Calls]<UL><LI><a href="#[19e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;numberOfSetBits
@@ -2826,7 +2826,7 @@ Local Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[6e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;compute_THD_with_FFT
 </UL>
 
-<P><STRONG><a name="[6f]"></a>measuring_task_fft</STRONG> (Thumb, 92 bytes, Stack size 8 bytes, do_task.o(i.measuring_task_fft))
+<P><STRONG><a name="[6f]"></a>measuring_task_fft</STRONG> (Thumb, 122 bytes, Stack size 8 bytes, do_task.o(i.measuring_task_fft))
 <BR><BR>[Stack]<UL><LI>Max Depth = 28<LI>Call Chain = measuring_task_fft &rArr; set_timer
 </UL>
 <BR>[Calls]<UL><LI><a href="#[112]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_timer
@@ -2835,7 +2835,7 @@ Local Symbols
 <BR>[Address Reference Count : 2]<UL><LI> do_task.o(i.measuring_task_fft)
 <LI> do_task.o(i.start_measure)
 </UL>
-<P><STRONG><a name="[71]"></a>measuring_task_no_THD</STRONG> (Thumb, 92 bytes, Stack size 8 bytes, do_task.o(i.measuring_task_no_THD))
+<P><STRONG><a name="[71]"></a>measuring_task_no_THD</STRONG> (Thumb, 122 bytes, Stack size 8 bytes, do_task.o(i.measuring_task_no_THD))
 <BR><BR>[Stack]<UL><LI>Max Depth = 28<LI>Call Chain = measuring_task_no_THD &rArr; set_timer
 </UL>
 <BR>[Calls]<UL><LI><a href="#[112]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_timer
@@ -3270,17 +3270,17 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[196]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;recieved_command_analyze
 </UL>
 
-<P><STRONG><a name="[1b1]"></a>communication_init</STRONG> (Thumb, 32 bytes, Stack size 0 bytes, serial_com.o(i.communication_init))
+<P><STRONG><a name="[1b1]"></a>communication_init</STRONG> (Thumb, 26 bytes, Stack size 0 bytes, serial_com.o(i.communication_init))
 <BR><BR>[Called By]<UL><LI><a href="#[14e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_com_init
 </UL>
 
-<P><STRONG><a name="[1ac]"></a>recieve_ack_func</STRONG> (Thumb, 88 bytes, Stack size 12 bytes, serial_com.o(i.recieve_ack_func))
+<P><STRONG><a name="[1ac]"></a>recieve_ack_func</STRONG> (Thumb, 84 bytes, Stack size 12 bytes, serial_com.o(i.recieve_ack_func))
 <BR><BR>[Stack]<UL><LI>Max Depth = 12<LI>Call Chain = recieve_ack_func
 </UL>
 <BR>[Called By]<UL><LI><a href="#[196]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;recieved_command_analyze
 </UL>
 
-<P><STRONG><a name="[1ab]"></a>recieve_nack_func</STRONG> (Thumb, 92 bytes, Stack size 12 bytes, serial_com.o(i.recieve_nack_func))
+<P><STRONG><a name="[1ab]"></a>recieve_nack_func</STRONG> (Thumb, 86 bytes, Stack size 12 bytes, serial_com.o(i.recieve_nack_func))
 <BR><BR>[Stack]<UL><LI>Max Depth = 12<LI>Call Chain = recieve_nack_func
 </UL>
 <BR>[Called By]<UL><LI><a href="#[196]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;recieved_command_analyze
@@ -3317,7 +3317,7 @@ Local Symbols
 <BR>[Called By]<UL><LI><a href="#[12b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ParseMessage
 </UL>
 
-<P><STRONG><a name="[74]"></a>transmit_command_handle</STRONG> (Thumb, 422 bytes, Stack size 48 bytes, serial_com.o(i.transmit_command_handle))
+<P><STRONG><a name="[74]"></a>transmit_command_handle</STRONG> (Thumb, 432 bytes, Stack size 48 bytes, serial_com.o(i.transmit_command_handle))
 <BR><BR>[Stack]<UL><LI>Max Depth = 448<LI>Call Chain = transmit_command_handle &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
 <BR>[Calls]<UL><LI><a href="#[13e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendComMessage
@@ -3329,7 +3329,7 @@ Local Symbols
 <BR>[Address Reference Count : 2]<UL><LI> serial_com.o(i.transmit_command_handle)
 <LI> serial_com.o(i.transmit_func)
 </UL>
-<P><STRONG><a name="[141]"></a>transmit_func</STRONG> (Thumb, 122 bytes, Stack size 24 bytes, serial_com.o(i.transmit_func))
+<P><STRONG><a name="[141]"></a>transmit_func</STRONG> (Thumb, 114 bytes, Stack size 24 bytes, serial_com.o(i.transmit_func))
 <BR><BR>[Stack]<UL><LI>Max Depth = 44<LI>Call Chain = transmit_func &rArr; restart_timer
 </UL>
 <BR>[Calls]<UL><LI><a href="#[14b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;restart_timer

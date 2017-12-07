@@ -286,5 +286,17 @@ namespace MT_300_TFA_application {
                 this["TRANSMIT_SLOT_FREE"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("5")]
+        public int _TIME_FOR_ACK {
+            get {
+                return ((int)(this["_TIME_FOR_ACK"]));
+            }
+            set {
+                this["_TIME_FOR_ACK"] = value;
+            }
+        }
     }
 }

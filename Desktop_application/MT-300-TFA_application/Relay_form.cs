@@ -28,15 +28,6 @@ namespace MT_300_TFA_application
             InitializeComponent();
             //Serial_class2 = new serial_com(this);
         }
-        private void rel_2_on_button_Click(object sender, EventArgs e)
-        {
-            serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[1], serial_com.RELAY_CODE_NAMES[3], "");
-        }
-
-        private void rel_2_off_button_Click(object sender, EventArgs e)
-        {
-            serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[1], serial_com.RELAY_CODE_NAMES[4], "");
-        }
 
         private void rel_1_38_on_button_Click(object sender, EventArgs e)
         {
@@ -46,6 +37,16 @@ namespace MT_300_TFA_application
         private void rel_1_38_off_button_Click(object sender, EventArgs e)
         {
             serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[1], serial_com.RELAY_CODE_NAMES[2], "");
+        }
+
+        private void rel_2_on_button_Click(object sender, EventArgs e)
+        {
+            serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[1], serial_com.RELAY_CODE_NAMES[3], "");
+        }
+
+        private void rel_2_off_button_Click(object sender, EventArgs e)
+        {
+            serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[1], serial_com.RELAY_CODE_NAMES[4], "");
         }
 
         private void rel_3_on_button_Click(object sender, EventArgs e)
@@ -328,26 +329,6 @@ namespace MT_300_TFA_application
             serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[1], serial_com.RELAY_CODE_NAMES[60], "");
         }
 
-        private void rel_31_on_button_Click(object sender, EventArgs e)
-        {
-            serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[1], serial_com.RELAY_CODE_NAMES[61], "");
-        }
-
-        private void rel_31_off_button_Click(object sender, EventArgs e)
-        {
-            serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[1], serial_com.RELAY_CODE_NAMES[62], "");
-        }
-
-        private void rel_32_on_button_Click(object sender, EventArgs e)
-        {
-            serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[1], serial_com.RELAY_CODE_NAMES[63], "");
-        }
-
-        private void rel_32_off_button_Click(object sender, EventArgs e)
-        {
-            serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[1], serial_com.RELAY_CODE_NAMES[64], "");
-        }
-
         private void rel_33_on_button_Click(object sender, EventArgs e)
         {
             serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[1], serial_com.RELAY_CODE_NAMES[65], "");
@@ -427,5 +408,21 @@ namespace MT_300_TFA_application
         {
             serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[1], serial_com.RELAY_CODE_NAMES[82], "");
         }
+
+        private void button42_on_Click(object sender, EventArgs e)
+        {
+            serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[1], serial_com.RELAY_CODE_NAMES[83], "");
+        }
+
+        private void button42_off_Click(object sender, EventArgs e)
+        {
+            serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[1], serial_com.RELAY_CODE_NAMES[84], "");
+        }
+
+        private void reset_all_rel_button_Click(object sender, EventArgs e)
+        {
+            serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[1], serial_com.RELAY_CODE_NAMES[0], "");
+        }
+
     }
 }

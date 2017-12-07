@@ -573,6 +573,7 @@ void power_on_test(void)
 		if(global_control & __PE_DISCONNECTED)
 		{	
 			set_event(SEND_WARNING_MSG,send_warning_MSG);
+			IND_PE_ON;
 			global_control |= __INIT_TEST_FAIL;
 		}
 		else if(global_control & __N_DISCONECTED)

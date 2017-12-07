@@ -97,6 +97,7 @@ namespace MT_300_TFA_application
         }
         private void cord_basic_task()
         {
+            int current_msg_id=0;
             string failTempString = serial_com.CORD_CODE_NAMES[4] + delimiter + _failReturnTXT;
             string passTempString = serial_com.CORD_CODE_NAMES[4] + delimiter + _passReturnTXT; 
             Thread.Sleep(100);
@@ -105,104 +106,104 @@ namespace MT_300_TFA_application
                 case "CABLE OK":
                     //ce je L1_L1...
                     if((String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[0]))|| (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[6]))|| (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[12]))|| (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[18]))|| (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24])))
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     else
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
                     break;
                 case "L - N CROSSED":
                     //vsi L2_L2.. razen L1_L1 in N_N
                     if ((String.Equals(current_meas, "L2_L2")) || (String.Equals(current_meas, "L3_L3")) || (String.Equals(current_meas, "PE_PE")))
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     //L1_N in N_L1
                     else if ((String.Equals(current_meas, "L1_N")) || (String.Equals(current_meas,"N_L1")))
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     else
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
                     break;
                 case "N - OPEN":
                     //ce je L1_L1... razen N_N
                     if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[0])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[6])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[12])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24])))
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     else
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
                     break;
                 case "L1 - N SHORTED":
                     //ce je L1_L1...
                     if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[0])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[6])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[12])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[18])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24])))
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     //L1_N in N_L1
                     else if ((String.Equals(current_meas, "L1_N")) || (String.Equals(current_meas, "N_L1")))
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     else
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
                     break;
                 case "L1 - PE SHORTED":
                     //ce je L1_L1...
                     if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[0])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[6])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[12])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[18])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24]))) Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     //L1_N in N_L1
                     else if ((String.Equals(current_meas, "L1_PE")) || (String.Equals(current_meas, "PE_L1")))
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     else
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
                     break;
                 case "L1 - L3 CROSSED":
                     //ce je L2_L2, N_N, PE_PE
                     if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[6])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[18])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24])))
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     //L1_N in N_L1
                     else if ((String.Equals(current_meas, "L1_L3")) || (String.Equals(current_meas, "L3_L1")))
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     else
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
                     break;
                 case "1P_L - N SHORTED":
                     //ce je L1_L1...
                     if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[0])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[18])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24]))) Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     //L1_N in N_L1
                     else if ((String.Equals(current_meas, "L1_N")) || (String.Equals(current_meas, "N_L1")))
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     else
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
                     break;
                 case "1P_L OPEN":
                     //ce je L1_L1...
                     if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[18])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24]))) Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     else
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
                     break;
                 case "L1-L2, L3-N CROSSED":
                     //ce je L1_L1...
                     if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24])))
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     else if((String.Equals(current_meas, "L1_L2")) || (String.Equals(current_meas, "L2_L1")) || (String.Equals(current_meas, "L3_N")) || (String.Equals(current_meas, "N_L3")))
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     else
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
                     break;
                 case "PE-L1, L2-N SHORTED":
                     //ce je L1_L1...
                     if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[0])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[6])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[12])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[18])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24])))
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     else if ((String.Equals(current_meas, "PE_L1")) || (String.Equals(current_meas, "L1_PE")) || (String.Equals(current_meas, "L2_N")) || (String.Equals(current_meas, "N_L2")))
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     else
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
                     break;
                 case "ALL CROSSED":
                     //ce je L1_L1...
                     if ((String.Equals(current_meas, "L1_L2"))|| (String.Equals(current_meas, "L2_L3")) || (String.Equals(current_meas, "L3_N")) || (String.Equals(current_meas, "N_PE"))  || (String.Equals(current_meas, "PE_L1")) )
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     else
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
                     break;
                 case "PE-L1 CROSSED AND OPEN":
                     //ce je L1_L1...
                     if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[6])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[12])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[18])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24])))
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     else if ((String.Equals(current_meas, "L1_PE")))
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
                     else
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                        current_msg_id = Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
                     break;
                 default: break;
             }

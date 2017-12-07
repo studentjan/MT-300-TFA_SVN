@@ -4,9 +4,11 @@
 
 //&&&&&&&&&&&&&&&&&&&NAVODILA ZA UPORABO PROTOKOLA&&&&&&&&&&&&&&&&&&&&&&&&
 //Spodaj so funkcije ki so namenjene prejemanju in posiljanju komand
-//zunaj knjiznice sta dostopni samo dve funkciji:
-//				- za prejemanje add_command_to_queue(...)
-//				- za oddajanje 	SendComMessage(...)
+//zunaj knjiznice so dostopne samo stiri funkcije:
+//				- za inicializacijo: 	serial_com_init()
+//				- za prejemanje: 			add_command_to_queue(...)
+//				- za oddajanje: 			SendComMessage(...)
+//				- za preverjanje ACK:	CheckIfACK(...)
 //	*****************************************************************************
 //	*	najprej v serial_com.h definieamo mozne smeri (vodila) iz katerih lahko dobivamo podatke (Makroji smeri)
 //	*	nastavimo TRANSMIT_COMMAND_CHECK na _ON ali OFF
@@ -17,6 +19,7 @@
 //	* ko imamo vse nastavljeno lahko v main.c - ju poklicemo inicializacijo serial_com_init()
 //	* ko dobimo podatke po vodilu poklicemo funkcijo add_command_to_queue(..), ki postavi komando v cakalno vrsto za analiziranje, zapomni pa se tudi od kje je prisla, da zna vrnit ACK
 //	* ce zelimo podatke poslati poklicemo funkcijo SendComMessage(...)
+//	* funkcija CheckIfACK(...) pa preveri ce je poslano sporocilo dobilo ACK
 
 
 #include "serial_com.h"
@@ -72,6 +75,7 @@ typedef struct
  uint32_t size;
  uint32_t nack_count;
  uint32_t nack_flag;	
+ uint32_t buffer_count;
  char transmitt_to_ID;
  char * msg_ptr;
 } TRANSMIT_BUFFER;
@@ -258,6 +262,7 @@ static uint32_t transmit_func(uint8_t message_size, uint8_t dir,char * ser_ans_b
 	Transmit_handle_buff[write_count].transmitt_to_ID=transmitt_to_ID;
 	Transmit_handle_buff[write_count].message_ID=current_ID;
 	Transmit_handle_buff[write_count].dirrection =dir;
+	Transmit_handle_buff[write_count].buffer_count = 0;;
 	Transmit_handle_buff[write_count].msg_ptr=(char*)malloc(message_size+1);
 	if(Transmit_handle_buff[write_count].msg_ptr==NULL) return 1;	//v HEAP-u je zmanjkalo spomina
 	strcpy(Transmit_handle_buff[write_count].msg_ptr, ser_ans_buff);
@@ -304,6 +309,7 @@ static void transmit_command_handle(void)
 				Transmit_handle_buff[read_count].transmitt_to_ID=0;
 				Transmit_handle_buff[read_count].nack_flag=0;
 				Transmit_handle_buff[read_count].nack_count=0;
+				Transmit_handle_buff[read_count].buffer_count = 0;
 				Transmit_handle_buff[read_count].msg_ptr=NULL;
 				Transmit_handle_buff[read_count].size=0;
 				
@@ -314,10 +320,13 @@ static void transmit_command_handle(void)
 			}while(Transmit_handle_buff[read_count].message_ID==TRANSMIT_SLOT_FREE);
 			//ce pridemo iz zgornje funkcije preden se buffer sprazni pomeni da smo naleteli na ID, ki se ni dobil ACK zato ga ponovno posljemo
 			if(read_count!=write_count)
-				command_not_ok_flag=1;
+				if(Transmit_handle_buff[read_count].buffer_count>WAIT_FOR_MSG_ACK)
+					command_not_ok_flag=1;
 		}
 		else 
-			command_not_ok_flag=1;
+			if(Transmit_handle_buff[read_count].buffer_count>WAIT_FOR_MSG_ACK)
+				command_not_ok_flag=1;
+		restart_timer(TRANSMIT_COMMAND_HANDLE,TRANSMIT_HANDLE_WAIT,transmit_command_handle);
 		//ce buffer se ni prazen ponovno zazeni funkcijo
 			
 	}
@@ -360,6 +369,7 @@ static void transmit_command_handle(void)
 			Transmit_handle_buff[read_count+j].transmitt_to_ID=0;
 			Transmit_handle_buff[read_count+j].nack_flag=0;
 			Transmit_handle_buff[read_count+j].nack_count=0;
+			Transmit_handle_buff[read_count+j].buffer_count = 0;
 			Transmit_handle_buff[read_count+j].msg_ptr=NULL;
 			Transmit_handle_buff[read_count+j].size=0;
 			if((read_count+1)==TRANSMIT_HANDLE_BUFF_SIZE)read_count=0;//gre na zacetek ker je ciklicen buffer
@@ -388,8 +398,10 @@ static void transmit_command_handle(void)
 				else i++;
 			}
 		}
-		restart_timer(TRANSMIT_COMMAND_HANDLE,TRANSMIT_HANDLE_WAIT,transmit_command_handle);
 	}
+	for (int k=0; k< TRANSMIT_HANDLE_BUFF_SIZE;k++)
+    if(Transmit_handle_buff[k].message_ID != TRANSMIT_SLOT_FREE)
+       Transmit_handle_buff[k].buffer_count++;
 }
 #endif
 
@@ -413,6 +425,7 @@ str2int_errno str2int(int *out, char *s, int base) {
 
 
 //+++++++++++++++++++++++analiziranje komand+++++++++++++++++++++++++++++++++++++
+//funkcijo si prilagodi sak sam
 /*******************************************************************************/
 /**															ANALIZE COMMAND																**/
 /*******************************************************************************/
@@ -612,11 +625,11 @@ static void command_analyze(uint8_t dir)
 		}
 		else if(!strcmp(&additionalCode[0][0][0],__INIT_C__))
 		{
-			//set_cord_init();
+			//cord_continuity_init();
 		}
 		else if(!strcmp(&additionalCode[0][0][0],__RPE_RESISTANCE__))
 		{
-			if((meas_task_control & __CORD_MEAS_IN_PROG) && (meas_task_control & __CORD_RES_REQUESTED))	//se izvede samo ce je meritev v teku
+			if((meas_task_control & __CORD_MEAS_IN_PROG) && (meas_task_control & __CORD_RPE_RES_REQUESTED))	//se izvede samo ce je meritev v teku
 				set_cord_resistance(&additionalCode[1][0][0]);
 		}
 	}
@@ -875,15 +888,7 @@ static bool CheckCRC(unsigned char isCRC, unsigned char CRCvalue, char *message)
 //&&								FUNKCIJE ZA POSILJANJE KOMANDE														&&/
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&/
 
-//+++++++++++++++++++++funkcija za posiljanje sporocila po protokolu++++++++++++++++++++++++++++
-// & send_control: 	1 - pomeni da uporabimo preverjanje ce je bilo sporocilo poslano (transmitt control)
-//								 	0 - pomeni da samo posljemo sporocilo brez postavitve v cakalno vrsto
-// & transmitter:	 	char_ID tistega kateremu je sporocilo namenjeno	
-// & receiver:	 		char_ID tistega kateremu ki posilja sporocilo
-// & function,command, data : pointerji na string za posiljanje
-// & dirrection			int ID vodila oziroma smer v kateo hocemo poslati rabimo jo za posiljanje, glej :serial_send_handler
-// & additional_code pointer na srting v katerem je dodatna koda. Tukaj lahko posljemo vec vrednosti. Ime parametra in njegovo vrednost locimo z '|' dva parametra pa z ','
-//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
 //tole funkcijo najbols da si prilagodi vsak sam
 //vse kar nardi je to da poslje sporocilo po pravem portu, ki ga izbere glede na dir
 //pazi da ni string, ki ga posiljas dolg 64 bytov, ker ne bo delal prov !!!!!!!!!!!!!!!
@@ -902,7 +907,18 @@ static void serial_send_handler(char * send_buff, uint16_t buffer_size,uint8_t d
 	}
 	
 }
-void SendComMessage(int send_control,char transmitter, char receiver, char * function, char * command, char * additional_code, char * data, int dirrection)
+//+++++++++++++++++++++funkcija za posiljanje sporocila po protokolu++++++++++++++++++++++++++++
+// & send_control: 	1 - pomeni da uporabimo preverjanje ce je bilo sporocilo poslano (transmitt control)
+//								 	0 - pomeni da samo posljemo sporocilo brez postavitve v cakalno vrsto
+// & transmitter:	 	char_ID tistega kateremu je sporocilo namenjeno	
+// & receiver:	 		char_ID tistega kateremu ki posilja sporocilo
+// & function,command, data : pointerji na string za posiljanje
+// & dirrection			int ID vodila oziroma smer v kateo hocemo poslati rabimo jo za posiljanje, glej :serial_send_handler
+// & additional_code pointer na srting v katerem je dodatna koda. Tukaj lahko posljemo vec vrednosti. Ime parametra in njegovo vrednost locimo z '|' dva parametra pa z ','
+// -> vrne: ID, ki ga dodeli sporocilu
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+uint32_t SendComMessage(int send_control,char transmitter, char receiver, char * function, char * command, char * additional_code, char * data, int dirrection)
 {
 	char temp_str[_SER_BUFFER_SIZE];
 	if(receiver == 0)					//ce reciver ni defineiran potem posljemo tistemu, ki nam je poslal zadni msg
@@ -916,8 +932,21 @@ void SendComMessage(int send_control,char transmitter, char receiver, char * fun
 		SendConstructedProtocolMessage(temp_str,dirrection,&message_inst);
 	else 
 		serial_send_handler(temp_str,strlen(temp_str),dirrection);
+	return message_inst.msg_ID;
 }
-
+//+++++++++++++++++++++funkcija preverja ali je sporocilo ze dobilo ACK++++++++++++++++++++++++++
+// & msg_id: 	ID sporocila, za katerega nas zanima ce je ze dobil acknowladge
+//	-> vrne:	true 	- ce je sporocilo dobilo ACK
+//						false - ce funkcija se ni dobila ACK
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+bool CheckIfACK(uint32_t msg_id)
+{
+	uint32_t i;
+	for(i=0;i<TRANSMIT_HANDLE_BUFF_SIZE;i++)
+		if(Transmit_handle_buff[i].message_ID == msg_id) 
+			return false;
+	return true;
+}
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 MESSAGE_CONSTRUCTOR CreateCommandInstance(char transmitter, char receiver, char * function, char * command, char * code, char * data)
 {

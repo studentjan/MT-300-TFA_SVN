@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Diagnostics;
 
 namespace MT_300_TFA_application
 {
@@ -145,20 +146,21 @@ namespace MT_300_TFA_application
         }
 
         //funkciji vnesemo parametre, ta pa nam sestavi kommando za posiljanje po protokolu
-        public void Send_protocol_message(int com_port_dir, char transmitter_ID, char reciever_ID, string function_string, string command_string, string additional_code_str, string data_string)
+        public int Send_protocol_message(int com_port_dir, char transmitter_ID, char reciever_ID, string function_string, string command_string, string additional_code_str, string data_string)
         {
             int msg_id = send_id_count;
             message_constructor protocol_message = new message_constructor(transmitter_ID, reciever_ID, msg_id, function_string, command_string, additional_code_str, data_string);
             string new_message = ConstructReplyMsg(protocol_message);
-            serial_send(com_port_dir, new_message);
-            if (Settings1.Default.TRANSMIT_COMMAND_CHECK == 1)
+            if (Settings1.Default.TRANSMIT_COMMAND_CHECK == 1)//more bit pred posiljanjem sporocila, ker drgac dobimo prej ACK kot se itvede naslednja koda
             {
                 char[] message_char = new_message.ToCharArray();
                 Transmit_func(new_message.Length, com_port_dir, message_char, protocol_message.msg_ID, protocol_message.reciever);
             }
+            serial_send(com_port_dir, new_message);
             //za vsako sporocilo generira svoj id od 1 do 99 
             if (send_id_count >= 99) send_id_count = 1;
             else send_id_count++;
+            return msg_id;
         }
         //funkcija, ki nam iz prispelega stringa izloci kommando in jo prestavi v cakalno vrsto za analiziranje.
         //ce imamo komando razbito v vec stringov lahko veckrat poklicemo to funkcijo, ta pa nam ga sestavi in doda v  cakalno vrsto
@@ -298,6 +300,7 @@ namespace MT_300_TFA_application
             public int nack_count;
             public int nack_flag;
             public char[] message;
+            public int buffer_counter;
         }
         private struct queue_buffer
         {
@@ -731,11 +734,18 @@ namespace MT_300_TFA_application
             string temp_str2 = (String.Format("{0}{1,3}:{2}{3}", temp_str, CalculateCRC(temp_str), UART_COMMAND_CHARACTER_13, UART_COMMAND_CHARACTER_10));
             return temp_str2;
         }
-
-        //funkcije za kontrolo oddanega sporocila
+        public bool CheckIfACK(int msg_id)
+        {
+            int i;
+            for (i = 0; i < TRANSMIT_HANDLE_BUFF_SIZE; i++)
+                if (Transmitt_handle_Buffer[i].message_ID == msg_id)
+                    return false;
+            return true;
+        }
         private int Recieve_ack_func()
         {
             int index = 500;
+            string new_str;
             if ((ID < 100) && (ID > 0))
             {
                 for (int i = 0; i < TRANSMIT_HANDLE_BUFF_SIZE; i++)
@@ -743,6 +753,8 @@ namespace MT_300_TFA_application
                     if (Transmitt_handle_Buffer[i].message_ID == ID)   //poiscemo kje se nahaja sporocilo s tem idjem
                     {
                         index = i;
+                        new_str = String.Format("Message {0} ACKNOWLADGE!", Transmitt_handle_Buffer[i].message_ID.ToString());
+                        Debug.WriteLine(new_str);
                         i = TRANSMIT_HANDLE_BUFF_SIZE; //skocimo ven iz for zanke
                     }
                 }
@@ -784,6 +796,7 @@ namespace MT_300_TFA_application
             Transmitt_handle_Buffer[transmitt_handle_write_count].transmitt_to_ID = receiver;
             Transmitt_handle_Buffer[transmitt_handle_write_count].dirrection = dir;
             Transmitt_handle_Buffer[transmitt_handle_write_count].message = ser_ans_buff;
+            Transmitt_handle_Buffer[transmitt_handle_write_count].buffer_counter = 0;
             Transmitt_handle_Buffer[transmitt_handle_write_count].size = message_size;
             Array.Copy(ser_ans_buff, Transmitt_handle_Buffer[transmitt_handle_write_count].message, message_size);
             //------------------------------preveri ce je buffer poln-------------------------------
@@ -816,7 +829,7 @@ namespace MT_300_TFA_application
             //preveri ce je buffer prazen
             do
             {
-                Thread.Sleep(300);
+                Thread.Sleep(100);
                 if (transmitt_handle_read_count == transmitt_handle_write_count)
                 {
                     task2_ex_flag = false;
@@ -835,6 +848,7 @@ namespace MT_300_TFA_application
                             Transmitt_handle_Buffer[transmitt_handle_read_count].nack_flag = 0;
                             Transmitt_handle_Buffer[transmitt_handle_read_count].nack_count = 0;
                             Transmitt_handle_Buffer[transmitt_handle_read_count].size = 0;
+                            Transmitt_handle_Buffer[transmitt_handle_read_count].buffer_counter = 0;
 
                             //postavimo se na naslednji vnos bufferja in preverimo ce je tudi ta prazen ce ni zapustimo zanko
                             if ((transmitt_handle_read_count + 1) == TRANSMIT_HANDLE_BUFF_SIZE) transmitt_handle_read_count = 0;//gre na zacetek ker je ciklicen buffer
@@ -843,15 +857,18 @@ namespace MT_300_TFA_application
                         } while (Transmitt_handle_Buffer[transmitt_handle_read_count].message_ID == Settings1.Default.TRANSMIT_SLOT_FREE);
                         //ce pridemo iz zgornje funkcije preden se buffer sprazni pomeni da smo naleteli na ID, ki se ni dobil ACK zato ga ponovno posljemo
                         if (transmitt_handle_read_count != transmitt_handle_write_count)
-                            command_not_ok_flag = 1;
+                            if(Transmitt_handle_Buffer[transmitt_handle_read_count].buffer_counter>Settings1.Default._TIME_FOR_ACK)
+                                command_not_ok_flag = 1;
                     }
                     else
-                        command_not_ok_flag = 1;
+                        if (Transmitt_handle_Buffer[transmitt_handle_read_count].buffer_counter > Settings1.Default._TIME_FOR_ACK)
+                            command_not_ok_flag = 1;
                     //ce buffer se ni prazen pocaka 10 ms in ponovno izvede nit
                     //if (transmitt_handle_read_count != transmitt_handle_write_count)
                     //    Thread.Sleep(10);
                     if (transmitt_handle_read_count == transmitt_handle_write_count) task2_ex_flag = false;
                 }
+                //ko pride komanda tle not pomeni, da je ze dovolj dolgo v cakalni vrsti in se ni dobila ACKNOWLADga
                 if (command_not_ok_flag == 1)
                 {
                     j = 0;
@@ -904,8 +921,12 @@ namespace MT_300_TFA_application
                             else i++;
                         }
                     }
-
+                    command_not_ok_flag = 0;
                 }
+                //povecam counter tistim ukazom, ki niso prazni
+                for (int k=0; k< TRANSMIT_HANDLE_BUFF_SIZE;k++)
+                    if(Transmitt_handle_Buffer[k].message_ID != Settings1.Default.TRANSMIT_SLOT_FREE)
+                        Transmitt_handle_Buffer[k].buffer_counter++;
             } while (task2_ex_flag == true);
         }
     }

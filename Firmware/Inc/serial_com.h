@@ -13,13 +13,13 @@
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
 //																NASTAVITVE																	 //
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
-#define SERIAL_COMMAND_SIZE     200   		//maksimalna velikost komande
+#define SERIAL_COMMAND_SIZE     				200   		//maksimalna velikost komande
 //Nastavitve bufferja za prejemanje
-#define _SER_BUFFER_SIZE            		256  //dolzina bufferja za celoten ukaz
-#define _SER_DATA_SIZE               		30  //dolzina bufferja za funkcijo, event in data string
-#define RxBufferSize_MAX					 254
-#define SERIAL_IN_QUEUE_SIZE 		5					//velikost vhodnega bufferja za sprejem komand
-#define SERIAL_BUFFER_SIZE      256   		//velikost vhodnega bufferja
+#define _SER_BUFFER_SIZE            		256  			//dolzina bufferja za celoten ukaz
+#define _SER_DATA_SIZE               		30  			//dolzina bufferja za funkcijo, event in data string
+#define RxBufferSize_MAX					 			254
+#define SERIAL_IN_QUEUE_SIZE 						5					//velikost vhodnega bufferja za sprejem komand
+#define SERIAL_BUFFER_SIZE      				256   		//velikost vhodnega bufferja
 #define MAX_ADDITIONAL_COMMANDS 				5
 #define MAX_ADDITIONAL_COMMANDS_LENGTH 	100
 
@@ -33,10 +33,12 @@
 #define NUM_NACK_EVENTS						3		//kolikokrat ponovi posiljanje ce dobi nack
 #define TRANSMIT_HANDLE_WAIT			10		//n*10ms - koliko casa cakamo na to da dobimo odgovor pred ponovnim posiljanjem
 																			//za program v visual studiu rabmo okol 50ms
+#define WAIT_FOR_MSG_ACK					3		//koliko casa cakamo na ack TRANSMIT_HANDLE_WAIT * n
 static uint32_t recieve_ack_func(void);
 static uint32_t recieve_nack_func(void);
 static void communication_init(void);
 #endif
+
 //Makroji smeri (pomembno za serial_send_handler)
 #define _UART_DIR_MT	      					0
 #define _UART_DIR_HV          				1
@@ -89,7 +91,8 @@ static void communication_init(void);
 //ne pozabi dodati kodo v serial send handler
 void serial_com_init(void);
 void add_command_to_queue(uint8_t* Buf, uint32_t Len,uint8_t dir);	//doda komando v cakalno vrsto za analiziranje. Poklici ko dobis podatke iz serijskega vodila
-void SendComMessage(int send_control,char transmitter, char receiver, char * function, char * command, char * additional_code, char * data, int dirrection);	//ko zelis posilati komando poklici to funkcijo in ji dodaj potrebne parametre
+uint32_t SendComMessage(int send_control,char transmitter, char receiver, char * function, char * command, char * additional_code, char * data, int dirrection);	//ko zelis posilati komando poklici to funkcijo in ji dodaj potrebne parametre
+bool CheckIfACK(uint32_t msg_id);
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
 
 //struktura za shranjevanje prejete komande

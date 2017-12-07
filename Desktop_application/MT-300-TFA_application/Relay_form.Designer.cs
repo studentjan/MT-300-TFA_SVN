@@ -76,8 +76,6 @@
             this.rel_35_off_button = new System.Windows.Forms.Button();
             this.rel_34_off_button = new System.Windows.Forms.Button();
             this.rel_33_off_button = new System.Windows.Forms.Button();
-            this.rel_32_off_button = new System.Windows.Forms.Button();
-            this.rel_31_off_button = new System.Windows.Forms.Button();
             this.rel_30_off_button = new System.Windows.Forms.Button();
             this.rel_29_off_button = new System.Windows.Forms.Button();
             this.rel_28_off_button = new System.Windows.Forms.Button();
@@ -91,8 +89,6 @@
             this.rel_35_on_button = new System.Windows.Forms.Button();
             this.rel_34_on_button = new System.Windows.Forms.Button();
             this.rel_33_on_button = new System.Windows.Forms.Button();
-            this.rel_32_on_button = new System.Windows.Forms.Button();
-            this.rel_31_on_button = new System.Windows.Forms.Button();
             this.rel_30_on_button = new System.Windows.Forms.Button();
             this.rel_29_on_button = new System.Windows.Forms.Button();
             this.rel_28_on_button = new System.Windows.Forms.Button();
@@ -108,6 +104,9 @@
             this.rel_23_on_button = new System.Windows.Forms.Button();
             this.rel_22_off_button = new System.Windows.Forms.Button();
             this.rel_22_on_button = new System.Windows.Forms.Button();
+            this.button42_off = new System.Windows.Forms.Button();
+            this.button42_on = new System.Windows.Forms.Button();
+            this.reset_all_rel_button = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // rel_7_off_button
@@ -218,6 +217,7 @@
             this.rel_2_off_button.TabIndex = 16;
             this.rel_2_off_button.Text = "REALAY 2 OFF";
             this.rel_2_off_button.UseVisualStyleBackColor = true;
+            this.rel_2_off_button.Click += new System.EventHandler(this.rel_2_off_button_Click);
             // 
             // rel_2_on_button
             // 
@@ -227,6 +227,7 @@
             this.rel_2_on_button.TabIndex = 15;
             this.rel_2_on_button.Text = "REALAY 2 ON";
             this.rel_2_on_button.UseVisualStyleBackColor = true;
+            this.rel_2_on_button.Click += new System.EventHandler(this.rel_2_on_button_Click);
             // 
             // rel_8_on_button
             // 
@@ -360,7 +361,7 @@
             // 
             // rel_20_on_button
             // 
-            this.rel_20_on_button.Location = new System.Drawing.Point(7, 568);
+            this.rel_20_on_button.Location = new System.Drawing.Point(372, 17);
             this.rel_20_on_button.Name = "rel_20_on_button";
             this.rel_20_on_button.Size = new System.Drawing.Size(130, 23);
             this.rel_20_on_button.TabIndex = 40;
@@ -500,7 +501,7 @@
             // 
             // rel_20_off_button
             // 
-            this.rel_20_off_button.Location = new System.Drawing.Point(143, 568);
+            this.rel_20_off_button.Location = new System.Drawing.Point(508, 17);
             this.rel_20_off_button.Name = "rel_20_off_button";
             this.rel_20_off_button.Size = new System.Drawing.Size(129, 23);
             this.rel_20_off_button.TabIndex = 54;
@@ -510,7 +511,7 @@
             // 
             // rel_41_off_button
             // 
-            this.rel_41_off_button.Location = new System.Drawing.Point(508, 568);
+            this.rel_41_off_button.Location = new System.Drawing.Point(508, 539);
             this.rel_41_off_button.Name = "rel_41_off_button";
             this.rel_41_off_button.Size = new System.Drawing.Size(129, 23);
             this.rel_41_off_button.TabIndex = 94;
@@ -520,7 +521,7 @@
             // 
             // rel_40_off_button
             // 
-            this.rel_40_off_button.Location = new System.Drawing.Point(508, 539);
+            this.rel_40_off_button.Location = new System.Drawing.Point(508, 510);
             this.rel_40_off_button.Name = "rel_40_off_button";
             this.rel_40_off_button.Size = new System.Drawing.Size(129, 23);
             this.rel_40_off_button.TabIndex = 93;
@@ -530,7 +531,7 @@
             // 
             // rel_39_off_button
             // 
-            this.rel_39_off_button.Location = new System.Drawing.Point(508, 510);
+            this.rel_39_off_button.Location = new System.Drawing.Point(508, 481);
             this.rel_39_off_button.Name = "rel_39_off_button";
             this.rel_39_off_button.Size = new System.Drawing.Size(129, 23);
             this.rel_39_off_button.TabIndex = 92;
@@ -540,7 +541,7 @@
             // 
             // rel_37_off_button
             // 
-            this.rel_37_off_button.Location = new System.Drawing.Point(508, 481);
+            this.rel_37_off_button.Location = new System.Drawing.Point(508, 452);
             this.rel_37_off_button.Name = "rel_37_off_button";
             this.rel_37_off_button.Size = new System.Drawing.Size(129, 23);
             this.rel_37_off_button.TabIndex = 91;
@@ -550,7 +551,7 @@
             // 
             // rel_36_off_button
             // 
-            this.rel_36_off_button.Location = new System.Drawing.Point(508, 452);
+            this.rel_36_off_button.Location = new System.Drawing.Point(508, 423);
             this.rel_36_off_button.Name = "rel_36_off_button";
             this.rel_36_off_button.Size = new System.Drawing.Size(129, 23);
             this.rel_36_off_button.TabIndex = 90;
@@ -560,7 +561,7 @@
             // 
             // rel_35_off_button
             // 
-            this.rel_35_off_button.Location = new System.Drawing.Point(508, 423);
+            this.rel_35_off_button.Location = new System.Drawing.Point(508, 394);
             this.rel_35_off_button.Name = "rel_35_off_button";
             this.rel_35_off_button.Size = new System.Drawing.Size(129, 23);
             this.rel_35_off_button.TabIndex = 89;
@@ -570,7 +571,7 @@
             // 
             // rel_34_off_button
             // 
-            this.rel_34_off_button.Location = new System.Drawing.Point(508, 394);
+            this.rel_34_off_button.Location = new System.Drawing.Point(508, 365);
             this.rel_34_off_button.Name = "rel_34_off_button";
             this.rel_34_off_button.Size = new System.Drawing.Size(129, 23);
             this.rel_34_off_button.TabIndex = 88;
@@ -580,7 +581,7 @@
             // 
             // rel_33_off_button
             // 
-            this.rel_33_off_button.Location = new System.Drawing.Point(508, 365);
+            this.rel_33_off_button.Location = new System.Drawing.Point(508, 336);
             this.rel_33_off_button.Name = "rel_33_off_button";
             this.rel_33_off_button.Size = new System.Drawing.Size(129, 23);
             this.rel_33_off_button.TabIndex = 87;
@@ -588,29 +589,9 @@
             this.rel_33_off_button.UseVisualStyleBackColor = true;
             this.rel_33_off_button.Click += new System.EventHandler(this.rel_33_off_button_Click);
             // 
-            // rel_32_off_button
-            // 
-            this.rel_32_off_button.Location = new System.Drawing.Point(508, 336);
-            this.rel_32_off_button.Name = "rel_32_off_button";
-            this.rel_32_off_button.Size = new System.Drawing.Size(129, 23);
-            this.rel_32_off_button.TabIndex = 86;
-            this.rel_32_off_button.Text = "REALAY 32 OFF";
-            this.rel_32_off_button.UseVisualStyleBackColor = true;
-            this.rel_32_off_button.Click += new System.EventHandler(this.rel_32_off_button_Click);
-            // 
-            // rel_31_off_button
-            // 
-            this.rel_31_off_button.Location = new System.Drawing.Point(508, 307);
-            this.rel_31_off_button.Name = "rel_31_off_button";
-            this.rel_31_off_button.Size = new System.Drawing.Size(129, 23);
-            this.rel_31_off_button.TabIndex = 85;
-            this.rel_31_off_button.Text = "REALAY 31 OFF";
-            this.rel_31_off_button.UseVisualStyleBackColor = true;
-            this.rel_31_off_button.Click += new System.EventHandler(this.rel_31_off_button_Click);
-            // 
             // rel_30_off_button
             // 
-            this.rel_30_off_button.Location = new System.Drawing.Point(508, 278);
+            this.rel_30_off_button.Location = new System.Drawing.Point(508, 307);
             this.rel_30_off_button.Name = "rel_30_off_button";
             this.rel_30_off_button.Size = new System.Drawing.Size(129, 23);
             this.rel_30_off_button.TabIndex = 84;
@@ -620,7 +601,7 @@
             // 
             // rel_29_off_button
             // 
-            this.rel_29_off_button.Location = new System.Drawing.Point(508, 249);
+            this.rel_29_off_button.Location = new System.Drawing.Point(508, 278);
             this.rel_29_off_button.Name = "rel_29_off_button";
             this.rel_29_off_button.Size = new System.Drawing.Size(129, 23);
             this.rel_29_off_button.TabIndex = 83;
@@ -630,7 +611,7 @@
             // 
             // rel_28_off_button
             // 
-            this.rel_28_off_button.Location = new System.Drawing.Point(508, 220);
+            this.rel_28_off_button.Location = new System.Drawing.Point(508, 249);
             this.rel_28_off_button.Name = "rel_28_off_button";
             this.rel_28_off_button.Size = new System.Drawing.Size(129, 23);
             this.rel_28_off_button.TabIndex = 82;
@@ -640,7 +621,7 @@
             // 
             // rel_21_43_off_button
             // 
-            this.rel_21_43_off_button.Location = new System.Drawing.Point(508, 17);
+            this.rel_21_43_off_button.Location = new System.Drawing.Point(508, 46);
             this.rel_21_43_off_button.Name = "rel_21_43_off_button";
             this.rel_21_43_off_button.Size = new System.Drawing.Size(129, 23);
             this.rel_21_43_off_button.TabIndex = 81;
@@ -650,7 +631,7 @@
             // 
             // rel_41_on_button
             // 
-            this.rel_41_on_button.Location = new System.Drawing.Point(372, 568);
+            this.rel_41_on_button.Location = new System.Drawing.Point(372, 539);
             this.rel_41_on_button.Name = "rel_41_on_button";
             this.rel_41_on_button.Size = new System.Drawing.Size(130, 23);
             this.rel_41_on_button.TabIndex = 80;
@@ -660,7 +641,7 @@
             // 
             // rel_21_43_on_button
             // 
-            this.rel_21_43_on_button.Location = new System.Drawing.Point(372, 17);
+            this.rel_21_43_on_button.Location = new System.Drawing.Point(372, 46);
             this.rel_21_43_on_button.Name = "rel_21_43_on_button";
             this.rel_21_43_on_button.Size = new System.Drawing.Size(130, 23);
             this.rel_21_43_on_button.TabIndex = 79;
@@ -670,7 +651,7 @@
             // 
             // rel_40_on_button
             // 
-            this.rel_40_on_button.Location = new System.Drawing.Point(372, 539);
+            this.rel_40_on_button.Location = new System.Drawing.Point(372, 510);
             this.rel_40_on_button.Name = "rel_40_on_button";
             this.rel_40_on_button.Size = new System.Drawing.Size(130, 23);
             this.rel_40_on_button.TabIndex = 78;
@@ -680,7 +661,7 @@
             // 
             // rel_39_on_button
             // 
-            this.rel_39_on_button.Location = new System.Drawing.Point(372, 510);
+            this.rel_39_on_button.Location = new System.Drawing.Point(372, 481);
             this.rel_39_on_button.Name = "rel_39_on_button";
             this.rel_39_on_button.Size = new System.Drawing.Size(130, 23);
             this.rel_39_on_button.TabIndex = 77;
@@ -690,7 +671,7 @@
             // 
             // rel_37_on_button
             // 
-            this.rel_37_on_button.Location = new System.Drawing.Point(372, 481);
+            this.rel_37_on_button.Location = new System.Drawing.Point(372, 452);
             this.rel_37_on_button.Name = "rel_37_on_button";
             this.rel_37_on_button.Size = new System.Drawing.Size(130, 23);
             this.rel_37_on_button.TabIndex = 76;
@@ -700,7 +681,7 @@
             // 
             // rel_36_on_button
             // 
-            this.rel_36_on_button.Location = new System.Drawing.Point(372, 452);
+            this.rel_36_on_button.Location = new System.Drawing.Point(372, 423);
             this.rel_36_on_button.Name = "rel_36_on_button";
             this.rel_36_on_button.Size = new System.Drawing.Size(130, 23);
             this.rel_36_on_button.TabIndex = 75;
@@ -710,7 +691,7 @@
             // 
             // rel_35_on_button
             // 
-            this.rel_35_on_button.Location = new System.Drawing.Point(372, 423);
+            this.rel_35_on_button.Location = new System.Drawing.Point(372, 394);
             this.rel_35_on_button.Name = "rel_35_on_button";
             this.rel_35_on_button.Size = new System.Drawing.Size(130, 23);
             this.rel_35_on_button.TabIndex = 74;
@@ -720,7 +701,7 @@
             // 
             // rel_34_on_button
             // 
-            this.rel_34_on_button.Location = new System.Drawing.Point(372, 394);
+            this.rel_34_on_button.Location = new System.Drawing.Point(372, 365);
             this.rel_34_on_button.Name = "rel_34_on_button";
             this.rel_34_on_button.Size = new System.Drawing.Size(130, 23);
             this.rel_34_on_button.TabIndex = 73;
@@ -730,7 +711,7 @@
             // 
             // rel_33_on_button
             // 
-            this.rel_33_on_button.Location = new System.Drawing.Point(372, 365);
+            this.rel_33_on_button.Location = new System.Drawing.Point(372, 336);
             this.rel_33_on_button.Name = "rel_33_on_button";
             this.rel_33_on_button.Size = new System.Drawing.Size(130, 23);
             this.rel_33_on_button.TabIndex = 72;
@@ -738,29 +719,9 @@
             this.rel_33_on_button.UseVisualStyleBackColor = true;
             this.rel_33_on_button.Click += new System.EventHandler(this.rel_33_on_button_Click);
             // 
-            // rel_32_on_button
-            // 
-            this.rel_32_on_button.Location = new System.Drawing.Point(372, 336);
-            this.rel_32_on_button.Name = "rel_32_on_button";
-            this.rel_32_on_button.Size = new System.Drawing.Size(130, 23);
-            this.rel_32_on_button.TabIndex = 71;
-            this.rel_32_on_button.Text = "REALAY 32 ON";
-            this.rel_32_on_button.UseVisualStyleBackColor = true;
-            this.rel_32_on_button.Click += new System.EventHandler(this.rel_32_on_button_Click);
-            // 
-            // rel_31_on_button
-            // 
-            this.rel_31_on_button.Location = new System.Drawing.Point(372, 307);
-            this.rel_31_on_button.Name = "rel_31_on_button";
-            this.rel_31_on_button.Size = new System.Drawing.Size(130, 23);
-            this.rel_31_on_button.TabIndex = 70;
-            this.rel_31_on_button.Text = "REALAY 31 ON";
-            this.rel_31_on_button.UseVisualStyleBackColor = true;
-            this.rel_31_on_button.Click += new System.EventHandler(this.rel_31_on_button_Click);
-            // 
             // rel_30_on_button
             // 
-            this.rel_30_on_button.Location = new System.Drawing.Point(372, 278);
+            this.rel_30_on_button.Location = new System.Drawing.Point(372, 307);
             this.rel_30_on_button.Name = "rel_30_on_button";
             this.rel_30_on_button.Size = new System.Drawing.Size(130, 23);
             this.rel_30_on_button.TabIndex = 69;
@@ -770,7 +731,7 @@
             // 
             // rel_29_on_button
             // 
-            this.rel_29_on_button.Location = new System.Drawing.Point(372, 249);
+            this.rel_29_on_button.Location = new System.Drawing.Point(372, 278);
             this.rel_29_on_button.Name = "rel_29_on_button";
             this.rel_29_on_button.Size = new System.Drawing.Size(130, 23);
             this.rel_29_on_button.TabIndex = 68;
@@ -780,7 +741,7 @@
             // 
             // rel_28_on_button
             // 
-            this.rel_28_on_button.Location = new System.Drawing.Point(372, 220);
+            this.rel_28_on_button.Location = new System.Drawing.Point(372, 249);
             this.rel_28_on_button.Name = "rel_28_on_button";
             this.rel_28_on_button.Size = new System.Drawing.Size(130, 23);
             this.rel_28_on_button.TabIndex = 67;
@@ -790,7 +751,7 @@
             // 
             // rel_27_off_button
             // 
-            this.rel_27_off_button.Location = new System.Drawing.Point(508, 191);
+            this.rel_27_off_button.Location = new System.Drawing.Point(508, 220);
             this.rel_27_off_button.Name = "rel_27_off_button";
             this.rel_27_off_button.Size = new System.Drawing.Size(129, 23);
             this.rel_27_off_button.TabIndex = 66;
@@ -800,7 +761,7 @@
             // 
             // rel_27_on_button
             // 
-            this.rel_27_on_button.Location = new System.Drawing.Point(372, 191);
+            this.rel_27_on_button.Location = new System.Drawing.Point(372, 220);
             this.rel_27_on_button.Name = "rel_27_on_button";
             this.rel_27_on_button.Size = new System.Drawing.Size(130, 23);
             this.rel_27_on_button.TabIndex = 65;
@@ -810,7 +771,7 @@
             // 
             // rel_26_off_button
             // 
-            this.rel_26_off_button.Location = new System.Drawing.Point(508, 162);
+            this.rel_26_off_button.Location = new System.Drawing.Point(508, 191);
             this.rel_26_off_button.Name = "rel_26_off_button";
             this.rel_26_off_button.Size = new System.Drawing.Size(129, 23);
             this.rel_26_off_button.TabIndex = 64;
@@ -820,7 +781,7 @@
             // 
             // rel_26_on_button
             // 
-            this.rel_26_on_button.Location = new System.Drawing.Point(372, 162);
+            this.rel_26_on_button.Location = new System.Drawing.Point(372, 191);
             this.rel_26_on_button.Name = "rel_26_on_button";
             this.rel_26_on_button.Size = new System.Drawing.Size(130, 23);
             this.rel_26_on_button.TabIndex = 63;
@@ -830,7 +791,7 @@
             // 
             // rel_25_off_button
             // 
-            this.rel_25_off_button.Location = new System.Drawing.Point(508, 133);
+            this.rel_25_off_button.Location = new System.Drawing.Point(508, 162);
             this.rel_25_off_button.Name = "rel_25_off_button";
             this.rel_25_off_button.Size = new System.Drawing.Size(129, 23);
             this.rel_25_off_button.TabIndex = 62;
@@ -840,7 +801,7 @@
             // 
             // rel_25_on_button
             // 
-            this.rel_25_on_button.Location = new System.Drawing.Point(372, 133);
+            this.rel_25_on_button.Location = new System.Drawing.Point(372, 162);
             this.rel_25_on_button.Name = "rel_25_on_button";
             this.rel_25_on_button.Size = new System.Drawing.Size(130, 23);
             this.rel_25_on_button.TabIndex = 61;
@@ -850,7 +811,7 @@
             // 
             // rel_24_off_button
             // 
-            this.rel_24_off_button.Location = new System.Drawing.Point(508, 104);
+            this.rel_24_off_button.Location = new System.Drawing.Point(508, 133);
             this.rel_24_off_button.Name = "rel_24_off_button";
             this.rel_24_off_button.Size = new System.Drawing.Size(129, 23);
             this.rel_24_off_button.TabIndex = 60;
@@ -860,7 +821,7 @@
             // 
             // rel_24_on_button
             // 
-            this.rel_24_on_button.Location = new System.Drawing.Point(372, 104);
+            this.rel_24_on_button.Location = new System.Drawing.Point(372, 133);
             this.rel_24_on_button.Name = "rel_24_on_button";
             this.rel_24_on_button.Size = new System.Drawing.Size(130, 23);
             this.rel_24_on_button.TabIndex = 59;
@@ -870,7 +831,7 @@
             // 
             // rel_23_off_button
             // 
-            this.rel_23_off_button.Location = new System.Drawing.Point(508, 75);
+            this.rel_23_off_button.Location = new System.Drawing.Point(508, 104);
             this.rel_23_off_button.Name = "rel_23_off_button";
             this.rel_23_off_button.Size = new System.Drawing.Size(129, 23);
             this.rel_23_off_button.TabIndex = 58;
@@ -880,7 +841,7 @@
             // 
             // rel_23_on_button
             // 
-            this.rel_23_on_button.Location = new System.Drawing.Point(372, 75);
+            this.rel_23_on_button.Location = new System.Drawing.Point(372, 104);
             this.rel_23_on_button.Name = "rel_23_on_button";
             this.rel_23_on_button.Size = new System.Drawing.Size(130, 23);
             this.rel_23_on_button.TabIndex = 57;
@@ -890,7 +851,7 @@
             // 
             // rel_22_off_button
             // 
-            this.rel_22_off_button.Location = new System.Drawing.Point(508, 46);
+            this.rel_22_off_button.Location = new System.Drawing.Point(508, 75);
             this.rel_22_off_button.Name = "rel_22_off_button";
             this.rel_22_off_button.Size = new System.Drawing.Size(129, 23);
             this.rel_22_off_button.TabIndex = 56;
@@ -900,7 +861,7 @@
             // 
             // rel_22_on_button
             // 
-            this.rel_22_on_button.Location = new System.Drawing.Point(372, 46);
+            this.rel_22_on_button.Location = new System.Drawing.Point(372, 75);
             this.rel_22_on_button.Name = "rel_22_on_button";
             this.rel_22_on_button.Size = new System.Drawing.Size(130, 23);
             this.rel_22_on_button.TabIndex = 55;
@@ -908,11 +869,46 @@
             this.rel_22_on_button.UseVisualStyleBackColor = true;
             this.rel_22_on_button.Click += new System.EventHandler(this.rel_22_on_button_Click);
             // 
+            // button42_off
+            // 
+            this.button42_off.Location = new System.Drawing.Point(508, 568);
+            this.button42_off.Name = "button42_off";
+            this.button42_off.Size = new System.Drawing.Size(129, 23);
+            this.button42_off.TabIndex = 96;
+            this.button42_off.Text = "REALAY 42 OFF";
+            this.button42_off.UseVisualStyleBackColor = true;
+            this.button42_off.Click += new System.EventHandler(this.button42_off_Click);
+            // 
+            // button42_on
+            // 
+            this.button42_on.Location = new System.Drawing.Point(372, 568);
+            this.button42_on.Name = "button42_on";
+            this.button42_on.Size = new System.Drawing.Size(130, 23);
+            this.button42_on.TabIndex = 95;
+            this.button42_on.Text = "REALAY 42 ON";
+            this.button42_on.UseVisualStyleBackColor = true;
+            this.button42_on.Click += new System.EventHandler(this.button42_on_Click);
+            // 
+            // reset_all_rel_button
+            // 
+            this.reset_all_rel_button.BackColor = System.Drawing.SystemColors.GrayText;
+            this.reset_all_rel_button.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.reset_all_rel_button.Location = new System.Drawing.Point(7, 568);
+            this.reset_all_rel_button.Name = "reset_all_rel_button";
+            this.reset_all_rel_button.Size = new System.Drawing.Size(265, 23);
+            this.reset_all_rel_button.TabIndex = 97;
+            this.reset_all_rel_button.Text = "RESET ALL";
+            this.reset_all_rel_button.UseVisualStyleBackColor = false;
+            this.reset_all_rel_button.Click += new System.EventHandler(this.reset_all_rel_button_Click);
+            // 
             // Relay_form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(661, 634);
+            this.ClientSize = new System.Drawing.Size(661, 601);
+            this.Controls.Add(this.reset_all_rel_button);
+            this.Controls.Add(this.button42_off);
+            this.Controls.Add(this.button42_on);
             this.Controls.Add(this.rel_41_off_button);
             this.Controls.Add(this.rel_40_off_button);
             this.Controls.Add(this.rel_39_off_button);
@@ -921,8 +917,6 @@
             this.Controls.Add(this.rel_35_off_button);
             this.Controls.Add(this.rel_34_off_button);
             this.Controls.Add(this.rel_33_off_button);
-            this.Controls.Add(this.rel_32_off_button);
-            this.Controls.Add(this.rel_31_off_button);
             this.Controls.Add(this.rel_30_off_button);
             this.Controls.Add(this.rel_29_off_button);
             this.Controls.Add(this.rel_28_off_button);
@@ -936,8 +930,6 @@
             this.Controls.Add(this.rel_35_on_button);
             this.Controls.Add(this.rel_34_on_button);
             this.Controls.Add(this.rel_33_on_button);
-            this.Controls.Add(this.rel_32_on_button);
-            this.Controls.Add(this.rel_31_on_button);
             this.Controls.Add(this.rel_30_on_button);
             this.Controls.Add(this.rel_29_on_button);
             this.Controls.Add(this.rel_28_on_button);
@@ -1049,8 +1041,6 @@
         private System.Windows.Forms.Button rel_35_off_button;
         private System.Windows.Forms.Button rel_34_off_button;
         private System.Windows.Forms.Button rel_33_off_button;
-        private System.Windows.Forms.Button rel_32_off_button;
-        private System.Windows.Forms.Button rel_31_off_button;
         private System.Windows.Forms.Button rel_30_off_button;
         private System.Windows.Forms.Button rel_29_off_button;
         private System.Windows.Forms.Button rel_28_off_button;
@@ -1064,8 +1054,6 @@
         private System.Windows.Forms.Button rel_35_on_button;
         private System.Windows.Forms.Button rel_34_on_button;
         private System.Windows.Forms.Button rel_33_on_button;
-        private System.Windows.Forms.Button rel_32_on_button;
-        private System.Windows.Forms.Button rel_31_on_button;
         private System.Windows.Forms.Button rel_30_on_button;
         private System.Windows.Forms.Button rel_29_on_button;
         private System.Windows.Forms.Button rel_28_on_button;
@@ -1081,5 +1069,8 @@
         private System.Windows.Forms.Button rel_23_on_button;
         private System.Windows.Forms.Button rel_22_off_button;
         private System.Windows.Forms.Button rel_22_on_button;
+        private System.Windows.Forms.Button button42_off;
+        private System.Windows.Forms.Button button42_on;
+        private System.Windows.Forms.Button reset_all_rel_button;
     }
 }

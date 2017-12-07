@@ -32,7 +32,9 @@ K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA\Desktop_app\MT-300-TFA_application\obj
 K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA\Desktop_app\MT-300-TFA_application\obj\Debug\MT_300_TFA_application.Properties.Resources.resources
 K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA\Desktop_app\MT-300-TFA_application\obj\Debug\MT_300_TFA_application.Relay_form.resources
 K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA\Desktop_app\MT-300-TFA_application\obj\Debug\MT-300-TFA_application.csproj.GenerateResource.Cache
-C:\Users\kopri\Desktop\SOFTWARE Projekti\MT-300-TFA_SVN\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT-300-TFA_application.csprojResolveAssemblyReference.cache
+C:\Users\kopri\Desktop\SOFTWARE Projekti\MT-300-TFA_SVN\trunk\Desktop_application\MT-300-TFA_application\bin\Debug\MT-300-TFA_application.exe.config
+C:\Users\kopri\Desktop\SOFTWARE Projekti\MT-300-TFA_SVN\trunk\Desktop_application\MT-300-TFA_application\bin\Debug\MT-300-TFA_application.exe
+C:\Users\kopri\Desktop\SOFTWARE Projekti\MT-300-TFA_SVN\trunk\Desktop_application\MT-300-TFA_application\bin\Debug\MT-300-TFA_application.pdb
 C:\Users\kopri\Desktop\SOFTWARE Projekti\MT-300-TFA_SVN\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT_300_TFA_application.Form1.resources
 C:\Users\kopri\Desktop\SOFTWARE Projekti\MT-300-TFA_SVN\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT_300_TFA_application.Cord_form.resources
 C:\Users\kopri\Desktop\SOFTWARE Projekti\MT-300-TFA_SVN\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT_300_TFA_application.Properties.Resources.resources
@@ -40,7 +42,5 @@ C:\Users\kopri\Desktop\SOFTWARE Projekti\MT-300-TFA_SVN\trunk\Desktop_applicatio
 C:\Users\kopri\Desktop\SOFTWARE Projekti\MT-300-TFA_SVN\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT-300-TFA_application.csproj.GenerateResource.Cache
 C:\Users\kopri\Desktop\SOFTWARE Projekti\MT-300-TFA_SVN\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT-300-TFA_application.csproj.CoreCompileInputs.cache
 C:\Users\kopri\Desktop\SOFTWARE Projekti\MT-300-TFA_SVN\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT-300-TFA_application.exe
-C:\Users\kopri\Desktop\SOFTWARE Projekti\MT-300-TFA_SVN\trunk\Desktop_application\MT-300-TFA_application\bin\Debug\MT-300-TFA_application.exe.config
-C:\Users\kopri\Desktop\SOFTWARE Projekti\MT-300-TFA_SVN\trunk\Desktop_application\MT-300-TFA_application\bin\Debug\MT-300-TFA_application.exe
-C:\Users\kopri\Desktop\SOFTWARE Projekti\MT-300-TFA_SVN\trunk\Desktop_application\MT-300-TFA_application\bin\Debug\MT-300-TFA_application.pdb
 C:\Users\kopri\Desktop\SOFTWARE Projekti\MT-300-TFA_SVN\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT-300-TFA_application.pdb
+C:\Users\kopri\Desktop\SOFTWARE Projekti\MT-300-TFA_SVN\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT-300-TFA_application.csprojResolveAssemblyReference.cache
