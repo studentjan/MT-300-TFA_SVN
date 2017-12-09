@@ -3,18 +3,31 @@
 
 #include "defines.h"
 #include <stdbool.h>
-#define CORD_RPE_LIMIT	1.0f	//n*ohm
 
 
-void start_cord_normal(void);
-void stop_cord(void);
+#define CORD_RPE_LIMIT				1.0f		//n*ohm
+#define CORD_RISO_LIMIT				1000000.0f	//n*ohm
+#define RPE_CONTINUITY_FAIL_LIMIT	20.0f 		//n*ohm
+
+//funkcije
+
 void stop_cord_and_transmitt(uint32_t dir, char device_ID);
-void cord_meas_continuity(void);
+void cord_global_init_set(void);
+void cord_correct_wiring_init(void);
 void cord_continuity_init(void);
 void cord_RISO_init(void);
-void cord_meas_RISO(void);
-void set_cord_resistance(char* value);
+void set_RPE_cord_resistance(char* value);
+void set_RISO_cord_resistance(char* value);
 void set_phase_num(int phase_num);
+//taski
+void init_cord(void);
+void stop_cord(void);
+void cord_RISO_onePhaseToPE(void);
+void cord_meas_correct_wiring(void);
+void cord_RISO_phasesToPE(void);
+void cord_RISO_phaseToPhase(void);
+void cord_continuity_test(void);
+
 
 //ne spreminjaj makrojev!!!
 //----------------------------NASTAVITVE--------------------------------------
@@ -22,7 +35,8 @@ void set_phase_num(int phase_num);
 #define AUTO_DETECT_P_NUM	false				//avtomatska detekcija stevila faz
 #define MULTI_FAULT_CONTINUE  _OFF		//ce je tole vklopljeno se meritev izvede do konca tudi ce ze ugotovi multifault
 #define MAX_ERROR_ADD_COMMAND	7				//stevilo oddanih errorjev locenih z ',' v koncnem sporocilu
-#define RISO_TEST_ON_FLAG				_ON		//ali gremo na RISO test ali ne
+#define RISO_TEST_ON_FLAG				_OFF	//ali gremo na RISO test ali ne
+#define CORD_AUTO_CONTINUE_MEAS	_OFF	//dolocimo ali zelimo avtomatsko nadaljevati cord meritve po vrstnem redu, ce je nastavljeno na _OFF potem to pomeni, da nadaljevanje meritve zahteva zunanja naprava npr. MT-310
 //----------------------------------------------------------------------------
 
 //
@@ -187,6 +201,70 @@ void set_phase_num(int phase_num);
 #define MULTI_CROSSED				0x02000000
 #define MULTI_OPENED				0x04000000
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+//++++++++++++++++++++++++++++++zastavice za insolation_status+++++++++++++++++++++++++++++++
+#define L1_PE_FAIL					0x00000001
+#define L2_PE_FAIL					0x00000002
+#define L3_PE_FAIL					0x00000004
+#define N_PE_FAIL						0x00000008
+#define L1_N_FAIL						0x00000010
+#define L2_N_FAIL						0x00000020
+#define L3_N_FAIL						0x00000040
+#define L1_L2_FAIL					0x00000080
+#define L2_L3_FAIL					0x00000100
+#define L1_L3_FAIL					0x00000200
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#define CORD_ONE_PHASE_TO_PE_MASK		0x0000000F
+#define CORD_PHASE_TO_PHASE_MASK		0x000003F0
+
+//++++++++++++++++++++++++++++++zastavice za cord_task_control+++++++++++++++++++++++++++++++
+#define	__CORD_RPE_RES_REQUESTED									0x00000002
+#define	__CORD_RISO_RES_REQUESTED									0x00000004
+#define	__CORD_CORECT_WIRING_MEASURED							0x00000008
+#define	__CORD_CONTINUITY_MEASURED								0x00000010
+#define	__CORD_RISO_PHASES_TO_PE_MEASURED					0x00000020
+#define	__CORD_RISO_ONE_PHASE_TO_PE_MEASURED			0x00000040
+#define	__CORD_RISO_PHASE_TO_PHASE_MEASURED				0x00000080
+#define	__CORD_INITIATED													0x00000100
+#define	__CORD_INIT_RECIEVED											0x00000200
+#define	__CORD_CORRECT_WIRING_IN_PROGRESS					0x00000400
+#define	__CORD_RISO_PHASES_TO_PE_IN_PROGRESS			0x00000800
+#define	__CORD_RISO_ONE_PHASE_TO_PE_IN_PROGRESS		0x00001000
+#define	__CORD_RISO_PHASE_TO_PHASE_IN_PROGRESS		0x00002000
+#define	__CORD_CONTINUITY_IN_PROGRESS							0x00004000
+#define __CORD_RISO_STARTED												0x00008000
+#define __CORD_RPE_L_STARTED											0x00010000
+#define __CORD_RPE_H_STARTED											0x00020000
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+#define CORD_MEAS_IN_PROG_MASK			0x00007C00				
+#define CORD_RISO_MASKS							0x00003CEC
+
+
+
+
+#define CON_L1_A	set_REL(10)
+#define DIS_L1_A	rst_REL(10)
+#define CON_L2_A	set_REL(11)
+#define DIS_L2_A	rst_REL(11)
+#define CON_L3_A	set_REL(12)
+#define DIS_L3_A	rst_REL(12)
+#define CON_N_A		set_REL(13)
+#define DIS_N_A		rst_REL(13)
+#define CON_PE_A	set_REL(8)
+#define DIS_PE_A	rst_REL(8)
+#define CON_L1_B	set_REL(33)
+#define DIS_L1_B	rst_REL(33)
+#define CON_L2_B	set_REL(34)
+#define DIS_L2_B	rst_REL(34)
+#define CON_L3_B	set_REL(35)
+#define DIS_L3_B	rst_REL(35)
+#define CON_N_B		set_REL(36)
+#define DIS_N_B		rst_REL(36)
+#define CON_PE_B	set_REL(30)
+#define DIS_PE_B	rst_REL(30)
 
 
 #endif

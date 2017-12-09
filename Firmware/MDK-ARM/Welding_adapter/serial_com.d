@@ -59,4 +59,4 @@ welding_adapter\serial_com.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/In
 welding_adapter\serial_com.o: ../Inc/comunication.h
 welding_adapter\serial_com.o: ../Inc/tasks.h
 welding_adapter\serial_com.o: ../Inc/os.h
-welding_adapter\serial_com.o: ../Inc/meas_task.h
+welding_adapter\serial_com.o: ../Inc/cord.h

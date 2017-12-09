@@ -453,13 +453,27 @@ enum CONNECTION_MASKS
 	__CHECK_TO_TERMINAL		=0x00000020,
 	__CHECK_TO_PAT				=0x00000040,
 };
-enum MEAS_TASK_MASKS
+enum CORD_TASK_MASKS
 {
-	__CORD_MEAS_IN_PROG		=0x00000001,
-	__CORD_RPE_RES_REQUESTED	=0x00000002,
-	__CORD_RISO_RES_REQUESTED	=0x00000004,
+	__CORD_MEAS_IN_PROG												=0x00000001,
+//	__CORD_RPE_RES_REQUESTED									=0x00000002,
+//	__CORD_RISO_RES_REQUESTED									=0x00000004,
+//	__CORD_CORECT_WIRING_MEASURED							=0x00000008,
+//	__CORD_CONTINUITY_MEASURED								=0x00000010,
+//	__CORD_RISO_PHASES_TO_PE_MEASURED					=0x00000020,
+//	__CORD_RISO_ONE_PHASE_TO_PE_MEASURED			=0x00000040,
+//	__CORD_RISO_PHASE_TO_PHASE_MEASURED				=0x00000080,
+//	__CORD_INITIATED													=0x00000100,
+//	__CORD_INIT_RECIEVED											=0x00000200,
+//	__CORD_CORRECT_WIRING_IN_PROGRESS					=0x00000400,
+//	__CORD_RISO_PHASES_TO_PE_IN_PROGRESS			=0x00000800,
+//	__CORD_RISO_ONE_PHASE_TO_PE_IN_PROGRESS		=0x00001000,
+//	__CORD_RISO_PHASE_TO_PHASE_IN_PROGRESS		=0x00002000,
+//	__CORD_CONTINUITY_IN_PROGRESS							=0x00004000,
 
 };
+
+
 
 
 #define	__IDIFF	 1
@@ -607,11 +621,27 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 
 //CORD
 //--additionalcode
-#define __START_NORM__ 			"START_NORMAL"
-#define __STOP_C__					"STOP"
+#define __INIT_CORD__	"INIT"
+#define __START_CORRECT_WIRING__	"START_C_W"
+#define __CORD_CW__					"CW"
+#define __STOP_C__						"STOP"
 #define __INIT_C__					"INIT"
-#define __START_RPE_5A__		"RPE_START"
+#define __CORD_INITIATED__			"INITIATED"
+#define __START_RPE_LOW__			"RPE_L_START"
+#define __RPE_LOW_STARTED__		"RPE_L_STARTED"
+#define __START_RPE_HIGH__		"RPE_H_START"
+#define __RPE_HIGH_STARTED__	"RPE_L_STARTED"
+#define __STOP_RPE__			"RPE_STOP"
 #define __GET_RPE_RES__			"RPE_RES_GET"
+#define __RPE_RESISTANCE__		"RPE_RES"
+#define __START_RISO__			"RISO_START"
+#define __RISO_STARTED__		"RISO_STARTED"
+#define __GET_RISO_RES__		"RISO_RES_GET"
+#define __RISO_RESISTANCE__	"RISO_RES"
+#define __RISO_PHASES_TO_PE_OK__		"RISO_ALL-PE|OK"
+#define __RISO_PHASES_TO_PE_FAIL__	"RISO_ALL-PE|FAIL"
+#define __STOP_RISO__				"RISO_STOP"
+#define __RISO_STOPPED__		"RISO_STOPPED"
 #define __L1_OPEN__					"L1_OPEN"
 #define __L1_1P_OPEN__			"L1_1P_OPEN"
 #define __L2_OPEN__					"L2_OPEN"
@@ -636,7 +666,7 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define __MULTI_CROSSED__		"MULTI_CROS"
 #define __MULTI_OPEN__			"MULTI_OPEN"
 
-#define __RPE_RESISTANCE__		"RPE_RES"
+
 #define __L1_L2_CROSSED__		"L1_L2_CROS"
 #define __L1_L3_CROSSED__		"L1_L3_CROS"
 #define __L2_L3_CROSSED__		"L2_L3_CROS"
@@ -679,7 +709,33 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define __L3_N_CRIS_CROSSED__		"L3_N_CRIS"
 #define __L3_PE_CRIS_CROSSED__		"L3_PE_CRIS"
 #define __N_PE_CRIS_CROSSED__		"N_PE_CRIS"
-
+//--PHASES TO PE
+#define __START_PHASES_TO_PE__		"START_ALL-PE"
+#define __RISO_PHASES_TO_PE__			"RISO_ALL-PE"
+//--ONE PHASE TO PE
+#define __START_ONE_PHASE_TO_PE__	"START_ONE-PE"
+#define __RISO_ONE_PHASE_TO_PE__	"RISO_ONE-PE"
+#define	__L1_PE_FAIL__						"L1-PE_F"
+#define	__L2_PE_FAIL__						"L2-PE_F"
+#define	__L3_PE_FAIL__						"L3-PE_F"
+#define	__N_PE_FAIL__							"N-PE_F"
+//--PHASE TO PHASE
+#define __START_PHASE_TO_PHASE__	"START_PH_PH"
+#define __RISO_PHASE_TO_PHASE__		"RISO_PH-PH"
+#define __L1_N_FAIL__						"L1-N_F"
+#define __L2_N_FAIL__						"L2-N_F"
+#define __L3_N_FAIL__						"L3-N_F"
+#define __L1_L3_FAIL__						"L1-L3_F"
+#define __L1_L2_FAIL__						"L1-L2_F"
+#define __L2_L3_FAIL__						"L2-L3_F"
+//--CONTINUITY
+#define __START_CONTINUITY__		"START_CONT"
+#define __CORD_CONTINUITY__			"CONT"
+#define __CORD_L1__					"L1"
+#define __CORD_L2__					"L2"
+#define __CORD_L3__					"L3"
+#define __CORD_N__					"N"
+#define __CORD_PE__					"PE"
 
 //STATUS
 //--additionalcode

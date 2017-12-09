@@ -401,9 +401,9 @@
               <FilePath>.\do_task.c</FilePath>
             </File>
             <File>
-              <FileName>meas_task.c</FileName>
+              <FileName>cord.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\Src\meas_task.c</FilePath>
+              <FilePath>..\Src\cord.c</FilePath>
             </File>
           </Files>
         </Group>

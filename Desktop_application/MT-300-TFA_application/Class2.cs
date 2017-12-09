@@ -92,10 +92,13 @@ namespace MT_300_TFA_application
         public static String[] CONNECTION_CODE_NAMES = {"CONNECT_REQUEST", "CONNECTION_ESTABLED", "CONNECTION_CHECK"};
         public static String[] CONNECTION_ADD_NAMES = {"MT-310", "OK", "NOK"};
         public static String[] TEST_CODE_NAMES = {"PROTOCOL_TEST"};
-        public static String[] CORD_CODE_NAMES = {"START_NORMAL", "STOP", "INIT", "RPE_RES_GET", "RPE_RES", "STOPPED"};
+             //                                           0          1      2               3           4       5           6           7               8               9               10      11      12           13         14              15              16              17              18          19              20              21              22          23              24
+        public static String[] CORD_CODE_NAMES = { "START_NORMAL", "STOP", "INIT", "RPE_RES_GET", "RPE_RES", "STOPPED", "INITIATED", "RISO_ALL-PE", "RISO_ONE-PE", "RISO_PH-PH", "START_C_W", "CW", "START_CONT", "CONT", "START_ALL - PE", "START_ONE-PE", "START_PH_PH", "RISO_RES_GET", "RISO_RES", "RPE_L_START", "RPE_L_STARTED", "RPE_H_START","RPE_H_STARTED","RISO_START","RISO_STARTED"};
         public static String[] CORD_LEFTOVER_NAMES = { "L1_L1", "L1_L2", "L1_L3", "L1_N", "L1_PE", "L2_L1", "L2_L2", "L2_L3", "L2_N", "L2_PE",
                                                         "L3_L1","L3_L2", "L3_L3", "L3_N", "L3_PE", "N_L1" , "N_L2" , "N_L3" , "N_N" , "N_PE" ,
                                                         "PE_L1", "PE_L2", "PE_L3", "PE_N","PE_PE", "1_P","3_P"};
+        //                                                          0           1           2        3      4       5       6           7           8         9     10      11      12      13          14      15
+        public static String[] CORD_LEFTOVER_RISO_NAMES = { "L1-L2-L3-N_PE","L2-L3-N_PE","L3-N_PE","N_PE","L3_PE", "L2_PE", "L1_PE","L1-L2-L3_N","L2-L3_N","L3_N","L2_N","L1_N", "L1-L2_L3","L2_L3", "L1_L3","L1_L2"};
         public static String[] STATUS_CODE_NAMES = {""};
         public static String[] STATUS_VALUE_NAMES = {""};
         public static String[] WARNING_CODE_NAMES = {"COMMAND_SEND_ERROR"};
@@ -654,6 +657,26 @@ namespace MT_300_TFA_application
                     else if (String.Equals(additionalCode[0, 0], CORD_CODE_NAMES[5])) //stopped
                     {
                         cord_return_event(m_leftover, additionalCode[0, 0]);
+                    }
+                    else if (String.Equals(additionalCode[0, 0], CORD_CODE_NAMES[6])) //initiated
+                    {
+                        cord_return_event("", additionalCode[0, 0]);
+                    }
+                    else if (String.Equals(additionalCode[0, 0], CORD_CODE_NAMES[7])) //RISO_ALL-PE
+                    {
+                        cord_return_event("", additionalCode[0, 0]);
+                    }
+                    else if (String.Equals(additionalCode[0, 0], CORD_CODE_NAMES[8])) //RISO_ONE-PE
+                    {
+                        cord_return_event("", additionalCode[0, 0]);
+                    }
+                    else if (String.Equals(additionalCode[0, 0], CORD_CODE_NAMES[9])) //RISO_PH-PH
+                    {
+                        cord_return_event("", additionalCode[0, 0]);
+                    }
+                    else
+                    {
+                        cord_return_event("", additionalCode[0, 0]);
                     }
                 }
              }

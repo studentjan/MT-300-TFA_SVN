@@ -5,7 +5,7 @@
 <h2>Tool Versions:</h2>
 IDE-Version: µVision V5.24.2.0
 Copyright (C) 2017 ARM Ltd and ARM Germany GmbH. All rights reserved.
-License Information: Jan Koprivec, AV Spekter, LIC=V8512-9QVKR-GNJA5-GYJ6K-I2FWW-LUL2L
+License Information: jan koprivec, AVSpekter, LIC=50DUH-W2AMH-8WB2D-8NSLT-CRL74-S9XSG
  
 Tool Versions:
 Toolchain:       MDK-ARM Professional  Version: 5.24.1
@@ -21,12 +21,23 @@ Target DLL:      STLink\ST-LINKIII-KEIL_SWO.dll V3.0.1.0
 Dialog DLL:      TCM.DLL V1.32.0.0
  
 <h2>Project:</h2>
-C:\Users\kopri\Desktop\SOFTWARE Projekti\MT-300-TFA_SVN\trunk\Firmware\MDK-ARM\Welding_adapter.uvprojx
-Project File Date:  11/29/2017
+K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Firmware\MDK-ARM\Welding_adapter.uvprojx
+Project File Date:  12/08/2017
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 5 (build 528)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'Welding_adapter'
+compiling cord.c...
+..\Src\cord.c(25): warning:  #177-D: variable "sent_command_id"  was declared but never referenced
+  static uint32_t sent_command_id=0;
+..\Src\cord.c: 1 warning, 0 errors
+compiling main.c...
+compiling stm32f3xx_hal_msp.c...
+compiling os.c...
+compiling stm32f3xx_it.c...
+../Src/stm32f3xx_it.c(408): warning:  #177-D: variable "temp4"  was declared but never referenced
+  		float temp4;
+../Src/stm32f3xx_it.c: 1 warning, 0 errors
 compiling do_task.c...
 do_task.c(311): warning:  #177-D: variable "j"  was declared but never referenced
   	uint32_t i, j;
@@ -39,17 +50,96 @@ do_task.c(313): warning:  #177-D: variable "table_ptr"  was declared but never r
 do_task.c(314): warning:  #177-D: variable "table_ptr2"  was declared but never referenced
   	float * table_ptr2;
 do_task.c: 5 warnings, 0 errors
+compiling usb_device.c...
+compiling test.c...
+compiling comunication.c...
+..\Src\comunication.c(81): warning:  #550-D: variable "usb_connected"  was set but never used
+  	static char usb_connected=_NO;
+..\Src\comunication.c: 1 warning, 0 errors
+compiling gpio.c...
+compiling usbd_conf.c...
+compiling sdadc.c...
+..\Src\sdadc.c(334): warning:  #177-D: variable "ConfParamStruct"  was declared but never referenced
+  	SDADC_ConfParamTypeDef ConfParamStruct;
+..\Src\sdadc.c(401): warning:  #177-D: variable "ConfParamStruct"  was declared but never referenced
+    SDADC_ConfParamTypeDef ConfParamStruct;
+..\Src\sdadc.c(648): warning:  #177-D: variable "ConfParamStruct"  was declared but never referenced
+  	SDADC_ConfParamTypeDef ConfParamStruct;
+..\Src\sdadc.c(722): warning:  #177-D: variable "ConfParamStruct"  was declared but never referenced
+  	SDADC_ConfParamTypeDef ConfParamStruct;
+..\Src\sdadc.c(942): warning:  #550-D: variable "ConvertionResult2"  was set but never used
+  	int16_t ConvertionResult2;
+..\Src\sdadc.c(999): warning:  #188-D: enumerated type mixed with another type
+  				HAL_GPIO_WritePin(
+URRENT_GAIN1_GPIO_Port, 
+URRENT_GAIN1_Pin, 
+OFF);
+..\Src\sdadc.c(1005): warning:  #188-D: enumerated type mixed with another type
+  				HAL_GPIO_WritePin(
+URRENT_GAIN2_GPIO_Port, 
+URRENT_GAIN2_Pin, 
+OFF);
+..\Src\sdadc.c(1011): warning:  #188-D: enumerated type mixed with another type
+  				HAL_GPIO_WritePin(
+URRENT_GAIN3_GPIO_Port, 
+URRENT_GAIN3_Pin, 
+OFF);
+..\Src\sdadc.c(1024): warning:  #188-D: enumerated type mixed with another type
+  				HAL_GPIO_WritePin(
+URRENT_GAIN1_GPIO_Port, 
+URRENT_GAIN1_Pin, 
+ON);
+..\Src\sdadc.c(1030): warning:  #188-D: enumerated type mixed with another type
+  				HAL_GPIO_WritePin(
+URRENT_GAIN2_GPIO_Port, 
+URRENT_GAIN2_Pin, 
+ON);
+..\Src\sdadc.c(1036): warning:  #188-D: enumerated type mixed with another type
+  				HAL_GPIO_WritePin(
+URRENT_GAIN3_GPIO_Port, 
+URRENT_GAIN3_Pin, 
+ON);
+..\Src\sdadc.c(1465): warning:  #177-D: variable "thd_counter2"  was declared but never referenced
+  	static uint32_t thd_counter2=	0;
+..\Src\sdadc.c(1472): warning:  #177-D: variable "cos"  was declared but never referenced
+  	float cos;
+..\Src\sdadc.c(1473): warning:  #177-D: variable "count"  was declared but never referenced
+  	static uint32_t count=1;
+..\Src\sdadc.c: 15 warnings, 0 errors
+compiling usb.c...
+compiling timer.c...
+compiling rel_driver.c...
+compiling serial_com.c...
+serial_com.c(260): warning:  #177-D: variable "i"  was declared but never referenced
+  	uint32_t i;
+serial_com.c(287): warning:  #550-D: variable "temp_array"  was set but never used
+  	char temp_array[3];
+serial_com.c(434): warning:  #177-D: variable "direction"  was declared but never referenced
+   uint8_t direction;
+serial_com.c(1088): warning:  #177-D: variable "krneki"  was declared but never referenced
+  	int krneki;
+serial_com.c(1089): warning:  #177-D: variable "krneki2"  was declared but never referenced
+  	int krneki2;
+serial_com.c(1129): warning:  #177-D: variable "IN_START_TAG"  was declared but never referenced
+  		char *IN_START_TAG;
+serial_com.c(1271): warning:  #177-D: variable "cnt"  was declared but never referenced
+   uint32_t cnt;
+serial_com.c(1272): warning:  #177-D: variable "cc"  was declared but never referenced
+   uint8_t cc,cd,d1,d2,d3;
+serial_com.c(1273): warning:  #177-D: variable "dir_tmp"  was declared but never referenced
+   uint8_t dir_tmp; 
+serial_com.c: 9 warnings, 0 errors
 linking...
-Program Size: Code=68524 RO-data=14692 RW-data=712 ZI-data=28096  
-"Welding_adapter\Welding_adapter.axf" - 0 Error(s), 5 Warning(s).
+Program Size: Code=76724 RO-data=14692 RW-data=748 ZI-data=28092  
+"Welding_adapter\Welding_adapter.axf" - 0 Error(s), 31 Warning(s).
 
 <h2>Software Packages used:</h2>
 
 Package Vendor: ARM
-                http://www.keil.com/pack/ARM.CMSIS.5.0.1.pack
-                ARM.CMSIS.5.0.1
+                http://www.keil.com/pack/ARM.CMSIS.5.1.1.pack
+                ARM.CMSIS.5.1.1
                 CMSIS (Cortex Microcontroller Software Interface Standard)
-   * Component: CORE Version: 5.0.1
+   * Component: CORE Version: 5.0.2
 
 Package Vendor: Keil
                 http://www.keil.com/pack/Keil.STM32F3xx_DFP.1.4.0.pack
@@ -58,13 +148,13 @@ Package Vendor: Keil
 
 <h2>Collection of Component include folders:</h2>
   .\RTE\_Welding_adapter
-  C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.0.1\CMSIS\Include
+  C:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\Include
   C:\Keil_v5\ARM\PACK\Keil\STM32F3xx_DFP\1.4.0\Device\Include
 
 <h2>Collection of Component Files used:</h2>
 
-   * Component: ARM::CMSIS:CORE:5.0.1
-Build Time Elapsed:  00:00:04
+   * Component: ARM::CMSIS:CORE:5.0.2
+Build Time Elapsed:  00:00:16
 </pre>
 </body>
 </html>

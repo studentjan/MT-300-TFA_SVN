@@ -3,7 +3,7 @@
 "welding_adapter\main.o"
 "welding_adapter\test.o"
 "welding_adapter\do_task.o"
-"welding_adapter\meas_task.o"
+"welding_adapter\cord.o"
 "welding_adapter\usbd_ioreq.o"
 "welding_adapter\usbd_ctlreq.o"
 "welding_adapter\usbd_cdc.o"

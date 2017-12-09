@@ -30,11 +30,14 @@
 #define SEND_WARNING_MSG											18
 #define LED_BLINKING_TASK											19
 #define TRANSMIT_COMMAND_HANDLE								20
-#define START_CORD_NORMAL											21
+#define INIT_CORD											21
 #define STOP_CORD															22
-#define CORD_MEAS_NORMAL											23
+#define CORD_MEAS_CORRECT_WIRING							23
 #define SEND_TFA_MAINS_STATUS									24
 #define CHECK_CONNECTION											25
-#define CORD_MEAS_RISO												26
+#define CORD_RISO_PHASES_TO_PE								26
+#define CORD_RISO_ONE_PHASE_TO_PE							27
+#define CORD_RISO_PHASE_TO_PHASE							28
+#define CORD_MEAS_CONTINUITY								29
 
 #endif // __TASKS_H

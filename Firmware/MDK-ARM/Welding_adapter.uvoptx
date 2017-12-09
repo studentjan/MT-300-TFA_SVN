@@ -409,8 +409,8 @@
       <tvExp>0</tvExp>
       <tvExpOptDlg>0</tvExpOptDlg>
       <bDave2>0</bDave2>
-      <PathWithFileName>..\Src\meas_task.c</PathWithFileName>
-      <FilenameWithoutPath>meas_task.c</FilenameWithoutPath>
+      <PathWithFileName>..\Src\cord.c</PathWithFileName>
+      <FilenameWithoutPath>cord.c</FilenameWithoutPath>
       <RteFlg>0</RteFlg>
       <bShared>0</bShared>
     </File>

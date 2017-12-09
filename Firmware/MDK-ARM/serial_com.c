@@ -37,12 +37,12 @@
 #include "os.h"
 #include <stdbool.h>
 #include <stdio.h>
-#include "meas_task.h"
+#include "cord.h"
 
 //-----------ZUNANJE SPREMENLJIVKE-----------------------
 extern uint8_t event_status; 
 extern uint32_t connection_control;
-extern uint32_t meas_task_control;
+extern uint32_t cord_task_control;
 extern int start_cord_count;
 //-----------GLOBALNE SPREMENLJIVKE----------------------
 uint8_t SERIAL_direction;
@@ -262,7 +262,7 @@ static uint32_t transmit_func(uint8_t message_size, uint8_t dir,char * ser_ans_b
 	Transmit_handle_buff[write_count].transmitt_to_ID=transmitt_to_ID;
 	Transmit_handle_buff[write_count].message_ID=current_ID;
 	Transmit_handle_buff[write_count].dirrection =dir;
-	Transmit_handle_buff[write_count].buffer_count = 0;;
+	Transmit_handle_buff[write_count].buffer_count = 0;
 	Transmit_handle_buff[write_count].msg_ptr=(char*)malloc(message_size+1);
 	if(Transmit_handle_buff[write_count].msg_ptr==NULL) return 1;	//v HEAP-u je zmanjkalo spomina
 	strcpy(Transmit_handle_buff[write_count].msg_ptr, ser_ans_buff);
@@ -605,32 +605,150 @@ static void command_analyze(uint8_t dir)
 /*********************************************************************************/
 	else if(!strcmp(m_command,__CORD__))
 	{ 
-		if(!strcmp(&additionalCode[0][0][0],__START_NORM__))
+		if(!strcmp(&additionalCode[0][0][0],__INIT_CORD__))
 		{
-			if(!(meas_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+			if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
 			{
-					meas_task_control |= __CORD_MEAS_IN_PROG;
-					if(!strcmp(m_value,__1_PHASE__))
-						set_phase_num(1);
-					else
-						set_phase_num(3);
+				cord_task_control |= __CORD_MEAS_IN_PROG;
+				if(!strcmp(m_value,__1_PHASE__))
+					set_phase_num(1);
+				else
+					set_phase_num(3);
+				start_cord_count = 0;
+				set_event(INIT_CORD,init_cord);
+				cord_task_control |= __CORD_INIT_RECIEVED;
+			}
+		}
+		//ce CORD se ni inicializiran ga najprej inicializira nato pa zacne meritev
+		else if(!strcmp(&additionalCode[0][0][0],__START_CORRECT_WIRING__))
+		{
+			//ce je katerakoli meritev v delu se ne izvede
+			if(!(cord_task_control & CORD_MEAS_IN_PROG_MASK))
+			{
+				if(cord_task_control & __CORD_INITIATED)
+				{
+					set_event(CORD_MEAS_CORRECT_WIRING,cord_meas_correct_wiring);
+				}
+				else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+				{
+					cord_task_control |= __CORD_MEAS_IN_PROG;
 					start_cord_count = 0;
-					set_event(START_CORD_NORMAL,start_cord_normal);
+					set_event(INIT_CORD,init_cord);
+				}
+			}
+		}
+		else if(!strcmp(&additionalCode[0][0][0],__START_CONTINUITY__))
+		{
+			//ce je katerakoli meritev v delu se ne izvede
+			if(!(cord_task_control & CORD_MEAS_IN_PROG_MASK))
+			{
+				if(cord_task_control & __CORD_INITIATED)
+				{
+					set_event(CORD_MEAS_CORRECT_WIRING,cord_continuity_test);
+				}
+				else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+				{
+					cord_task_control |= __CORD_MEAS_IN_PROG;
+					start_cord_count = 0;
+					set_event(INIT_CORD,init_cord);
+				}
+			}
+		}
+		else if(!strcmp(&additionalCode[0][0][0],__START_PHASES_TO_PE__))
+		{
+			//ce je katerakoli meritev v delu se ne izvede
+			if(!(cord_task_control & CORD_MEAS_IN_PROG_MASK))
+			{
+				if(cord_task_control & __CORD_INITIATED)
+				{
+					set_event(CORD_MEAS_CORRECT_WIRING,cord_RISO_phasesToPE);
+				}
+				else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+				{
+					cord_task_control |= __CORD_MEAS_IN_PROG;
+					start_cord_count = 0;
+					set_event(INIT_CORD,init_cord);
+				}
+			}
+		}
+		else if(!strcmp(&additionalCode[0][0][0],__START_ONE_PHASE_TO_PE__))
+		{
+			//ce je katerakoli meritev v delu se ne izvede
+			if(!(cord_task_control & CORD_MEAS_IN_PROG_MASK))
+			{
+				if(cord_task_control & __CORD_INITIATED)
+				{
+					set_event(CORD_MEAS_CORRECT_WIRING,cord_RISO_onePhaseToPE);
+				}
+				else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+				{
+					cord_task_control |= __CORD_MEAS_IN_PROG;
+					start_cord_count = 0;
+					set_event(INIT_CORD,init_cord);
+				}
+			}
+		}
+		else if(!strcmp(&additionalCode[0][0][0],__START_PHASE_TO_PHASE__))
+		{
+			//ce je katerakoli meritev v delu se ne izvede
+			if(!(cord_task_control & CORD_MEAS_IN_PROG_MASK))
+			{
+				if(cord_task_control & __CORD_INITIATED)
+				{
+					set_event(CORD_MEAS_CORRECT_WIRING,cord_RISO_phaseToPhase);
+				}
+				else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+				{
+					cord_task_control |= __CORD_MEAS_IN_PROG;
+					start_cord_count = 0;
+					set_event(INIT_CORD,init_cord);
+				}
 			}
 		}
 		else if(!strcmp(&additionalCode[0][0][0],__STOP_C__))
 		{
-			if(meas_task_control & __CORD_MEAS_IN_PROG)	//se izvede samo ce je meritev v teku
+			if(cord_task_control & __CORD_MEAS_IN_PROG)	//se izvede samo ce je meritev v teku
 				set_event(STOP_CORD,stop_cord);
 		}
 		else if(!strcmp(&additionalCode[0][0][0],__INIT_C__))
 		{
-			//cord_continuity_init();
+			//cord_correct_wiring_init();
 		}
 		else if(!strcmp(&additionalCode[0][0][0],__RPE_RESISTANCE__))
 		{
-			if((meas_task_control & __CORD_MEAS_IN_PROG) && (meas_task_control & __CORD_RPE_RES_REQUESTED))	//se izvede samo ce je meritev v teku
-				set_cord_resistance(&additionalCode[1][0][0]);
+			if((cord_task_control & __CORD_MEAS_IN_PROG) && (cord_task_control & __CORD_RPE_RES_REQUESTED))	//se izvede samo ce je meritev v teku
+				set_RPE_cord_resistance(&additionalCode[1][0][0]);
+		}
+		else if(!strcmp(&additionalCode[0][0][0],__RISO_RESISTANCE__))
+		{
+			if((cord_task_control & __CORD_MEAS_IN_PROG) && (cord_task_control & __CORD_RISO_RES_REQUESTED))	//se izvede samo ce je meritev v teku
+				set_RISO_cord_resistance(&additionalCode[1][0][0]);
+		}
+		else if(!strcmp(&additionalCode[0][0][0],__RISO_STARTED__))
+		{
+			if(cord_task_control & __CORD_MEAS_IN_PROG)
+				cord_task_control |= __CORD_RISO_STARTED;
+		}
+		else if(!strcmp(&additionalCode[0][0][0],__RPE_LOW_STARTED__))
+		{
+			if(cord_task_control & __CORD_MEAS_IN_PROG)
+				cord_task_control |= __CORD_RPE_L_STARTED;
+		}
+		else if(!strcmp(&additionalCode[0][0][0],__RPE_HIGH_STARTED__))
+		{
+			if(cord_task_control & __CORD_MEAS_IN_PROG)
+				cord_task_control |= __CORD_RPE_H_STARTED;
+		}
+		else if(!strcmp(&additionalCode[0][0][0],__RISO_STARTED__))
+		{
+			if(cord_task_control & __CORD_MEAS_IN_PROG)
+				cord_task_control &=~(__CORD_RPE_L_STARTED|__CORD_RPE_H_STARTED);
+		}
+
+		else if(!strcmp(&additionalCode[0][0][0],__RISO_STOPPED__))
+		{
+			if(cord_task_control & __CORD_MEAS_IN_PROG)
+				cord_task_control &= (~__CORD_RISO_STARTED);
 		}
 	}
 /*******************************************************************************/
