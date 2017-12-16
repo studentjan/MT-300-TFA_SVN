@@ -1,5 +1,5 @@
-#ifndef __MEAS_TASK_H
-#define __MEAS_TASK_H
+#ifndef __CORD_H
+#define __CORD_H
 
 #include "defines.h"
 #include <stdbool.h>
