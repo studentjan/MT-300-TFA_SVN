@@ -6,7 +6,7 @@
 
 
 #define CORD_RPE_LIMIT				1.0f		//n*ohm
-#define CORD_RISO_LIMIT				1000000.0f	//n*ohm
+#define CORD_RISO_LIMIT				1.0f	//n*Mohm
 #define RPE_CONTINUITY_FAIL_LIMIT	20.0f 		//n*ohm
 
 //funkcije

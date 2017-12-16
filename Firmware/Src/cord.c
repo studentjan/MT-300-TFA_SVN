@@ -66,6 +66,8 @@ void init_cord(void)
 	{
 		global_control &= (~__INIT_TEST_PASS);
 		init_test_counter=0;
+		cord_RISO_count=0;
+		cord_continuity_count=0;
 		set_event(POWER_ON_TEST,power_on_test);
 		start_cord_count++;
 		set_timer(INIT_CORD,5,init_cord);
@@ -112,8 +114,8 @@ void cord_meas_correct_wiring(void)
 			if(cord_task_control & __CORD_INITIATED)
 			{
 				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__START_RPE_LOW__,"",device.device_dir);
-				cord_cw_count++;
 				cord_correct_wiring_init();
+				cord_cw_count++;
 			}
 			else
 				set_event(INIT_CORD,init_cord);
@@ -121,11 +123,14 @@ void cord_meas_correct_wiring(void)
 		}
 		case 1:
 		{
-			set_REL(10);
-			set_REL(33);
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L1_L1",device.device_dir);
-			cord_task_control |= __CORD_RPE_RES_REQUESTED;
-			cord_cw_count++;
+			if(cord_task_control & __CORD_RPE_L_STARTED)
+			{
+				set_REL(10);
+				set_REL(33);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L1_L1",device.device_dir);
+				cord_task_control |= __CORD_RPE_RES_REQUESTED;
+				cord_cw_count++;
+			}
 			break;
 		}
 		case 2://L1 L1 POVEZANA?
@@ -4953,22 +4958,27 @@ void cord_meas_correct_wiring(void)
 	}
 	if(cord_cw_count==99)
 	{
-		tramsmitt_corect_wiring_state(device.device_dir, device.device_ID);
-		cord_task_control &= (~__CORD_CORRECT_WIRING_IN_PROGRESS);
-		cord_task_control |= __CORD_CORECT_WIRING_MEASURED;
 		SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__STOP_RPE__,"",device.device_dir);
-		if(CORD_AUTO_CONTINUE_MEAS == _ON)
+		if(!(cord_task_control & __CORD_RPE_L_STARTED))
 		{	
-			if(RISO_TEST_ON_FLAG ==_ON)
-			{
-				cord_RISO_init();
-				set_event(CORD_RISO_PHASES_TO_PE,cord_RISO_phasesToPE);
-			}
+			tramsmitt_corect_wiring_state(device.device_dir, device.device_ID);
+			cord_task_control &= (~__CORD_CORRECT_WIRING_IN_PROGRESS);
+			cord_task_control |= __CORD_CORECT_WIRING_MEASURED;
+			if(CORD_AUTO_CONTINUE_MEAS == _ON)
+			{	
+				if(RISO_TEST_ON_FLAG ==_ON)
+				{
+					cord_RISO_init();
+					set_event(CORD_RISO_PHASES_TO_PE,cord_RISO_phasesToPE);
+				}
 //			else
 //				set_event(STOP_CORD,stop_cord);
-		}
+			}
 //		else
 //			set_event(STOP_CORD,stop_cord);
+		}
+		else
+				restart_timer(CORD_MEAS_CORRECT_WIRING,5,cord_meas_correct_wiring);
 	}
 	else if(cord_cw_count == 100)
 	{
@@ -5015,14 +5025,7 @@ void cord_RISO_phasesToPE(void)
 		case 2://L1,L2,L3,N proti PE ali L1,N proti PE za enofazin podalsek
 			if(!(cord_task_control&__CORD_RISO_RES_REQUESTED))
 			{
-				if(cord_check_RISO_resistance())
-				{
-					cord_transmittPhasesToPE(true);
-				}
-				else
-				{
-					cord_transmittPhasesToPE(false);
-				}
+				
 				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__STOP_RISO__,"",device.device_dir);
 				cord_RISO_count++;
 			}
@@ -5040,6 +5043,15 @@ void cord_RISO_phasesToPE(void)
 		{
 			cord_task_control &=(~__CORD_RISO_PHASES_TO_PE_IN_PROGRESS);
 			cord_task_control |= __CORD_RISO_PHASES_TO_PE_MEASURED;
+			if(cord_check_RISO_resistance())
+			{
+				cord_transmittPhasesToPE(true);
+				cord_RISO_count=11;
+			}
+			else
+			{
+				cord_transmittPhasesToPE(false);
+			}
 		}
 	}
 }
@@ -5097,7 +5109,7 @@ void cord_RISO_onePhaseToPE(void)
 			break;
 			case 3:
 				cord_task_control |= __CORD_RISO_ONE_PHASE_TO_PE_IN_PROGRESS;
-				cord_task_control |= __CORD_RISO_RES_REQUESTED;
+				//cord_task_control |= __CORD_RISO_RES_REQUESTED;
 				cord_RISO_count++;
 				//SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__START_RISO__,"",device.device_dir);
 				break;
@@ -5147,8 +5159,7 @@ void cord_RISO_onePhaseToPE(void)
 						DIS_N_A;
 						CON_L1_A;
 						CON_N_B;
-						cord_task_control |= __CORD_RISO_RES_REQUESTED;
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L1-L2-L3_N",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__STOP_RISO__,"",device.device_dir);
 					}
 					else
 					{
@@ -5192,8 +5203,6 @@ void cord_RISO_onePhaseToPE(void)
 						{
 							cord_RISO_count=11;
 							insolation_status |= L1_PE_FAIL;
-							cord_task_control |= __CORD_RISO_RES_REQUESTED;
-							SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L2_PE",device.device_dir);
 						}
 						else
 						{
@@ -5508,11 +5517,11 @@ void cord_RISO_phaseToPhase(void)
 		}
 	}
 	if(cord_RISO_count <= 19)
-		restart_timer(CORD_RISO_ONE_PHASE_TO_PE,5,cord_RISO_onePhaseToPE);
+		restart_timer(CORD_RISO_PHASE_TO_PHASE,5,cord_RISO_phaseToPhase);
 	else
 	{
 		if(cord_task_control & __CORD_RISO_STARTED)
-			restart_timer(CORD_RISO_ONE_PHASE_TO_PE,5,cord_RISO_onePhaseToPE);
+			restart_timer(CORD_RISO_PHASE_TO_PHASE,5,cord_RISO_phaseToPhase);
 		else
 		{
 			cord_transmittPhaseToPhase();
@@ -5664,8 +5673,17 @@ void cord_continuity_test(void)
 			if(cord_task_control & __CORD_RPE_H_STARTED)
 			{
 				cord_task_control |= __CORD_RPE_RES_REQUESTED;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L2_L2",device.device_dir);
-				cord_continuity_count++;
+				if(CORD_PHASE_NUM_SETTING == _1_PHASE)
+				{
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"N_N",device.device_dir);
+					cord_continuity_count=11;
+				}
+				else
+				{
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L2_L2",device.device_dir);
+					cord_continuity_count++;
+				}
+				
 			}
 			break;
 		case 5:
@@ -5762,7 +5780,6 @@ void cord_continuity_test(void)
 			{
 				DIS_PE_A;
 				DIS_PE_B;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__START_RPE_HIGH__,"",device.device_dir);
 				cord_continuity_count++;
 			}
 			break;

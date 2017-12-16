@@ -170,13 +170,12 @@ Section Cross References
     cord.o(i.cord_RISO_phaseToPhase) refers to cord.o(.data) for .data
     cord.o(i.cord_RISO_phaseToPhase) refers to os.o(i.restart_timer) for restart_timer
     cord.o(i.cord_RISO_phaseToPhase) refers to cord.o(i.cord_transmittPhaseToPhase) for cord_transmittPhaseToPhase
-    cord.o(i.cord_RISO_phaseToPhase) refers to cord.o(i.cord_RISO_onePhaseToPE) for cord_RISO_onePhaseToPE
     cord.o(i.cord_RISO_phasesToPE) refers to cord.o(i.cord_RISO_init) for cord_RISO_init
     cord.o(i.cord_RISO_phasesToPE) refers to serial_com.o(i.SendComMessage) for SendComMessage
     cord.o(i.cord_RISO_phasesToPE) refers to rel_driver.o(i.set_REL) for set_REL
+    cord.o(i.cord_RISO_phasesToPE) refers to os.o(i.restart_timer) for restart_timer
     cord.o(i.cord_RISO_phasesToPE) refers to cord.o(i.cord_check_RISO_resistance) for cord_check_RISO_resistance
     cord.o(i.cord_RISO_phasesToPE) refers to cord.o(i.cord_transmittPhasesToPE) for cord_transmittPhasesToPE
-    cord.o(i.cord_RISO_phasesToPE) refers to os.o(i.restart_timer) for restart_timer
     cord.o(i.cord_RISO_phasesToPE) refers to cord.o(.data) for .data
     cord.o(i.cord_check_RISO_resistance) refers to cord.o(.data) for .data
     cord.o(i.cord_check_RPE_resistance) refers to cord.o(.data) for .data
@@ -3441,130 +3440,130 @@ Image Symbol Table
     i.arm_sqrt_f32                           0x0800845c   Section        0  sdadc.o(i.arm_sqrt_f32)
     arm_sqrt_f32                             0x0800845d   Thumb Code    36  sdadc.o(i.arm_sqrt_f32)
     i.command_analyze                        0x08008484   Section        0  serial_com.o(i.command_analyze)
-    command_analyze                          0x08008485   Thumb Code  4382  serial_com.o(i.command_analyze)
-    i.command_do_events                      0x08009650   Section        0  serial_com.o(i.command_do_events)
-    command_do_events                        0x08009651   Thumb Code    96  serial_com.o(i.command_do_events)
-    i.command_return                         0x080096b8   Section        0  serial_com.o(i.command_return)
-    command_return                           0x080096b9   Thumb Code   270  serial_com.o(i.command_return)
-    i.communication_init                     0x080097e4   Section        0  serial_com.o(i.communication_init)
-    communication_init                       0x080097e5   Thumb Code    26  serial_com.o(i.communication_init)
-    i.compute_THD_with_FFT                   0x08009804   Section        0  do_task.o(i.compute_THD_with_FFT)
-    i.compute_rms                            0x08009ab8   Section        0  sdadc.o(i.compute_rms)
-    i.cord_RISO_init                         0x08009df8   Section        0  cord.o(i.cord_RISO_init)
-    i.cord_RISO_onePhaseToPE                 0x08009e90   Section        0  cord.o(i.cord_RISO_onePhaseToPE)
-    i.cord_RISO_phaseToPhase                 0x0800a468   Section        0  cord.o(i.cord_RISO_phaseToPhase)
-    i.cord_RISO_phasesToPE                   0x0800aa88   Section        0  cord.o(i.cord_RISO_phasesToPE)
+    command_analyze                          0x08008485   Thumb Code  4446  serial_com.o(i.command_analyze)
+    i.command_do_events                      0x08009690   Section        0  serial_com.o(i.command_do_events)
+    command_do_events                        0x08009691   Thumb Code    96  serial_com.o(i.command_do_events)
+    i.command_return                         0x080096f8   Section        0  serial_com.o(i.command_return)
+    command_return                           0x080096f9   Thumb Code   270  serial_com.o(i.command_return)
+    i.communication_init                     0x08009824   Section        0  serial_com.o(i.communication_init)
+    communication_init                       0x08009825   Thumb Code    26  serial_com.o(i.communication_init)
+    i.compute_THD_with_FFT                   0x08009844   Section        0  do_task.o(i.compute_THD_with_FFT)
+    i.compute_rms                            0x08009af8   Section        0  sdadc.o(i.compute_rms)
+    i.cord_RISO_init                         0x08009e38   Section        0  cord.o(i.cord_RISO_init)
+    i.cord_RISO_onePhaseToPE                 0x08009ed0   Section        0  cord.o(i.cord_RISO_onePhaseToPE)
+    i.cord_RISO_phaseToPhase                 0x0800a460   Section        0  cord.o(i.cord_RISO_phaseToPhase)
+    i.cord_RISO_phasesToPE                   0x0800aa80   Section        0  cord.o(i.cord_RISO_phasesToPE)
     i.cord_check_RISO_resistance             0x0800ac04   Section        0  cord.o(i.cord_check_RISO_resistance)
-    i.cord_check_RPE_resistance              0x0800ac20   Section        0  cord.o(i.cord_check_RPE_resistance)
-    i.cord_continuity_init                   0x0800ac38   Section        0  cord.o(i.cord_continuity_init)
-    i.cord_continuity_test                   0x0800ace0   Section        0  cord.o(i.cord_continuity_test)
-    i.cord_correct_wiring_init               0x0800b10c   Section        0  cord.o(i.cord_correct_wiring_init)
-    i.cord_global_init_set                   0x0800b1a4   Section        0  cord.o(i.cord_global_init_set)
-    i.cord_meas_correct_wiring               0x0800b23c   Section        0  cord.o(i.cord_meas_correct_wiring)
-    i.cord_transmittContiunuity              0x0800e9c8   Section        0  cord.o(i.cord_transmittContiunuity)
-    i.cord_transmittOnePhaseToPE             0x0800eb78   Section        0  cord.o(i.cord_transmittOnePhaseToPE)
-    i.cord_transmittPhaseToPhase             0x0800ec88   Section        0  cord.o(i.cord_transmittPhaseToPhase)
-    i.cord_transmittPhasesToPE               0x0800edd4   Section        0  cord.o(i.cord_transmittPhasesToPE)
-    i.disconnect_function                    0x0800ee60   Section        0  comunication.o(i.disconnect_function)
-    i.do_events                              0x0800ee98   Section        0  os.o(i.do_events)
-    i.free                                   0x0800eecc   Section        0  malloc.o(i.free)
-    i.free_timer                             0x0800ef1c   Section        0  os.o(i.free_timer)
-    i.get_connected_device                   0x0800ef44   Section        0  do_task.o(i.get_connected_device)
-    i.get_inst_value                         0x0800ef84   Section        0  sdadc.o(i.get_inst_value)
-    i.get_phase_seq                          0x0800efe4   Section        0  do_task.o(i.get_phase_seq)
-    i.get_value                              0x0800f008   Section        0  sdadc.o(i.get_value)
-    i.init_OS                                0x0800f080   Section        0  os.o(i.init_OS)
-    i.init_REL                               0x0800f0d0   Section        0  rel_driver.o(i.init_REL)
-    i.init_cord                              0x0800f124   Section        0  cord.o(i.init_cord)
-    i.init_event_Q                           0x0800f238   Section        0  os.o(i.init_event_Q)
-    i.init_timers                            0x0800f250   Section        0  os.o(i.init_timers)
-    i.input_START_measure                    0x0800f26c   Section        0  sdadc.o(i.input_START_measure)
-    i.input_STOP_measure                     0x0800f28c   Section        0  sdadc.o(i.input_STOP_measure)
-    i.led_blinking_task                      0x0800f2bc   Section        0  do_task.o(i.led_blinking_task)
-    i.main                                   0x0800f324   Section        0  main.o(i.main)
-    i.malloc                                 0x0800f3d4   Section        0  malloc.o(i.malloc)
-    i.measure_IDIFF                          0x0800f440   Section        0  sdadc.o(i.measure_IDIFF)
-    measure_IDIFF                            0x0800f441   Thumb Code   246  sdadc.o(i.measure_IDIFF)
-    i.measure_IL_Current                     0x0800f55c   Section        0  sdadc.o(i.measure_IL_Current)
-    measure_IL_Current                       0x0800f55d   Thumb Code  1642  sdadc.o(i.measure_IL_Current)
-    i.measure_UL1PE                          0x0800fbd0   Section        0  sdadc.o(i.measure_UL1PE)
-    measure_UL1PE                            0x0800fbd1   Thumb Code   164  sdadc.o(i.measure_UL1PE)
-    i.measure_ULN_Voltage                    0x0800fc8c   Section        0  sdadc.o(i.measure_ULN_Voltage)
-    measure_ULN_Voltage                      0x0800fc8d   Thumb Code  1874  sdadc.o(i.measure_ULN_Voltage)
-    i.measure_UNPE                           0x080103ec   Section        0  sdadc.o(i.measure_UNPE)
-    measure_UNPE                             0x080103ed   Thumb Code   164  sdadc.o(i.measure_UNPE)
-    i.measuring_task_fft                     0x080104a8   Section        0  do_task.o(i.measuring_task_fft)
-    measuring_task_fft                       0x080104a9   Thumb Code   122  do_task.o(i.measuring_task_fft)
-    i.measuring_task_no_THD                  0x08010534   Section        0  do_task.o(i.measuring_task_no_THD)
-    measuring_task_no_THD                    0x08010535   Thumb Code   122  do_task.o(i.measuring_task_no_THD)
-    i.numberOfSetBits                        0x080105c0   Section        0  cord.o(i.numberOfSetBits)
-    i.power_on_test                          0x080105ec   Section        0  do_task.o(i.power_on_test)
-    i.recieve_ack_func                       0x08010934   Section        0  serial_com.o(i.recieve_ack_func)
-    recieve_ack_func                         0x08010935   Thumb Code    84  serial_com.o(i.recieve_ack_func)
-    i.recieve_nack_func                      0x08010990   Section        0  serial_com.o(i.recieve_nack_func)
-    recieve_nack_func                        0x08010991   Thumb Code    86  serial_com.o(i.recieve_nack_func)
-    i.recieved_command_analyze               0x080109f0   Section        0  serial_com.o(i.recieved_command_analyze)
-    recieved_command_analyze                 0x080109f1   Thumb Code    60  serial_com.o(i.recieved_command_analyze)
-    i.reset_all_REL                          0x08010a2c   Section        0  rel_driver.o(i.reset_all_REL)
-    i.restart_timer                          0x08010a68   Section        0  os.o(i.restart_timer)
-    i.rst_REL                                0x08010abc   Section        0  rel_driver.o(i.rst_REL)
-    i.run_OS                                 0x08010e70   Section        0  os.o(i.run_OS)
-    i.sel_REL_DRIVER                         0x08010e7c   Section        0  rel_driver.o(i.sel_REL_DRIVER)
-    sel_REL_DRIVER                           0x08010e7d   Thumb Code   142  rel_driver.o(i.sel_REL_DRIVER)
-    i.send_mains_status                      0x08010f14   Section        0  do_task.o(i.send_mains_status)
-    i.send_warning_MSG                       0x080111d8   Section        0  comunication.o(i.send_warning_MSG)
-    i.serial_com_init                        0x080112b4   Section        0  serial_com.o(i.serial_com_init)
-    i.serial_send_handler                    0x080112e4   Section        0  serial_com.o(i.serial_send_handler)
-    serial_send_handler                      0x080112e5   Thumb Code    26  serial_com.o(i.serial_send_handler)
-    i.service_timers                         0x08011340   Section        0  os.o(i.service_timers)
-    i.set_REL                                0x08011388   Section        0  rel_driver.o(i.set_REL)
-    i.set_RISO_cord_resistance               0x08011748   Section        0  cord.o(i.set_RISO_cord_resistance)
-    i.set_RPE_cord_resistance                0x08011768   Section        0  cord.o(i.set_RPE_cord_resistance)
-    i.set_SDADC_zero                         0x08011788   Section        0  sdadc.o(i.set_SDADC_zero)
-    i.set_event                              0x080117fc   Section        0  os.o(i.set_event)
-    i.set_phase_num                          0x08011838   Section        0  cord.o(i.set_phase_num)
-    i.set_timer                              0x08011850   Section        0  os.o(i.set_timer)
-    i.start_measure                          0x08011884   Section        0  do_task.o(i.start_measure)
-    i.start_measure_no_THD                   0x08011964   Section        0  do_task.o(i.start_measure_no_THD)
-    i.stop_cord                              0x08011a08   Section        0  cord.o(i.stop_cord)
-    i.stop_measure                           0x08011ac8   Section        0  do_task.o(i.stop_measure)
-    i.strtok_single                          0x08011b2c   Section        0  serial_com.o(i.strtok_single)
-    strtok_single                            0x08011b2d   Thumb Code    52  serial_com.o(i.strtok_single)
-    i.tramsmitt_corect_wiring_state          0x08011b64   Section        0  cord.o(i.tramsmitt_corect_wiring_state)
-    i.transmit_command_handle                0x08012a80   Section        0  serial_com.o(i.transmit_command_handle)
-    transmit_command_handle                  0x08012a81   Thumb Code   432  serial_com.o(i.transmit_command_handle)
-    i.transmit_func                          0x08012c6c   Section        0  serial_com.o(i.transmit_func)
-    transmit_func                            0x08012c6d   Thumb Code   114  serial_com.o(i.transmit_func)
-    i.write_THD                              0x08012cec   Section        0  sdadc.o(i.write_THD)
-    .constdata                               0x08012d3c   Section       32  stm32f3xx_hal_rcc.o(.constdata)
-    .constdata                               0x08012d5c   Section       16  system_stm32f3xx.o(.constdata)
-    .constdata                               0x08012d6c   Section        8  system_stm32f3xx.o(.constdata)
-    .constdata                               0x08012d74   Section     8192  arm_common_tables.o(.constdata)
-    .constdata                               0x08014d74   Section     3600  arm_common_tables.o(.constdata)
-    .constdata                               0x08015b84   Section     2052  arm_common_tables.o(.constdata)
-    .constdata                               0x08016388   Section       16  arm_const_structs.o(.constdata)
-    .constdata                               0x08016398   Section      216  sdadc.o(.constdata)
-    INST_ULN1_HPF                            0x08016398   Data          12  sdadc.o(.constdata)
-    INST_ULN2_HPF                            0x080163a4   Data          12  sdadc.o(.constdata)
-    INST_ULN3_HPF                            0x080163b0   Data          12  sdadc.o(.constdata)
-    INST_IL1_HPF                             0x080163bc   Data          12  sdadc.o(.constdata)
-    INST_IL2_HPF                             0x080163c8   Data          12  sdadc.o(.constdata)
-    INST_IL3_HPF                             0x080163d4   Data          12  sdadc.o(.constdata)
-    INST_IDIFF_HPF                           0x080163e0   Data          12  sdadc.o(.constdata)
-    INST_UL1PE_HPF                           0x080163ec   Data          12  sdadc.o(.constdata)
-    INST_UNPE_HPF                            0x080163f8   Data          12  sdadc.o(.constdata)
-    INST_ULN1_LPF                            0x08016404   Data          12  sdadc.o(.constdata)
-    INST_ULN2_LPF                            0x08016410   Data          12  sdadc.o(.constdata)
-    INST_ULN3_LPF                            0x0801641c   Data          12  sdadc.o(.constdata)
-    INST_IL1_LPF                             0x08016428   Data          12  sdadc.o(.constdata)
-    INST_IL2_LPF                             0x08016434   Data          12  sdadc.o(.constdata)
-    INST_IL3_LPF                             0x08016440   Data          12  sdadc.o(.constdata)
-    INST_IDIFF_LPF                           0x0801644c   Data          12  sdadc.o(.constdata)
-    INST_UL1PE_LPF                           0x08016458   Data          12  sdadc.o(.constdata)
-    INST_UNPE_LPF                            0x08016464   Data          12  sdadc.o(.constdata)
-    .constdata                               0x08016470   Section      129  ctype_o.o(.constdata)
-    .constdata                               0x080164f4   Section        4  ctype_o.o(.constdata)
-    table                                    0x080164f4   Data           4  ctype_o.o(.constdata)
+    i.cord_check_RPE_resistance              0x0800ac1c   Section        0  cord.o(i.cord_check_RPE_resistance)
+    i.cord_continuity_init                   0x0800ac34   Section        0  cord.o(i.cord_continuity_init)
+    i.cord_continuity_test                   0x0800acdc   Section        0  cord.o(i.cord_continuity_test)
+    i.cord_correct_wiring_init               0x0800b110   Section        0  cord.o(i.cord_correct_wiring_init)
+    i.cord_global_init_set                   0x0800b1a8   Section        0  cord.o(i.cord_global_init_set)
+    i.cord_meas_correct_wiring               0x0800b240   Section        0  cord.o(i.cord_meas_correct_wiring)
+    i.cord_transmittContiunuity              0x0800e9e4   Section        0  cord.o(i.cord_transmittContiunuity)
+    i.cord_transmittOnePhaseToPE             0x0800eb94   Section        0  cord.o(i.cord_transmittOnePhaseToPE)
+    i.cord_transmittPhaseToPhase             0x0800eca4   Section        0  cord.o(i.cord_transmittPhaseToPhase)
+    i.cord_transmittPhasesToPE               0x0800edf0   Section        0  cord.o(i.cord_transmittPhasesToPE)
+    i.disconnect_function                    0x0800ee7c   Section        0  comunication.o(i.disconnect_function)
+    i.do_events                              0x0800eeb4   Section        0  os.o(i.do_events)
+    i.free                                   0x0800eee8   Section        0  malloc.o(i.free)
+    i.free_timer                             0x0800ef38   Section        0  os.o(i.free_timer)
+    i.get_connected_device                   0x0800ef60   Section        0  do_task.o(i.get_connected_device)
+    i.get_inst_value                         0x0800efa0   Section        0  sdadc.o(i.get_inst_value)
+    i.get_phase_seq                          0x0800f000   Section        0  do_task.o(i.get_phase_seq)
+    i.get_value                              0x0800f024   Section        0  sdadc.o(i.get_value)
+    i.init_OS                                0x0800f09c   Section        0  os.o(i.init_OS)
+    i.init_REL                               0x0800f0ec   Section        0  rel_driver.o(i.init_REL)
+    i.init_cord                              0x0800f140   Section        0  cord.o(i.init_cord)
+    i.init_event_Q                           0x0800f258   Section        0  os.o(i.init_event_Q)
+    i.init_timers                            0x0800f270   Section        0  os.o(i.init_timers)
+    i.input_START_measure                    0x0800f28c   Section        0  sdadc.o(i.input_START_measure)
+    i.input_STOP_measure                     0x0800f2ac   Section        0  sdadc.o(i.input_STOP_measure)
+    i.led_blinking_task                      0x0800f2dc   Section        0  do_task.o(i.led_blinking_task)
+    i.main                                   0x0800f344   Section        0  main.o(i.main)
+    i.malloc                                 0x0800f3f4   Section        0  malloc.o(i.malloc)
+    i.measure_IDIFF                          0x0800f460   Section        0  sdadc.o(i.measure_IDIFF)
+    measure_IDIFF                            0x0800f461   Thumb Code   246  sdadc.o(i.measure_IDIFF)
+    i.measure_IL_Current                     0x0800f57c   Section        0  sdadc.o(i.measure_IL_Current)
+    measure_IL_Current                       0x0800f57d   Thumb Code  1642  sdadc.o(i.measure_IL_Current)
+    i.measure_UL1PE                          0x0800fbf0   Section        0  sdadc.o(i.measure_UL1PE)
+    measure_UL1PE                            0x0800fbf1   Thumb Code   164  sdadc.o(i.measure_UL1PE)
+    i.measure_ULN_Voltage                    0x0800fcac   Section        0  sdadc.o(i.measure_ULN_Voltage)
+    measure_ULN_Voltage                      0x0800fcad   Thumb Code  1874  sdadc.o(i.measure_ULN_Voltage)
+    i.measure_UNPE                           0x0801040c   Section        0  sdadc.o(i.measure_UNPE)
+    measure_UNPE                             0x0801040d   Thumb Code   164  sdadc.o(i.measure_UNPE)
+    i.measuring_task_fft                     0x080104c8   Section        0  do_task.o(i.measuring_task_fft)
+    measuring_task_fft                       0x080104c9   Thumb Code   122  do_task.o(i.measuring_task_fft)
+    i.measuring_task_no_THD                  0x08010554   Section        0  do_task.o(i.measuring_task_no_THD)
+    measuring_task_no_THD                    0x08010555   Thumb Code   122  do_task.o(i.measuring_task_no_THD)
+    i.numberOfSetBits                        0x080105e0   Section        0  cord.o(i.numberOfSetBits)
+    i.power_on_test                          0x0801060c   Section        0  do_task.o(i.power_on_test)
+    i.recieve_ack_func                       0x08010954   Section        0  serial_com.o(i.recieve_ack_func)
+    recieve_ack_func                         0x08010955   Thumb Code    84  serial_com.o(i.recieve_ack_func)
+    i.recieve_nack_func                      0x080109b0   Section        0  serial_com.o(i.recieve_nack_func)
+    recieve_nack_func                        0x080109b1   Thumb Code    86  serial_com.o(i.recieve_nack_func)
+    i.recieved_command_analyze               0x08010a10   Section        0  serial_com.o(i.recieved_command_analyze)
+    recieved_command_analyze                 0x08010a11   Thumb Code    60  serial_com.o(i.recieved_command_analyze)
+    i.reset_all_REL                          0x08010a4c   Section        0  rel_driver.o(i.reset_all_REL)
+    i.restart_timer                          0x08010a88   Section        0  os.o(i.restart_timer)
+    i.rst_REL                                0x08010adc   Section        0  rel_driver.o(i.rst_REL)
+    i.run_OS                                 0x08010e90   Section        0  os.o(i.run_OS)
+    i.sel_REL_DRIVER                         0x08010e9c   Section        0  rel_driver.o(i.sel_REL_DRIVER)
+    sel_REL_DRIVER                           0x08010e9d   Thumb Code   142  rel_driver.o(i.sel_REL_DRIVER)
+    i.send_mains_status                      0x08010f34   Section        0  do_task.o(i.send_mains_status)
+    i.send_warning_MSG                       0x080111f8   Section        0  comunication.o(i.send_warning_MSG)
+    i.serial_com_init                        0x080112d4   Section        0  serial_com.o(i.serial_com_init)
+    i.serial_send_handler                    0x08011304   Section        0  serial_com.o(i.serial_send_handler)
+    serial_send_handler                      0x08011305   Thumb Code    26  serial_com.o(i.serial_send_handler)
+    i.service_timers                         0x08011360   Section        0  os.o(i.service_timers)
+    i.set_REL                                0x080113a8   Section        0  rel_driver.o(i.set_REL)
+    i.set_RISO_cord_resistance               0x08011768   Section        0  cord.o(i.set_RISO_cord_resistance)
+    i.set_RPE_cord_resistance                0x08011788   Section        0  cord.o(i.set_RPE_cord_resistance)
+    i.set_SDADC_zero                         0x080117a8   Section        0  sdadc.o(i.set_SDADC_zero)
+    i.set_event                              0x0801181c   Section        0  os.o(i.set_event)
+    i.set_phase_num                          0x08011858   Section        0  cord.o(i.set_phase_num)
+    i.set_timer                              0x08011870   Section        0  os.o(i.set_timer)
+    i.start_measure                          0x080118a4   Section        0  do_task.o(i.start_measure)
+    i.start_measure_no_THD                   0x08011984   Section        0  do_task.o(i.start_measure_no_THD)
+    i.stop_cord                              0x08011a28   Section        0  cord.o(i.stop_cord)
+    i.stop_measure                           0x08011ae8   Section        0  do_task.o(i.stop_measure)
+    i.strtok_single                          0x08011b4c   Section        0  serial_com.o(i.strtok_single)
+    strtok_single                            0x08011b4d   Thumb Code    52  serial_com.o(i.strtok_single)
+    i.tramsmitt_corect_wiring_state          0x08011b84   Section        0  cord.o(i.tramsmitt_corect_wiring_state)
+    i.transmit_command_handle                0x08012a98   Section        0  serial_com.o(i.transmit_command_handle)
+    transmit_command_handle                  0x08012a99   Thumb Code   432  serial_com.o(i.transmit_command_handle)
+    i.transmit_func                          0x08012c84   Section        0  serial_com.o(i.transmit_func)
+    transmit_func                            0x08012c85   Thumb Code   114  serial_com.o(i.transmit_func)
+    i.write_THD                              0x08012d04   Section        0  sdadc.o(i.write_THD)
+    .constdata                               0x08012d54   Section       32  stm32f3xx_hal_rcc.o(.constdata)
+    .constdata                               0x08012d74   Section       16  system_stm32f3xx.o(.constdata)
+    .constdata                               0x08012d84   Section        8  system_stm32f3xx.o(.constdata)
+    .constdata                               0x08012d8c   Section     8192  arm_common_tables.o(.constdata)
+    .constdata                               0x08014d8c   Section     3600  arm_common_tables.o(.constdata)
+    .constdata                               0x08015b9c   Section     2052  arm_common_tables.o(.constdata)
+    .constdata                               0x080163a0   Section       16  arm_const_structs.o(.constdata)
+    .constdata                               0x080163b0   Section      216  sdadc.o(.constdata)
+    INST_ULN1_HPF                            0x080163b0   Data          12  sdadc.o(.constdata)
+    INST_ULN2_HPF                            0x080163bc   Data          12  sdadc.o(.constdata)
+    INST_ULN3_HPF                            0x080163c8   Data          12  sdadc.o(.constdata)
+    INST_IL1_HPF                             0x080163d4   Data          12  sdadc.o(.constdata)
+    INST_IL2_HPF                             0x080163e0   Data          12  sdadc.o(.constdata)
+    INST_IL3_HPF                             0x080163ec   Data          12  sdadc.o(.constdata)
+    INST_IDIFF_HPF                           0x080163f8   Data          12  sdadc.o(.constdata)
+    INST_UL1PE_HPF                           0x08016404   Data          12  sdadc.o(.constdata)
+    INST_UNPE_HPF                            0x08016410   Data          12  sdadc.o(.constdata)
+    INST_ULN1_LPF                            0x0801641c   Data          12  sdadc.o(.constdata)
+    INST_ULN2_LPF                            0x08016428   Data          12  sdadc.o(.constdata)
+    INST_ULN3_LPF                            0x08016434   Data          12  sdadc.o(.constdata)
+    INST_IL1_LPF                             0x08016440   Data          12  sdadc.o(.constdata)
+    INST_IL2_LPF                             0x0801644c   Data          12  sdadc.o(.constdata)
+    INST_IL3_LPF                             0x08016458   Data          12  sdadc.o(.constdata)
+    INST_IDIFF_LPF                           0x08016464   Data          12  sdadc.o(.constdata)
+    INST_UL1PE_LPF                           0x08016470   Data          12  sdadc.o(.constdata)
+    INST_UNPE_LPF                            0x0801647c   Data          12  sdadc.o(.constdata)
+    .constdata                               0x08016488   Section      129  ctype_o.o(.constdata)
+    .constdata                               0x0801650c   Section        4  ctype_o.o(.constdata)
+    table                                    0x0801650c   Data           4  ctype_o.o(.constdata)
     .data                                    0x20000000   Section       28  stm32f3xx_it.o(.data)
     perm_temp1                               0x20000000   Data           4  stm32f3xx_it.o(.data)
     perm_temp2                               0x20000004   Data           4  stm32f3xx_it.o(.data)
@@ -4099,75 +4098,75 @@ Image Symbol Table
     arm_cmplx_mag_f32                        0x08007d27   Thumb Code   156  arm_cmplx_mag_f32.o(i.arm_cmplx_mag_f32)
     arm_cos_f32                              0x08007dc5   Thumb Code   114  arm_cos_f32.o(i.arm_cos_f32)
     arm_radix8_butterfly_f32                 0x08007e45   Thumb Code  1478  arm_cfft_radix8_f32.o(i.arm_radix8_butterfly_f32)
-    compute_THD_with_FFT                     0x08009805   Thumb Code   656  do_task.o(i.compute_THD_with_FFT)
-    compute_rms                              0x08009ab9   Thumb Code   802  sdadc.o(i.compute_rms)
-    cord_RISO_init                           0x08009df9   Thumb Code   142  cord.o(i.cord_RISO_init)
-    cord_RISO_onePhaseToPE                   0x08009e91   Thumb Code  1488  cord.o(i.cord_RISO_onePhaseToPE)
-    cord_RISO_phaseToPhase                   0x0800a469   Thumb Code  1556  cord.o(i.cord_RISO_phaseToPhase)
-    cord_RISO_phasesToPE                     0x0800aa89   Thumb Code   298  cord.o(i.cord_RISO_phasesToPE)
+    compute_THD_with_FFT                     0x08009845   Thumb Code   656  do_task.o(i.compute_THD_with_FFT)
+    compute_rms                              0x08009af9   Thumb Code   802  sdadc.o(i.compute_rms)
+    cord_RISO_init                           0x08009e39   Thumb Code   142  cord.o(i.cord_RISO_init)
+    cord_RISO_onePhaseToPE                   0x08009ed1   Thumb Code  1422  cord.o(i.cord_RISO_onePhaseToPE)
+    cord_RISO_phaseToPhase                   0x0800a461   Thumb Code  1560  cord.o(i.cord_RISO_phaseToPhase)
+    cord_RISO_phasesToPE                     0x0800aa81   Thumb Code   306  cord.o(i.cord_RISO_phasesToPE)
     cord_check_RISO_resistance               0x0800ac05   Thumb Code    18  cord.o(i.cord_check_RISO_resistance)
-    cord_check_RPE_resistance                0x0800ac21   Thumb Code    18  cord.o(i.cord_check_RPE_resistance)
-    cord_continuity_init                     0x0800ac39   Thumb Code   154  cord.o(i.cord_continuity_init)
-    cord_continuity_test                     0x0800ace1   Thumb Code   962  cord.o(i.cord_continuity_test)
-    cord_correct_wiring_init                 0x0800b10d   Thumb Code   144  cord.o(i.cord_correct_wiring_init)
-    cord_global_init_set                     0x0800b1a5   Thumb Code   144  cord.o(i.cord_global_init_set)
-    cord_meas_correct_wiring                 0x0800b23d   Thumb Code 14166  cord.o(i.cord_meas_correct_wiring)
-    cord_transmittContiunuity                0x0800e9c9   Thumb Code   316  cord.o(i.cord_transmittContiunuity)
-    cord_transmittOnePhaseToPE               0x0800eb79   Thumb Code   178  cord.o(i.cord_transmittOnePhaseToPE)
-    cord_transmittPhaseToPhase               0x0800ec89   Thumb Code   224  cord.o(i.cord_transmittPhaseToPhase)
-    cord_transmittPhasesToPE                 0x0800edd5   Thumb Code    84  cord.o(i.cord_transmittPhasesToPE)
-    disconnect_function                      0x0800ee61   Thumb Code    52  comunication.o(i.disconnect_function)
-    do_events                                0x0800ee99   Thumb Code    42  os.o(i.do_events)
-    free                                     0x0800eecd   Thumb Code    76  malloc.o(i.free)
-    free_timer                               0x0800ef1d   Thumb Code    36  os.o(i.free_timer)
-    get_connected_device                     0x0800ef45   Thumb Code    60  do_task.o(i.get_connected_device)
-    get_inst_value                           0x0800ef85   Thumb Code    84  sdadc.o(i.get_inst_value)
-    get_phase_seq                            0x0800efe5   Thumb Code    28  do_task.o(i.get_phase_seq)
-    get_value                                0x0800f009   Thumb Code   112  sdadc.o(i.get_value)
-    init_OS                                  0x0800f081   Thumb Code    66  os.o(i.init_OS)
-    init_REL                                 0x0800f0d1   Thumb Code    74  rel_driver.o(i.init_REL)
-    init_cord                                0x0800f125   Thumb Code   214  cord.o(i.init_cord)
-    init_event_Q                             0x0800f239   Thumb Code    18  os.o(i.init_event_Q)
-    init_timers                              0x0800f251   Thumb Code    22  os.o(i.init_timers)
-    input_START_measure                      0x0800f26d   Thumb Code    26  sdadc.o(i.input_START_measure)
-    input_STOP_measure                       0x0800f28d   Thumb Code    38  sdadc.o(i.input_STOP_measure)
-    led_blinking_task                        0x0800f2bd   Thumb Code    90  do_task.o(i.led_blinking_task)
-    main                                     0x0800f325   Thumb Code   152  main.o(i.main)
-    malloc                                   0x0800f3d5   Thumb Code    92  malloc.o(i.malloc)
-    numberOfSetBits                          0x080105c1   Thumb Code    44  cord.o(i.numberOfSetBits)
-    power_on_test                            0x080105ed   Thumb Code   788  do_task.o(i.power_on_test)
-    reset_all_REL                            0x08010a2d   Thumb Code    52  rel_driver.o(i.reset_all_REL)
-    restart_timer                            0x08010a69   Thumb Code    78  os.o(i.restart_timer)
-    rst_REL                                  0x08010abd   Thumb Code   932  rel_driver.o(i.rst_REL)
-    run_OS                                   0x08010e71   Thumb Code    10  os.o(i.run_OS)
-    send_mains_status                        0x08010f15   Thumb Code   472  do_task.o(i.send_mains_status)
-    send_warning_MSG                         0x080111d9   Thumb Code   134  comunication.o(i.send_warning_MSG)
-    serial_com_init                          0x080112b5   Thumb Code    38  serial_com.o(i.serial_com_init)
-    service_timers                           0x08011341   Thumb Code    64  os.o(i.service_timers)
-    set_REL                                  0x08011389   Thumb Code   942  rel_driver.o(i.set_REL)
-    set_RISO_cord_resistance                 0x08011749   Thumb Code    28  cord.o(i.set_RISO_cord_resistance)
-    set_RPE_cord_resistance                  0x08011769   Thumb Code    28  cord.o(i.set_RPE_cord_resistance)
-    set_SDADC_zero                           0x08011789   Thumb Code   106  sdadc.o(i.set_SDADC_zero)
-    set_event                                0x080117fd   Thumb Code    50  os.o(i.set_event)
-    set_phase_num                            0x08011839   Thumb Code    18  cord.o(i.set_phase_num)
-    set_timer                                0x08011851   Thumb Code    48  os.o(i.set_timer)
-    start_measure                            0x08011885   Thumb Code   192  do_task.o(i.start_measure)
-    start_measure_no_THD                     0x08011965   Thumb Code   146  do_task.o(i.start_measure_no_THD)
-    stop_cord                                0x08011a09   Thumb Code   156  cord.o(i.stop_cord)
-    stop_measure                             0x08011ac9   Thumb Code    72  do_task.o(i.stop_measure)
-    tramsmitt_corect_wiring_state            0x08011b65   Thumb Code  3858  cord.o(i.tramsmitt_corect_wiring_state)
-    write_THD                                0x08012ced   Thumb Code    76  sdadc.o(i.write_THD)
-    aPLLMULFactorTable                       0x08012d3c   Data          16  stm32f3xx_hal_rcc.o(.constdata)
-    aPredivFactorTable                       0x08012d4c   Data          16  stm32f3xx_hal_rcc.o(.constdata)
-    AHBPrescTable                            0x08012d5c   Data          16  system_stm32f3xx.o(.constdata)
-    APBPrescTable                            0x08012d6c   Data           8  system_stm32f3xx.o(.constdata)
-    twiddleCoef_1024                         0x08012d74   Data        8192  arm_common_tables.o(.constdata)
-    armBitRevIndexTable1024                  0x08014d74   Data        3600  arm_common_tables.o(.constdata)
-    sinTable_f32                             0x08015b84   Data        2052  arm_common_tables.o(.constdata)
-    arm_cfft_sR_f32_len1024                  0x08016388   Data          16  arm_const_structs.o(.constdata)
-    __ctype_table                            0x08016470   Data         129  ctype_o.o(.constdata)
-    Region$$Table$$Base                      0x080164f8   Number         0  anon$$obj.o(Region$$Table)
-    Region$$Table$$Limit                     0x08016518   Number         0  anon$$obj.o(Region$$Table)
+    cord_check_RPE_resistance                0x0800ac1d   Thumb Code    18  cord.o(i.cord_check_RPE_resistance)
+    cord_continuity_init                     0x0800ac35   Thumb Code   154  cord.o(i.cord_continuity_init)
+    cord_continuity_test                     0x0800acdd   Thumb Code   970  cord.o(i.cord_continuity_test)
+    cord_correct_wiring_init                 0x0800b111   Thumb Code   144  cord.o(i.cord_correct_wiring_init)
+    cord_global_init_set                     0x0800b1a9   Thumb Code   144  cord.o(i.cord_global_init_set)
+    cord_meas_correct_wiring                 0x0800b241   Thumb Code 14192  cord.o(i.cord_meas_correct_wiring)
+    cord_transmittContiunuity                0x0800e9e5   Thumb Code   316  cord.o(i.cord_transmittContiunuity)
+    cord_transmittOnePhaseToPE               0x0800eb95   Thumb Code   178  cord.o(i.cord_transmittOnePhaseToPE)
+    cord_transmittPhaseToPhase               0x0800eca5   Thumb Code   224  cord.o(i.cord_transmittPhaseToPhase)
+    cord_transmittPhasesToPE                 0x0800edf1   Thumb Code    84  cord.o(i.cord_transmittPhasesToPE)
+    disconnect_function                      0x0800ee7d   Thumb Code    52  comunication.o(i.disconnect_function)
+    do_events                                0x0800eeb5   Thumb Code    42  os.o(i.do_events)
+    free                                     0x0800eee9   Thumb Code    76  malloc.o(i.free)
+    free_timer                               0x0800ef39   Thumb Code    36  os.o(i.free_timer)
+    get_connected_device                     0x0800ef61   Thumb Code    60  do_task.o(i.get_connected_device)
+    get_inst_value                           0x0800efa1   Thumb Code    84  sdadc.o(i.get_inst_value)
+    get_phase_seq                            0x0800f001   Thumb Code    28  do_task.o(i.get_phase_seq)
+    get_value                                0x0800f025   Thumb Code   112  sdadc.o(i.get_value)
+    init_OS                                  0x0800f09d   Thumb Code    66  os.o(i.init_OS)
+    init_REL                                 0x0800f0ed   Thumb Code    74  rel_driver.o(i.init_REL)
+    init_cord                                0x0800f141   Thumb Code   218  cord.o(i.init_cord)
+    init_event_Q                             0x0800f259   Thumb Code    18  os.o(i.init_event_Q)
+    init_timers                              0x0800f271   Thumb Code    22  os.o(i.init_timers)
+    input_START_measure                      0x0800f28d   Thumb Code    26  sdadc.o(i.input_START_measure)
+    input_STOP_measure                       0x0800f2ad   Thumb Code    38  sdadc.o(i.input_STOP_measure)
+    led_blinking_task                        0x0800f2dd   Thumb Code    90  do_task.o(i.led_blinking_task)
+    main                                     0x0800f345   Thumb Code   152  main.o(i.main)
+    malloc                                   0x0800f3f5   Thumb Code    92  malloc.o(i.malloc)
+    numberOfSetBits                          0x080105e1   Thumb Code    44  cord.o(i.numberOfSetBits)
+    power_on_test                            0x0801060d   Thumb Code   788  do_task.o(i.power_on_test)
+    reset_all_REL                            0x08010a4d   Thumb Code    52  rel_driver.o(i.reset_all_REL)
+    restart_timer                            0x08010a89   Thumb Code    78  os.o(i.restart_timer)
+    rst_REL                                  0x08010add   Thumb Code   932  rel_driver.o(i.rst_REL)
+    run_OS                                   0x08010e91   Thumb Code    10  os.o(i.run_OS)
+    send_mains_status                        0x08010f35   Thumb Code   472  do_task.o(i.send_mains_status)
+    send_warning_MSG                         0x080111f9   Thumb Code   134  comunication.o(i.send_warning_MSG)
+    serial_com_init                          0x080112d5   Thumb Code    38  serial_com.o(i.serial_com_init)
+    service_timers                           0x08011361   Thumb Code    64  os.o(i.service_timers)
+    set_REL                                  0x080113a9   Thumb Code   942  rel_driver.o(i.set_REL)
+    set_RISO_cord_resistance                 0x08011769   Thumb Code    28  cord.o(i.set_RISO_cord_resistance)
+    set_RPE_cord_resistance                  0x08011789   Thumb Code    28  cord.o(i.set_RPE_cord_resistance)
+    set_SDADC_zero                           0x080117a9   Thumb Code   106  sdadc.o(i.set_SDADC_zero)
+    set_event                                0x0801181d   Thumb Code    50  os.o(i.set_event)
+    set_phase_num                            0x08011859   Thumb Code    18  cord.o(i.set_phase_num)
+    set_timer                                0x08011871   Thumb Code    48  os.o(i.set_timer)
+    start_measure                            0x080118a5   Thumb Code   192  do_task.o(i.start_measure)
+    start_measure_no_THD                     0x08011985   Thumb Code   146  do_task.o(i.start_measure_no_THD)
+    stop_cord                                0x08011a29   Thumb Code   156  cord.o(i.stop_cord)
+    stop_measure                             0x08011ae9   Thumb Code    72  do_task.o(i.stop_measure)
+    tramsmitt_corect_wiring_state            0x08011b85   Thumb Code  3858  cord.o(i.tramsmitt_corect_wiring_state)
+    write_THD                                0x08012d05   Thumb Code    76  sdadc.o(i.write_THD)
+    aPLLMULFactorTable                       0x08012d54   Data          16  stm32f3xx_hal_rcc.o(.constdata)
+    aPredivFactorTable                       0x08012d64   Data          16  stm32f3xx_hal_rcc.o(.constdata)
+    AHBPrescTable                            0x08012d74   Data          16  system_stm32f3xx.o(.constdata)
+    APBPrescTable                            0x08012d84   Data           8  system_stm32f3xx.o(.constdata)
+    twiddleCoef_1024                         0x08012d8c   Data        8192  arm_common_tables.o(.constdata)
+    armBitRevIndexTable1024                  0x08014d8c   Data        3600  arm_common_tables.o(.constdata)
+    sinTable_f32                             0x08015b9c   Data        2052  arm_common_tables.o(.constdata)
+    arm_cfft_sR_f32_len1024                  0x080163a0   Data          16  arm_const_structs.o(.constdata)
+    __ctype_table                            0x08016488   Data         129  ctype_o.o(.constdata)
+    Region$$Table$$Base                      0x08016510   Number         0  anon$$obj.o(Region$$Table)
+    Region$$Table$$Limit                     0x08016530   Number         0  anon$$obj.o(Region$$Table)
     stevec3                                  0x20000018   Data           4  stm32f3xx_it.o(.data)
     global_control                           0x2000001c   Data           4  main.o(.data)
     connection_control                       0x20000020   Data           4  main.o(.data)
@@ -4287,9 +4286,9 @@ Memory Map of the image
 
   Image Entry point : 0x08000189
 
-  Load Region LR_IROM1 (Base: 0x08000000, Size: 0x00016804, Max: 0x00040000, ABSOLUTE, COMPRESSED[0x00016614])
+  Load Region LR_IROM1 (Base: 0x08000000, Size: 0x0001681c, Max: 0x00040000, ABSOLUTE, COMPRESSED[0x0001662c])
 
-    Execution Region ER_IROM1 (Exec base: 0x08000000, Load base: 0x08000000, Size: 0x00016518, Max: 0x00040000, ABSOLUTE)
+    Execution Region ER_IROM1 (Exec base: 0x08000000, Load base: 0x08000000, Size: 0x00016530, Max: 0x00040000, ABSOLUTE)
 
     Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
 
@@ -4636,99 +4635,101 @@ Memory Map of the image
     0x0800840c   0x0800840c   0x00000028   Code   RO          432    i.arm_sqrt_f32      do_task.o
     0x08008434   0x08008434   0x00000028   Code   RO         5385    i.arm_sqrt_f32      arm_cmplx_mag_f32.o
     0x0800845c   0x0800845c   0x00000028   Code   RO         6165    i.arm_sqrt_f32      sdadc.o
-    0x08008484   0x08008484   0x000011cc   Code   RO         6515    i.command_analyze   serial_com.o
-    0x08009650   0x08009650   0x00000068   Code   RO         6516    i.command_do_events  serial_com.o
-    0x080096b8   0x080096b8   0x0000012c   Code   RO         6517    i.command_return    serial_com.o
-    0x080097e4   0x080097e4   0x00000020   Code   RO         6518    i.communication_init  serial_com.o
-    0x08009804   0x08009804   0x000002b4   Code   RO          433    i.compute_THD_with_FFT  do_task.o
-    0x08009ab8   0x08009ab8   0x00000340   Code   RO         6166    i.compute_rms       sdadc.o
-    0x08009df8   0x08009df8   0x00000098   Code   RO          552    i.cord_RISO_init    cord.o
-    0x08009e90   0x08009e90   0x000005d8   Code   RO          553    i.cord_RISO_onePhaseToPE  cord.o
-    0x0800a468   0x0800a468   0x00000620   Code   RO          554    i.cord_RISO_phaseToPhase  cord.o
-    0x0800aa88   0x0800aa88   0x0000017c   Code   RO          555    i.cord_RISO_phasesToPE  cord.o
-    0x0800ac04   0x0800ac04   0x0000001c   Code   RO          556    i.cord_check_RISO_resistance  cord.o
-    0x0800ac20   0x0800ac20   0x00000018   Code   RO          557    i.cord_check_RPE_resistance  cord.o
-    0x0800ac38   0x0800ac38   0x000000a8   Code   RO          558    i.cord_continuity_init  cord.o
-    0x0800ace0   0x0800ace0   0x0000042c   Code   RO          559    i.cord_continuity_test  cord.o
-    0x0800b10c   0x0800b10c   0x00000098   Code   RO          560    i.cord_correct_wiring_init  cord.o
-    0x0800b1a4   0x0800b1a4   0x00000098   Code   RO          562    i.cord_global_init_set  cord.o
-    0x0800b23c   0x0800b23c   0x0000378c   Code   RO          563    i.cord_meas_correct_wiring  cord.o
-    0x0800e9c8   0x0800e9c8   0x000001b0   Code   RO          564    i.cord_transmittContiunuity  cord.o
-    0x0800eb78   0x0800eb78   0x00000110   Code   RO          565    i.cord_transmittOnePhaseToPE  cord.o
-    0x0800ec88   0x0800ec88   0x0000014c   Code   RO          566    i.cord_transmittPhaseToPhase  cord.o
-    0x0800edd4   0x0800edd4   0x0000008c   Code   RO          567    i.cord_transmittPhasesToPE  cord.o
-    0x0800ee60   0x0800ee60   0x00000038   Code   RO         6054    i.disconnect_function  comunication.o
-    0x0800ee98   0x0800ee98   0x00000034   Code   RO         5492    i.do_events         os.o
-    0x0800eecc   0x0800eecc   0x00000050   Code   RO         6977    i.free              mc_w.l(malloc.o)
-    0x0800ef1c   0x0800ef1c   0x00000028   Code   RO         5495    i.free_timer        os.o
-    0x0800ef44   0x0800ef44   0x00000040   Code   RO          436    i.get_connected_device  do_task.o
-    0x0800ef84   0x0800ef84   0x00000060   Code   RO         6167    i.get_inst_value    sdadc.o
-    0x0800efe4   0x0800efe4   0x00000024   Code   RO          437    i.get_phase_seq     do_task.o
-    0x0800f008   0x0800f008   0x00000078   Code   RO         6168    i.get_value         sdadc.o
-    0x0800f080   0x0800f080   0x00000050   Code   RO         5496    i.init_OS           os.o
-    0x0800f0d0   0x0800f0d0   0x00000054   Code   RO         6415    i.init_REL          rel_driver.o
-    0x0800f124   0x0800f124   0x00000114   Code   RO          568    i.init_cord         cord.o
-    0x0800f238   0x0800f238   0x00000018   Code   RO         5497    i.init_event_Q      os.o
-    0x0800f250   0x0800f250   0x0000001c   Code   RO         5498    i.init_timers       os.o
-    0x0800f26c   0x0800f26c   0x00000020   Code   RO         6170    i.input_START_measure  sdadc.o
-    0x0800f28c   0x0800f28c   0x00000030   Code   RO         6172    i.input_STOP_measure  sdadc.o
-    0x0800f2bc   0x0800f2bc   0x00000068   Code   RO          438    i.led_blinking_task  do_task.o
-    0x0800f324   0x0800f324   0x000000b0   Code   RO          329    i.main              main.o
-    0x0800f3d4   0x0800f3d4   0x0000006c   Code   RO         6978    i.malloc            mc_w.l(malloc.o)
-    0x0800f440   0x0800f440   0x0000011c   Code   RO         6173    i.measure_IDIFF     sdadc.o
-    0x0800f55c   0x0800f55c   0x00000674   Code   RO         6174    i.measure_IL_Current  sdadc.o
-    0x0800fbd0   0x0800fbd0   0x000000bc   Code   RO         6175    i.measure_UL1PE     sdadc.o
-    0x0800fc8c   0x0800fc8c   0x00000760   Code   RO         6176    i.measure_ULN_Voltage  sdadc.o
-    0x080103ec   0x080103ec   0x000000bc   Code   RO         6177    i.measure_UNPE      sdadc.o
-    0x080104a8   0x080104a8   0x0000008c   Code   RO          439    i.measuring_task_fft  do_task.o
-    0x08010534   0x08010534   0x0000008c   Code   RO          440    i.measuring_task_no_THD  do_task.o
-    0x080105c0   0x080105c0   0x0000002c   Code   RO          569    i.numberOfSetBits   cord.o
-    0x080105ec   0x080105ec   0x00000348   Code   RO          441    i.power_on_test     do_task.o
-    0x08010934   0x08010934   0x0000005c   Code   RO         6519    i.recieve_ack_func  serial_com.o
-    0x08010990   0x08010990   0x00000060   Code   RO         6520    i.recieve_nack_func  serial_com.o
-    0x080109f0   0x080109f0   0x0000003c   Code   RO         6521    i.recieved_command_analyze  serial_com.o
-    0x08010a2c   0x08010a2c   0x0000003c   Code   RO         6416    i.reset_all_REL     rel_driver.o
-    0x08010a68   0x08010a68   0x00000054   Code   RO         5499    i.restart_timer     os.o
-    0x08010abc   0x08010abc   0x000003b4   Code   RO         6417    i.rst_REL           rel_driver.o
-    0x08010e70   0x08010e70   0x0000000a   Code   RO         5500    i.run_OS            os.o
-    0x08010e7a   0x08010e7a   0x00000002   PAD
-    0x08010e7c   0x08010e7c   0x00000098   Code   RO         6418    i.sel_REL_DRIVER    rel_driver.o
-    0x08010f14   0x08010f14   0x000002c4   Code   RO          442    i.send_mains_status  do_task.o
-    0x080111d8   0x080111d8   0x000000dc   Code   RO         6055    i.send_warning_MSG  comunication.o
-    0x080112b4   0x080112b4   0x00000030   Code   RO         6522    i.serial_com_init   serial_com.o
-    0x080112e4   0x080112e4   0x0000005c   Code   RO         6523    i.serial_send_handler  serial_com.o
-    0x08011340   0x08011340   0x00000048   Code   RO         5501    i.service_timers    os.o
-    0x08011388   0x08011388   0x000003c0   Code   RO         6419    i.set_REL           rel_driver.o
-    0x08011748   0x08011748   0x00000020   Code   RO          570    i.set_RISO_cord_resistance  cord.o
-    0x08011768   0x08011768   0x00000020   Code   RO          571    i.set_RPE_cord_resistance  cord.o
-    0x08011788   0x08011788   0x00000074   Code   RO         6178    i.set_SDADC_zero    sdadc.o
-    0x080117fc   0x080117fc   0x0000003c   Code   RO         5502    i.set_event         os.o
-    0x08011838   0x08011838   0x00000018   Code   RO          572    i.set_phase_num     cord.o
-    0x08011850   0x08011850   0x00000034   Code   RO         5503    i.set_timer         os.o
-    0x08011884   0x08011884   0x000000e0   Code   RO          443    i.start_measure     do_task.o
-    0x08011964   0x08011964   0x000000a4   Code   RO          444    i.start_measure_no_THD  do_task.o
-    0x08011a08   0x08011a08   0x000000c0   Code   RO          573    i.stop_cord         cord.o
-    0x08011ac8   0x08011ac8   0x00000064   Code   RO          445    i.stop_measure      do_task.o
-    0x08011b2c   0x08011b2c   0x00000038   Code   RO         6525    i.strtok_single     serial_com.o
-    0x08011b64   0x08011b64   0x00000f1c   Code   RO          574    i.tramsmitt_corect_wiring_state  cord.o
-    0x08012a80   0x08012a80   0x000001ec   Code   RO         6526    i.transmit_command_handle  serial_com.o
-    0x08012c6c   0x08012c6c   0x00000080   Code   RO         6527    i.transmit_func     serial_com.o
-    0x08012cec   0x08012cec   0x00000050   Code   RO         6179    i.write_THD         sdadc.o
-    0x08012d3c   0x08012d3c   0x00000020   Data   RO         2105    .constdata          stm32f3xx_hal_rcc.o
-    0x08012d5c   0x08012d5c   0x00000010   Data   RO         4795    .constdata          system_stm32f3xx.o
-    0x08012d6c   0x08012d6c   0x00000008   Data   RO         4796    .constdata          system_stm32f3xx.o
-    0x08012d74   0x08012d74   0x00002000   Data   RO         4941    .constdata          arm_common_tables.o
-    0x08014d74   0x08014d74   0x00000e10   Data   RO         4970    .constdata          arm_common_tables.o
-    0x08015b84   0x08015b84   0x00000804   Data   RO         4990    .constdata          arm_common_tables.o
-    0x08016388   0x08016388   0x00000010   Data   RO         5022    .constdata          arm_const_structs.o
-    0x08016398   0x08016398   0x000000d8   Data   RO         6194    .constdata          sdadc.o
-    0x08016470   0x08016470   0x00000081   Data   RO         6673    .constdata          mc_w.l(ctype_o.o)
-    0x080164f1   0x080164f1   0x00000003   PAD
-    0x080164f4   0x080164f4   0x00000004   Data   RO         6674    .constdata          mc_w.l(ctype_o.o)
-    0x080164f8   0x080164f8   0x00000020   Data   RO         7085    Region$$Table       anon$$obj.o
+    0x08008484   0x08008484   0x0000120c   Code   RO         6515    i.command_analyze   serial_com.o
+    0x08009690   0x08009690   0x00000068   Code   RO         6516    i.command_do_events  serial_com.o
+    0x080096f8   0x080096f8   0x0000012c   Code   RO         6517    i.command_return    serial_com.o
+    0x08009824   0x08009824   0x00000020   Code   RO         6518    i.communication_init  serial_com.o
+    0x08009844   0x08009844   0x000002b4   Code   RO          433    i.compute_THD_with_FFT  do_task.o
+    0x08009af8   0x08009af8   0x00000340   Code   RO         6166    i.compute_rms       sdadc.o
+    0x08009e38   0x08009e38   0x00000098   Code   RO          552    i.cord_RISO_init    cord.o
+    0x08009ed0   0x08009ed0   0x0000058e   Code   RO          553    i.cord_RISO_onePhaseToPE  cord.o
+    0x0800a45e   0x0800a45e   0x00000002   PAD
+    0x0800a460   0x0800a460   0x00000620   Code   RO          554    i.cord_RISO_phaseToPhase  cord.o
+    0x0800aa80   0x0800aa80   0x00000184   Code   RO          555    i.cord_RISO_phasesToPE  cord.o
+    0x0800ac04   0x0800ac04   0x00000018   Code   RO          556    i.cord_check_RISO_resistance  cord.o
+    0x0800ac1c   0x0800ac1c   0x00000018   Code   RO          557    i.cord_check_RPE_resistance  cord.o
+    0x0800ac34   0x0800ac34   0x000000a8   Code   RO          558    i.cord_continuity_init  cord.o
+    0x0800acdc   0x0800acdc   0x00000434   Code   RO          559    i.cord_continuity_test  cord.o
+    0x0800b110   0x0800b110   0x00000098   Code   RO          560    i.cord_correct_wiring_init  cord.o
+    0x0800b1a8   0x0800b1a8   0x00000098   Code   RO          562    i.cord_global_init_set  cord.o
+    0x0800b240   0x0800b240   0x000037a4   Code   RO          563    i.cord_meas_correct_wiring  cord.o
+    0x0800e9e4   0x0800e9e4   0x000001b0   Code   RO          564    i.cord_transmittContiunuity  cord.o
+    0x0800eb94   0x0800eb94   0x00000110   Code   RO          565    i.cord_transmittOnePhaseToPE  cord.o
+    0x0800eca4   0x0800eca4   0x0000014c   Code   RO          566    i.cord_transmittPhaseToPhase  cord.o
+    0x0800edf0   0x0800edf0   0x0000008c   Code   RO          567    i.cord_transmittPhasesToPE  cord.o
+    0x0800ee7c   0x0800ee7c   0x00000038   Code   RO         6054    i.disconnect_function  comunication.o
+    0x0800eeb4   0x0800eeb4   0x00000034   Code   RO         5492    i.do_events         os.o
+    0x0800eee8   0x0800eee8   0x00000050   Code   RO         6977    i.free              mc_w.l(malloc.o)
+    0x0800ef38   0x0800ef38   0x00000028   Code   RO         5495    i.free_timer        os.o
+    0x0800ef60   0x0800ef60   0x00000040   Code   RO          436    i.get_connected_device  do_task.o
+    0x0800efa0   0x0800efa0   0x00000060   Code   RO         6167    i.get_inst_value    sdadc.o
+    0x0800f000   0x0800f000   0x00000024   Code   RO          437    i.get_phase_seq     do_task.o
+    0x0800f024   0x0800f024   0x00000078   Code   RO         6168    i.get_value         sdadc.o
+    0x0800f09c   0x0800f09c   0x00000050   Code   RO         5496    i.init_OS           os.o
+    0x0800f0ec   0x0800f0ec   0x00000054   Code   RO         6415    i.init_REL          rel_driver.o
+    0x0800f140   0x0800f140   0x00000118   Code   RO          568    i.init_cord         cord.o
+    0x0800f258   0x0800f258   0x00000018   Code   RO         5497    i.init_event_Q      os.o
+    0x0800f270   0x0800f270   0x0000001c   Code   RO         5498    i.init_timers       os.o
+    0x0800f28c   0x0800f28c   0x00000020   Code   RO         6170    i.input_START_measure  sdadc.o
+    0x0800f2ac   0x0800f2ac   0x00000030   Code   RO         6172    i.input_STOP_measure  sdadc.o
+    0x0800f2dc   0x0800f2dc   0x00000068   Code   RO          438    i.led_blinking_task  do_task.o
+    0x0800f344   0x0800f344   0x000000b0   Code   RO          329    i.main              main.o
+    0x0800f3f4   0x0800f3f4   0x0000006c   Code   RO         6978    i.malloc            mc_w.l(malloc.o)
+    0x0800f460   0x0800f460   0x0000011c   Code   RO         6173    i.measure_IDIFF     sdadc.o
+    0x0800f57c   0x0800f57c   0x00000674   Code   RO         6174    i.measure_IL_Current  sdadc.o
+    0x0800fbf0   0x0800fbf0   0x000000bc   Code   RO         6175    i.measure_UL1PE     sdadc.o
+    0x0800fcac   0x0800fcac   0x00000760   Code   RO         6176    i.measure_ULN_Voltage  sdadc.o
+    0x0801040c   0x0801040c   0x000000bc   Code   RO         6177    i.measure_UNPE      sdadc.o
+    0x080104c8   0x080104c8   0x0000008c   Code   RO          439    i.measuring_task_fft  do_task.o
+    0x08010554   0x08010554   0x0000008c   Code   RO          440    i.measuring_task_no_THD  do_task.o
+    0x080105e0   0x080105e0   0x0000002c   Code   RO          569    i.numberOfSetBits   cord.o
+    0x0801060c   0x0801060c   0x00000348   Code   RO          441    i.power_on_test     do_task.o
+    0x08010954   0x08010954   0x0000005c   Code   RO         6519    i.recieve_ack_func  serial_com.o
+    0x080109b0   0x080109b0   0x00000060   Code   RO         6520    i.recieve_nack_func  serial_com.o
+    0x08010a10   0x08010a10   0x0000003c   Code   RO         6521    i.recieved_command_analyze  serial_com.o
+    0x08010a4c   0x08010a4c   0x0000003c   Code   RO         6416    i.reset_all_REL     rel_driver.o
+    0x08010a88   0x08010a88   0x00000054   Code   RO         5499    i.restart_timer     os.o
+    0x08010adc   0x08010adc   0x000003b4   Code   RO         6417    i.rst_REL           rel_driver.o
+    0x08010e90   0x08010e90   0x0000000a   Code   RO         5500    i.run_OS            os.o
+    0x08010e9a   0x08010e9a   0x00000002   PAD
+    0x08010e9c   0x08010e9c   0x00000098   Code   RO         6418    i.sel_REL_DRIVER    rel_driver.o
+    0x08010f34   0x08010f34   0x000002c4   Code   RO          442    i.send_mains_status  do_task.o
+    0x080111f8   0x080111f8   0x000000dc   Code   RO         6055    i.send_warning_MSG  comunication.o
+    0x080112d4   0x080112d4   0x00000030   Code   RO         6522    i.serial_com_init   serial_com.o
+    0x08011304   0x08011304   0x0000005c   Code   RO         6523    i.serial_send_handler  serial_com.o
+    0x08011360   0x08011360   0x00000048   Code   RO         5501    i.service_timers    os.o
+    0x080113a8   0x080113a8   0x000003c0   Code   RO         6419    i.set_REL           rel_driver.o
+    0x08011768   0x08011768   0x00000020   Code   RO          570    i.set_RISO_cord_resistance  cord.o
+    0x08011788   0x08011788   0x00000020   Code   RO          571    i.set_RPE_cord_resistance  cord.o
+    0x080117a8   0x080117a8   0x00000074   Code   RO         6178    i.set_SDADC_zero    sdadc.o
+    0x0801181c   0x0801181c   0x0000003c   Code   RO         5502    i.set_event         os.o
+    0x08011858   0x08011858   0x00000018   Code   RO          572    i.set_phase_num     cord.o
+    0x08011870   0x08011870   0x00000034   Code   RO         5503    i.set_timer         os.o
+    0x080118a4   0x080118a4   0x000000e0   Code   RO          443    i.start_measure     do_task.o
+    0x08011984   0x08011984   0x000000a4   Code   RO          444    i.start_measure_no_THD  do_task.o
+    0x08011a28   0x08011a28   0x000000c0   Code   RO          573    i.stop_cord         cord.o
+    0x08011ae8   0x08011ae8   0x00000064   Code   RO          445    i.stop_measure      do_task.o
+    0x08011b4c   0x08011b4c   0x00000038   Code   RO         6525    i.strtok_single     serial_com.o
+    0x08011b84   0x08011b84   0x00000f12   Code   RO          574    i.tramsmitt_corect_wiring_state  cord.o
+    0x08012a96   0x08012a96   0x00000002   PAD
+    0x08012a98   0x08012a98   0x000001ec   Code   RO         6526    i.transmit_command_handle  serial_com.o
+    0x08012c84   0x08012c84   0x00000080   Code   RO         6527    i.transmit_func     serial_com.o
+    0x08012d04   0x08012d04   0x00000050   Code   RO         6179    i.write_THD         sdadc.o
+    0x08012d54   0x08012d54   0x00000020   Data   RO         2105    .constdata          stm32f3xx_hal_rcc.o
+    0x08012d74   0x08012d74   0x00000010   Data   RO         4795    .constdata          system_stm32f3xx.o
+    0x08012d84   0x08012d84   0x00000008   Data   RO         4796    .constdata          system_stm32f3xx.o
+    0x08012d8c   0x08012d8c   0x00002000   Data   RO         4941    .constdata          arm_common_tables.o
+    0x08014d8c   0x08014d8c   0x00000e10   Data   RO         4970    .constdata          arm_common_tables.o
+    0x08015b9c   0x08015b9c   0x00000804   Data   RO         4990    .constdata          arm_common_tables.o
+    0x080163a0   0x080163a0   0x00000010   Data   RO         5022    .constdata          arm_const_structs.o
+    0x080163b0   0x080163b0   0x000000d8   Data   RO         6194    .constdata          sdadc.o
+    0x08016488   0x08016488   0x00000081   Data   RO         6673    .constdata          mc_w.l(ctype_o.o)
+    0x08016509   0x08016509   0x00000003   PAD
+    0x0801650c   0x0801650c   0x00000004   Data   RO         6674    .constdata          mc_w.l(ctype_o.o)
+    0x08016510   0x08016510   0x00000020   Data   RO         7085    Region$$Table       anon$$obj.o
 
 
-    Execution Region RW_IRAM1 (Exec base: 0x20000000, Load base: 0x08016518, Size: 0x000070a8, Max: 0x00008000, ABSOLUTE, COMPRESSED[0x000000fc])
+    Execution Region RW_IRAM1 (Exec base: 0x20000000, Load base: 0x08016530, Size: 0x000070a8, Max: 0x00008000, ABSOLUTE, COMPRESSED[0x000000fc])
 
     Exec Addr    Load Addr    Size         Type   Attr      Idx    E Section Name        Object
 
@@ -4806,14 +4807,14 @@ Image component sizes
        128         14          0          0          0        914   arm_cos_f32.o
        188         22          0          0          0        741   clock.o
       1536        270          0         12        212       6227   comunication.o
-     25052       2530          0         80          0      30242   cord.o
+     25008       2492          0         80          0      30342   cord.o
       3252        468          0         20       4256      25265   do_task.o
        320         26          0          0          0       1255   gpio.o
        304         32          0          8          0       3640   main.o
        502         68          0          8        600      34407   os.o
       2204         80          0          6          0       5436   rel_driver.o
       7030        558        216        120      13736      22346   sdadc.o
-      7452       1474          0         76       2972      28060   serial_com.o
+      7516       1500          0         76       2972      28100   serial_com.o
         36          8        392          0       3584        852   startup_stm32f373xc.o
        126         22          0          4          0       4103   stm32f3xx_hal.o
        254         14          0          0          0      33383   stm32f3xx_hal_cortex.o
@@ -4830,7 +4831,7 @@ Image component sizes
         84          0          0          0          0       2574   stm32f3xx_hal_tim_ex.o
        904         46          0          0          0       4237   stm32f3xx_hal_uart.o
        148          6          0          0          0       1475   stm32f3xx_hal_uart_ex.o
-       854         48          0         28          0     582739   stm32f3xx_it.o
+       854         48          0         28          0     582771   stm32f3xx_it.o
        104         22         24          4          0       1307   system_stm32f3xx.o
         48          8          0          8          0       1021   test.o
        672        114          0          4        192       3469   timer.o
@@ -4845,9 +4846,9 @@ Image component sizes
        132          0          0          0          0       4856   usbd_ioreq.o
 
     ----------------------------------------------------------------------
-     70748       6406      14556        736      28092     970348   Object Totals
+     70772       6394      14556        736      28092     970520   Object Totals
          0          0         32          0          0          0   (incl. Generated)
-        28          0          0          8          0          0   (incl. Padding)
+        32          0          0          8          0          0   (incl. Padding)
 
     ----------------------------------------------------------------------
 
@@ -4924,15 +4925,15 @@ Image component sizes
 
       Code (inc. data)   RO Data    RW Data    ZI Data      Debug   
 
-     76724       6588      14692        748      28092     939740   Grand Totals
-     76724       6588      14692        252      28092     939740   ELF Image Totals (compressed)
-     76724       6588      14692        252          0          0   ROM Totals
+     76748       6576      14692        748      28092     939912   Grand Totals
+     76748       6576      14692        252      28092     939912   ELF Image Totals (compressed)
+     76748       6576      14692        252          0          0   ROM Totals
 
 ==============================================================================
 
-    Total RO  Size (Code + RO Data)                91416 (  89.27kB)
+    Total RO  Size (Code + RO Data)                91440 (  89.30kB)
     Total RW  Size (RW Data + ZI Data)             28840 (  28.16kB)
-    Total ROM Size (Code + RO Data + RW Data)      91668 (  89.52kB)
+    Total ROM Size (Code + RO Data + RW Data)      91692 (  89.54kB)
 
 ==============================================================================
 

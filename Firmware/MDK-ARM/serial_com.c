@@ -742,7 +742,7 @@ static void command_analyze(uint8_t dir)
 		else if(!strcmp(&additionalCode[0][0][0],__RISO_STARTED__))
 		{
 			if(cord_task_control & __CORD_MEAS_IN_PROG)
-				cord_task_control &=~(__CORD_RPE_L_STARTED|__CORD_RPE_H_STARTED);
+				cord_task_control |= __CORD_RISO_STARTED;
 		}
 
 		else if(!strcmp(&additionalCode[0][0][0],__RISO_STOPPED__))
@@ -750,6 +750,12 @@ static void command_analyze(uint8_t dir)
 			if(cord_task_control & __CORD_MEAS_IN_PROG)
 				cord_task_control &= (~__CORD_RISO_STARTED);
 		}
+		else if(!strcmp(&additionalCode[0][0][0],__RPE_STOPPED__))
+		{
+			if(cord_task_control & __CORD_MEAS_IN_PROG)
+				cord_task_control &=~(__CORD_RPE_L_STARTED|__CORD_RPE_H_STARTED);
+		}
+		
 	}
 /*******************************************************************************/
 /**															ADITIONAL SETTINGS														**/

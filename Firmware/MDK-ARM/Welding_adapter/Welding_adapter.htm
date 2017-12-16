@@ -3,7 +3,7 @@
 <title>Static Call Graph - [Welding_adapter\Welding_adapter.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image Welding_adapter\Welding_adapter.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Sat Dec 09 13:51:37 2017
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060528: Last Updated: Fri Dec 15 16:08:22 2017
 <BR><P>
 <H3>Maximum Stack Usage =        664 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -135,8 +135,8 @@ Function Pointers
  <LI><a href="#[75]">compute_rms</a> from sdadc.o(i.compute_rms) referenced from do_task.o(i.measuring_task_no_THD)
  <LI><a href="#[6e]">cord_RISO_onePhaseToPE</a> from cord.o(i.cord_RISO_onePhaseToPE) referenced from serial_com.o(i.command_analyze)
  <LI><a href="#[6e]">cord_RISO_onePhaseToPE</a> from cord.o(i.cord_RISO_onePhaseToPE) referenced 2 times from cord.o(i.cord_RISO_onePhaseToPE)
- <LI><a href="#[6e]">cord_RISO_onePhaseToPE</a> from cord.o(i.cord_RISO_onePhaseToPE) referenced from cord.o(i.cord_RISO_phaseToPhase)
  <LI><a href="#[6f]">cord_RISO_phaseToPhase</a> from cord.o(i.cord_RISO_phaseToPhase) referenced from serial_com.o(i.command_analyze)
+ <LI><a href="#[6f]">cord_RISO_phaseToPhase</a> from cord.o(i.cord_RISO_phaseToPhase) referenced 2 times from cord.o(i.cord_RISO_phaseToPhase)
  <LI><a href="#[6d]">cord_RISO_phasesToPE</a> from cord.o(i.cord_RISO_phasesToPE) referenced from serial_com.o(i.command_analyze)
  <LI><a href="#[6d]">cord_RISO_phasesToPE</a> from cord.o(i.cord_RISO_phasesToPE) referenced 2 times from cord.o(i.cord_RISO_phasesToPE)
  <LI><a href="#[6c]">cord_continuity_test</a> from cord.o(i.cord_continuity_test) referenced from serial_com.o(i.command_analyze)
@@ -378,8 +378,8 @@ Global Symbols
 <P><STRONG><a name="[1cf]"></a>_ll_ushift_r</STRONG> (Thumb, 0 bytes, Stack size 0 bytes, llushr.o(.text), UNUSED)
 
 <P><STRONG><a name="[7c]"></a>__rt_ctype_table</STRONG> (Thumb, 4 bytes, Stack size 0 bytes, ctype_o.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strtol
-<LI><a href="#[64]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isspace
+<BR><BR>[Called By]<UL><LI><a href="#[64]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;isspace
+<LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strtol
 </UL>
 
 <P><STRONG><a name="[64]"></a>isspace</STRONG> (Thumb, 18 bytes, Stack size 8 bytes, isspace_o.o(.text))
@@ -466,9 +466,9 @@ Global Symbols
 <P><STRONG><a name="[80]"></a>strtol</STRONG> (Thumb, 112 bytes, Stack size 32 bytes, strtol.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = strtol &rArr; _strtoul
 </UL>
-<BR>[Calls]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_strtoul
+<BR>[Calls]<UL><LI><a href="#[7c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_ctype_table
+<LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_strtoul
 <LI><a href="#[82]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_errno_addr
-<LI><a href="#[7c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__rt_ctype_table
 </UL>
 <BR>[Called By]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;atoi
 </UL>
@@ -492,9 +492,9 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[85]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_float_round
 </UL>
-<BR>[Called By]<UL><LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_scanf_really_real
-<LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_RPE_cord_resistance
+<BR>[Called By]<UL><LI><a href="#[19b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_RPE_cord_resistance
 <LI><a href="#[19c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_RISO_cord_resistance
+<LI><a href="#[99]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_scanf_really_real
 </UL>
 
 <P><STRONG><a name="[1d5]"></a>__aeabi_uidiv</STRONG> (Thumb, 0 bytes, Stack size 12 bytes, uidiv.o(.text), UNUSED)
@@ -504,8 +504,8 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[86]"></a>__aeabi_uldivmod</STRONG> (Thumb, 98 bytes, Stack size 40 bytes, uldiv.o(.text), UNUSED)
-<BR><BR>[Calls]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_llsl
-<LI><a href="#[87]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_llsr
+<BR><BR>[Calls]<UL><LI><a href="#[87]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_llsr
+<LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_llsl
 </UL>
 <BR>[Called By]<UL><LI><a href="#[181]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_printf_core
 <LI><a href="#[186]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fp_digits
@@ -570,8 +570,8 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[95]"></a>__aeabi_d2ulz</STRONG> (Thumb, 48 bytes, Stack size 0 bytes, dfixul.o(.text), UNUSED)
-<BR><BR>[Calls]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_llsl
-<LI><a href="#[87]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_llsr
+<BR><BR>[Calls]<UL><LI><a href="#[87]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_llsr
+<LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_llsl
 </UL>
 <BR>[Called By]<UL><LI><a href="#[186]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fp_digits
 </UL>
@@ -614,9 +614,9 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[99]"></a>_scanf_really_real</STRONG> (Thumb, 556 bytes, Stack size 104 bytes, scanf_fp.o(.text), UNUSED)
-<BR><BR>[Calls]<UL><LI><a href="#[9a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_is_digit
+<BR><BR>[Calls]<UL><LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_d2f
+<LI><a href="#[9a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_is_digit
 <LI><a href="#[97]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_fp_value
-<LI><a href="#[84]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_d2f
 </UL>
 
 <P><STRONG><a name="[62]"></a>_sgetc</STRONG> (Thumb, 30 bytes, Stack size 0 bytes, _sgetc.o(.text))
@@ -632,9 +632,9 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[8f]"></a>_double_epilogue</STRONG> (Thumb, 156 bytes, Stack size 32 bytes, depilogue.o(.text), UNUSED)
-<BR><BR>[Calls]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_llsl
+<BR><BR>[Calls]<UL><LI><a href="#[87]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_llsr
+<LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_llsl
 <LI><a href="#[90]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_double_round
-<LI><a href="#[87]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_llsr
 </UL>
 <BR>[Called By]<UL><LI><a href="#[98]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_ul2d
 <LI><a href="#[93]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_dmul
@@ -670,10 +670,10 @@ Global Symbols
 <P><STRONG><a name="[a4]"></a>ConstructProtocolString</STRONG> (Thumb, 96 bytes, Stack size 32 bytes, serial_com.o(i.ConstructProtocolString))
 <BR><BR>[Stack]<UL><LI>Max Depth = 64<LI>Call Chain = ConstructProtocolString &rArr; CalculateCRC
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
-<LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcat
+<BR>[Calls]<UL><LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcat
 <LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 <LI><a href="#[a1]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CalculateCRC
+<LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendComMessage
 </UL>
@@ -1798,12 +1798,12 @@ Global Symbols
 <P><STRONG><a name="[78]"></a>Transmit_results_task</STRONG> (Thumb, 862 bytes, Stack size 120 bytes, comunication.o(i.Transmit_results_task))
 <BR><BR>[Stack]<UL><LI>Max Depth = 520<LI>Call Chain = Transmit_results_task &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
-<LI><a href="#[14e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_value
+<BR>[Calls]<UL><LI><a href="#[14e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;get_value
 <LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendComMessage
 <LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;restart_timer
 <LI><a href="#[14f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2d
 <LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcat
+<LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 </UL>
 <BR>[Address Reference Count : 3]<UL><LI> do_task.o(i.start_measure)
 <LI> do_task.o(i.start_measure_no_THD)
@@ -2469,7 +2469,7 @@ Global Symbols
 <LI><a href="#[6e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cord_RISO_onePhaseToPE
 </UL>
 
-<P><STRONG><a name="[6e]"></a>cord_RISO_onePhaseToPE</STRONG> (Thumb, 1488 bytes, Stack size 32 bytes, cord.o(i.cord_RISO_onePhaseToPE))
+<P><STRONG><a name="[6e]"></a>cord_RISO_onePhaseToPE</STRONG> (Thumb, 1422 bytes, Stack size 32 bytes, cord.o(i.cord_RISO_onePhaseToPE))
 <BR><BR>[Stack]<UL><LI>Max Depth = 560<LI>Call Chain = cord_RISO_onePhaseToPE &rArr; cord_transmittPhasesToPE &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cord_check_RISO_resistance
@@ -2481,11 +2481,10 @@ Global Symbols
 <LI><a href="#[1a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cord_transmittPhasesToPE
 <LI><a href="#[1a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cord_transmittOnePhaseToPE
 </UL>
-<BR>[Address Reference Count : 3]<UL><LI> cord.o(i.cord_RISO_phaseToPhase)
-<LI> cord.o(i.cord_RISO_onePhaseToPE)
+<BR>[Address Reference Count : 2]<UL><LI> cord.o(i.cord_RISO_onePhaseToPE)
 <LI> serial_com.o(i.command_analyze)
 </UL>
-<P><STRONG><a name="[6f]"></a>cord_RISO_phaseToPhase</STRONG> (Thumb, 1556 bytes, Stack size 32 bytes, cord.o(i.cord_RISO_phaseToPhase))
+<P><STRONG><a name="[6f]"></a>cord_RISO_phaseToPhase</STRONG> (Thumb, 1560 bytes, Stack size 32 bytes, cord.o(i.cord_RISO_phaseToPhase))
 <BR><BR>[Stack]<UL><LI>Max Depth = 560<LI>Call Chain = cord_RISO_phaseToPhase &rArr; cord_transmittPhaseToPhase &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cord_check_RISO_resistance
@@ -2495,9 +2494,10 @@ Global Symbols
 <LI><a href="#[199]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;rst_REL
 <LI><a href="#[1a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cord_transmittPhaseToPhase
 </UL>
-<BR>[Address Reference Count : 1]<UL><LI> serial_com.o(i.command_analyze)
+<BR>[Address Reference Count : 2]<UL><LI> cord.o(i.cord_RISO_phaseToPhase)
+<LI> serial_com.o(i.command_analyze)
 </UL>
-<P><STRONG><a name="[6d]"></a>cord_RISO_phasesToPE</STRONG> (Thumb, 298 bytes, Stack size 32 bytes, cord.o(i.cord_RISO_phasesToPE))
+<P><STRONG><a name="[6d]"></a>cord_RISO_phasesToPE</STRONG> (Thumb, 306 bytes, Stack size 32 bytes, cord.o(i.cord_RISO_phasesToPE))
 <BR><BR>[Stack]<UL><LI>Max Depth = 560<LI>Call Chain = cord_RISO_phasesToPE &rArr; cord_transmittPhasesToPE &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1a4]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cord_check_RISO_resistance
@@ -2529,7 +2529,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cord_continuity_test
 </UL>
 
-<P><STRONG><a name="[6c]"></a>cord_continuity_test</STRONG> (Thumb, 962 bytes, Stack size 40 bytes, cord.o(i.cord_continuity_test))
+<P><STRONG><a name="[6c]"></a>cord_continuity_test</STRONG> (Thumb, 970 bytes, Stack size 40 bytes, cord.o(i.cord_continuity_test))
 <BR><BR>[Stack]<UL><LI>Max Depth = 664<LI>Call Chain = cord_continuity_test &rArr; cord_transmittContiunuity &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1a8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cord_continuity_init
@@ -2561,7 +2561,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[6a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;init_cord
 </UL>
 
-<P><STRONG><a name="[6b]"></a>cord_meas_correct_wiring</STRONG> (Thumb, 14166 bytes, Stack size 56 bytes, cord.o(i.cord_meas_correct_wiring))
+<P><STRONG><a name="[6b]"></a>cord_meas_correct_wiring</STRONG> (Thumb, 14192 bytes, Stack size 56 bytes, cord.o(i.cord_meas_correct_wiring))
 <BR><BR>[Stack]<UL><LI>Max Depth = 616<LI>Call Chain = cord_meas_correct_wiring &rArr; tramsmitt_corect_wiring_state &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1aa]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cord_correct_wiring_init
@@ -2581,12 +2581,12 @@ Global Symbols
 <P><STRONG><a name="[1a9]"></a>cord_transmittContiunuity</STRONG> (Thumb, 316 bytes, Stack size 224 bytes, cord.o(i.cord_transmittContiunuity))
 <BR><BR>[Stack]<UL><LI>Max Depth = 624<LI>Call Chain = cord_transmittContiunuity &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
-<LI><a href="#[1af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2snprintf
-<LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendComMessage
+<BR>[Calls]<UL><LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendComMessage
 <LI><a href="#[14f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_f2d
 <LI><a href="#[a2]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strlen
 <LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcat
+<LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
+<LI><a href="#[1af]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2snprintf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[6c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cord_continuity_test
 </UL>
@@ -2594,9 +2594,9 @@ Global Symbols
 <P><STRONG><a name="[1a6]"></a>cord_transmittOnePhaseToPE</STRONG> (Thumb, 178 bytes, Stack size 128 bytes, cord.o(i.cord_transmittOnePhaseToPE))
 <BR><BR>[Stack]<UL><LI>Max Depth = 528<LI>Call Chain = cord_transmittOnePhaseToPE &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
-<LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendComMessage
+<BR>[Calls]<UL><LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendComMessage
 <LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcat
+<LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[6e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cord_RISO_onePhaseToPE
 </UL>
@@ -2604,9 +2604,9 @@ Global Symbols
 <P><STRONG><a name="[1a7]"></a>cord_transmittPhaseToPhase</STRONG> (Thumb, 224 bytes, Stack size 128 bytes, cord.o(i.cord_transmittPhaseToPhase))
 <BR><BR>[Stack]<UL><LI>Max Depth = 528<LI>Call Chain = cord_transmittPhaseToPhase &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
-<LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendComMessage
+<BR>[Calls]<UL><LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendComMessage
 <LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcat
+<LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[6f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cord_RISO_phaseToPhase
 </UL>
@@ -2614,9 +2614,9 @@ Global Symbols
 <P><STRONG><a name="[1a5]"></a>cord_transmittPhasesToPE</STRONG> (Thumb, 84 bytes, Stack size 128 bytes, cord.o(i.cord_transmittPhasesToPE))
 <BR><BR>[Stack]<UL><LI>Max Depth = 528<LI>Call Chain = cord_transmittPhasesToPE &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
-<LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendComMessage
+<BR>[Calls]<UL><LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendComMessage
 <LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcat
+<LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[6d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cord_RISO_phasesToPE
 <LI><a href="#[6e]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cord_RISO_onePhaseToPE
@@ -2687,7 +2687,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[5f]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
 </UL>
 
-<P><STRONG><a name="[6a]"></a>init_cord</STRONG> (Thumb, 214 bytes, Stack size 32 bytes, cord.o(i.init_cord))
+<P><STRONG><a name="[6a]"></a>init_cord</STRONG> (Thumb, 218 bytes, Stack size 32 bytes, cord.o(i.init_cord))
 <BR><BR>[Stack]<UL><LI>Max Depth = 432<LI>Call Chain = init_cord &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
 <BR>[Calls]<UL><LI><a href="#[1ab]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cord_global_init_set
@@ -2847,9 +2847,9 @@ Global Symbols
 <P><STRONG><a name="[69]"></a>send_mains_status</STRONG> (Thumb, 472 bytes, Stack size 136 bytes, do_task.o(i.send_mains_status))
 <BR><BR>[Stack]<UL><LI>Max Depth = 536<LI>Call Chain = send_mains_status &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
-<LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendComMessage
+<BR>[Calls]<UL><LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendComMessage
 <LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcat
+<LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 </UL>
 <BR>[Address Reference Count : 3]<UL><LI> main.o(i.main)
 <LI> cord.o(i.init_cord)
@@ -3007,10 +3007,10 @@ Global Symbols
 <P><STRONG><a name="[1ae]"></a>tramsmitt_corect_wiring_state</STRONG> (Thumb, 3858 bytes, Stack size 160 bytes, cord.o(i.tramsmitt_corect_wiring_state))
 <BR><BR>[Stack]<UL><LI>Max Depth = 560<LI>Call Chain = tramsmitt_corect_wiring_state &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
-<BR>[Calls]<UL><LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
-<LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendComMessage
+<BR>[Calls]<UL><LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendComMessage
 <LI><a href="#[1ad]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;numberOfSetBits
 <LI><a href="#[a7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcat
+<LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 </UL>
 <BR>[Called By]<UL><LI><a href="#[6b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;cord_meas_correct_wiring
 </UL>
@@ -3424,8 +3424,7 @@ Local Symbols
 <P><STRONG><a name="[130]"></a>ParseMessage</STRONG> (Thumb, 352 bytes, Stack size 224 bytes, serial_com.o(i.ParseMessage))
 <BR><BR>[Stack]<UL><LI>Max Depth = 312<LI>Call Chain = ParseMessage &rArr; atoi &rArr; strtol &rArr; _strtoul
 </UL>
-<BR>[Calls]<UL><LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;atoi
-<LI><a href="#[131]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcpy
+<BR>[Calls]<UL><LI><a href="#[131]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcpy
 <LI><a href="#[135]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcmp
 <LI><a href="#[a5]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr4
 <LI><a href="#[7d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_memclr
@@ -3434,6 +3433,7 @@ Local Symbols
 <LI><a href="#[134]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;GetID
 <LI><a href="#[ae]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;FindAllAdditionalCmdParameters
 <LI><a href="#[a3]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;CheckCRC
+<LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;atoi
 </UL>
 <BR>[Called By]<UL><LI><a href="#[19d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;recieved_command_analyze
 </UL>
@@ -3442,7 +3442,7 @@ Local Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[130]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ParseMessage
 </UL>
 
-<P><STRONG><a name="[193]"></a>command_analyze</STRONG> (Thumb, 4382 bytes, Stack size 32 bytes, serial_com.o(i.command_analyze))
+<P><STRONG><a name="[193]"></a>command_analyze</STRONG> (Thumb, 4446 bytes, Stack size 32 bytes, serial_com.o(i.command_analyze))
 <BR><BR>[Stack]<UL><LI>Max Depth = 432<LI>Call Chain = command_analyze &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
 <BR>[Calls]<UL><LI><a href="#[198]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;set_REL
@@ -3531,21 +3531,21 @@ Local Symbols
 <P><STRONG><a name="[79]"></a>transmit_command_handle</STRONG> (Thumb, 432 bytes, Stack size 48 bytes, serial_com.o(i.transmit_command_handle))
 <BR><BR>[Stack]<UL><LI>Max Depth = 448<LI>Call Chain = transmit_command_handle &rArr; SendComMessage &rArr; SendConstructedProtocolMessage &rArr; serial_send_handler &rArr; CDC_Transmit_FS &rArr; USBD_CDC_TransmitPacket &rArr; USBD_LL_Transmit &rArr; HAL_PCD_EP_Transmit &rArr; PCD_WritePMA
 </UL>
-<BR>[Calls]<UL><LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free
-<LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
-<LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendComMessage
+<BR>[Calls]<UL><LI><a href="#[143]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendComMessage
 <LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;restart_timer
 <LI><a href="#[144]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;serial_send_handler
+<LI><a href="#[1c7]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;free
+<LI><a href="#[a6]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__2sprintf
 </UL>
 <BR>[Address Reference Count : 2]<UL><LI> serial_com.o(i.transmit_command_handle)
 <LI> serial_com.o(i.transmit_func)
 </UL>
 <P><STRONG><a name="[146]"></a>transmit_func</STRONG> (Thumb, 114 bytes, Stack size 24 bytes, serial_com.o(i.transmit_func))
-<BR><BR>[Stack]<UL><LI>Max Depth = 44<LI>Call Chain = transmit_func &rArr; malloc
+<BR><BR>[Stack]<UL><LI>Max Depth = 44<LI>Call Chain = transmit_func &rArr; restart_timer
 </UL>
-<BR>[Calls]<UL><LI><a href="#[1c8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
-<LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;restart_timer
+<BR>[Calls]<UL><LI><a href="#[150]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;restart_timer
 <LI><a href="#[131]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;strcpy
+<LI><a href="#[1c8]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;malloc
 </UL>
 <BR>[Called By]<UL><LI><a href="#[145]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;SendConstructedProtocolMessage
 </UL>
