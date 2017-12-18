@@ -25,6 +25,7 @@ extern uint32_t SDADC2_ch_cnt;
 extern uint32_t current_THD_sampling;
 extern uint32_t last_THD_MEASURED;
 uint32_t init_test_counter=0;
+uint32_t meas_task_control=0;
 #if THD_COMPUTATION_METHOD
 extern float32_t THD_buffer1[CORELATION_THD_BUFFER_SIZE];
 float THD_correlation_buffer[CORELATION_THD_BUFFER_SIZE];

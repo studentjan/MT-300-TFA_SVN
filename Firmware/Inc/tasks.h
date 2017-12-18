@@ -38,6 +38,11 @@
 #define CORD_RISO_PHASES_TO_PE								26
 #define CORD_RISO_ONE_PHASE_TO_PE							27
 #define CORD_RISO_PHASE_TO_PHASE							28
-#define CORD_MEAS_CONTINUITY								29
+#define CORD_MEAS_CONTINUITY									29
+#define MACH_RISO_PHASES_TO_PE								30
+#define MACH_RISO_ONE_PHASE_TO_PE							31
+#define MACH_RISO_PHASE_TO_PHASE							32
+#define INIT_MACH															33
+#define STOP_MACH															34
 
 #endif // __TASKS_H

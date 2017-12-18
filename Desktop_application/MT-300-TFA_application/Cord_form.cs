@@ -357,7 +357,7 @@ namespace MT_300_TFA_application
                     case "L3 - PE":
                         temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _failTempString;
                         break;
-                    case "L1,N - PE":
+                    case "L1,N -PE":
                         temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _failTempString;
                         break;
                     case "N - PE":
@@ -384,7 +384,7 @@ namespace MT_300_TFA_application
                         else
                             temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _passTempString; 
                         break;
-                    case "L1,N - PE":
+                    case "L1,N -PE":
                         if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[1]))||(String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[2]))||(String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[3]))||(String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[6])))
                             temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _failTempString;
                         else

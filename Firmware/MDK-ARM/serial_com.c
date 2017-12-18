@@ -38,12 +38,16 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include "cord.h"
+#include "machines.h"
 
 //-----------ZUNANJE SPREMENLJIVKE-----------------------
 extern uint8_t event_status; 
 extern uint32_t connection_control;
 extern uint32_t cord_task_control;
+extern uint32_t meas_task_control;
+extern uint32_t mach_task_control;
 extern int start_cord_count;
+extern uint32_t start_mach_count;
 //-----------GLOBALNE SPREMENLJIVKE----------------------
 uint8_t SERIAL_direction;
 uint8_t event_status; 
@@ -644,7 +648,7 @@ static void command_analyze(uint8_t dir)
 			{
 				if(cord_task_control & __CORD_INITIATED)
 				{
-					set_event(CORD_MEAS_CORRECT_WIRING,cord_continuity_test);
+					set_event(CORD_MEAS_CONTINUITY,cord_continuity_test);
 				}
 				else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
 				{
@@ -661,7 +665,7 @@ static void command_analyze(uint8_t dir)
 			{
 				if(cord_task_control & __CORD_INITIATED)
 				{
-					set_event(CORD_MEAS_CORRECT_WIRING,cord_RISO_phasesToPE);
+					set_event(CORD_RISO_PHASES_TO_PE,cord_RISO_phasesToPE);
 				}
 				else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
 				{
@@ -678,7 +682,7 @@ static void command_analyze(uint8_t dir)
 			{
 				if(cord_task_control & __CORD_INITIATED)
 				{
-					set_event(CORD_MEAS_CORRECT_WIRING,cord_RISO_onePhaseToPE);
+					set_event(CORD_RISO_ONE_PHASE_TO_PE,cord_RISO_onePhaseToPE);
 				}
 				else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
 				{
@@ -695,7 +699,7 @@ static void command_analyze(uint8_t dir)
 			{
 				if(cord_task_control & __CORD_INITIATED)
 				{
-					set_event(CORD_MEAS_CORRECT_WIRING,cord_RISO_phaseToPhase);
+					set_event(CORD_RISO_PHASE_TO_PHASE,cord_RISO_phaseToPhase);
 				}
 				else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
 				{
@@ -754,6 +758,92 @@ static void command_analyze(uint8_t dir)
 		{
 			if(cord_task_control & __CORD_MEAS_IN_PROG)
 				cord_task_control &=~(__CORD_RPE_L_STARTED|__CORD_RPE_H_STARTED);
+		}
+		
+	}
+/*********************************************************************************/
+/**																	MACHINES																		**/
+/*********************************************************************************/
+	else if(!strcmp(m_command,__MACHINES__))
+	{ 
+		if(!strcmp(&additionalCode[0][0][0],__INIT_MACHINES__))
+		{
+			if(!(meas_task_control & __MACH_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+			{
+				meas_task_control |= __MACH_MEAS_IN_PROG;
+				if(!strcmp(m_value,__1_PHASE__))
+					set_phase_num_mach(1);
+				else
+					set_phase_num_mach(3);
+				start_mach_count = 0;
+				set_event(INIT_MACH,init_mach);
+				mach_task_control |= __MACH_INIT_RECIEVED;
+			}
+		}
+		else if(!strcmp(&additionalCode[0][0][0],__START_PHASES_TO_PE__))
+		{
+			//ce je katerakoli meritev v delu se ne izvede
+			if(!(meas_task_control & __MACH_MEAS_IN_PROG))
+			{
+				if(mach_task_control & __MACH_INITIATED)
+				{
+					set_event(MACH_RISO_PHASES_TO_PE,mach_RISO_phasesToPE);
+				}
+				else if(!(meas_task_control & __MACH_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+				{
+					meas_task_control |= __MACH_MEAS_IN_PROG;
+					start_cord_count = 0;
+					set_event(INIT_MACH,init_mach);
+				}
+			}
+		}
+		else if(!strcmp(&additionalCode[0][0][0],__START_ONE_PHASE_TO_PE__))
+		{
+			//ce je katerakoli meritev v delu se ne izvede
+			if(!(meas_task_control & __MACH_MEAS_IN_PROG))
+			{
+				if(mach_task_control & __MACH_INITIATED)
+				{
+					set_event(MACH_RISO_ONE_PHASE_TO_PE,mach_RISO_onePhaseToPE);
+				}
+				else if(!(meas_task_control & __MACH_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+				{
+					meas_task_control |= __MACH_MEAS_IN_PROG;
+					start_mach_count = 0;
+					set_event(INIT_MACH,init_mach);
+				}
+			}
+		}
+		else if(!strcmp(&additionalCode[0][0][0],__STOP_MACH__))
+		{
+			if(meas_task_control & __MACH_MEAS_IN_PROG)	//se izvede samo ce je meritev v teku
+				set_event(STOP_MACH,stop_mach);
+		}
+		else if(!strcmp(&additionalCode[0][0][0],__RISO_RESISTANCE__))
+		{
+			if((meas_task_control & __MACH_MEAS_IN_PROG) && (mach_task_control & __MACH_RISO_RES_REQUESTED))	//se izvede samo ce je meritev v teku
+				set_RISO_mach_resistance(&additionalCode[1][0][0]);
+		}
+		else if(!strcmp(&additionalCode[0][0][0],__RISO_STARTED__))
+		{
+			if(meas_task_control & __MACH_MEAS_IN_PROG)
+				mach_task_control |= __MACH_RISO_STARTED;
+		}
+
+		else if(!strcmp(&additionalCode[0][0][0],__RISO_STOPPED__))
+		{
+			if(meas_task_control & __MACH_MEAS_IN_PROG)
+				mach_task_control &= (~__MACH_RISO_STARTED);
+		}
+		else if(!strcmp(&additionalCode[0][0][0],__MECH_RPE_START__))
+		{
+			if((meas_task_control & __MACH_MEAS_IN_PROG))
+				set_event(MACH_RPE_START,MachinesRPEStart);
+		}
+		else if(!strcmp(&additionalCode[0][0][0],__MECH_RPE_STOP__))
+		{
+			if((meas_task_control & __MACH_MEAS_IN_PROG)&&(mach_task_control & __MACH_RPE_IN_PROGRESS))
+				set_event(MACH_RPE_STOP,MachinesRPEStop);
 		}
 		
 	}
