@@ -44,8 +44,8 @@ I (../Inc/includes.h)(0x59BFC4A4)
 I (C:\Keil_v5\ARM\ARMCC\include\math.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x588BE5B4)
-I (../Inc/defines.h)(0x5A338389)
-I (../Inc/tasks.h)(0x5A2BB017)
+I (../Inc/defines.h)(0x5A378A81)
+I (../Inc/tasks.h)(0x5A37ACCE)
 I (C:\Keil_v5\ARM\ARMCC\include\assert.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\errno.h)(0x588BE5B4)
@@ -107,7 +107,7 @@ I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\math.h)(0x588BE5B4)
 I (../Inc/gpio.h)(0x59BFC4A4)
 I (../Inc/comunication.h)(0x59FB3C58)
-I (../Inc/defines.h)(0x5A338389)
+I (../Inc/defines.h)(0x5A378A81)
 I (../Inc/timer.h)(0x59E64E4A)
 I (../Inc/usb_device.h)(0x59BFC4A4)
 I (../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h)(0x59BFC4A6)
@@ -115,7 +115,7 @@ I (../Inc/usbd_conf.h)(0x59BFC4A4)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x588BE5B4)
 I (../Inc/test.h)(0x59BFC4A4)
 I (../Inc/includes.h)(0x59BFC4A4)
-I (../Inc/tasks.h)(0x5A2BB017)
+I (../Inc/tasks.h)(0x5A37ACCE)
 I (C:\Keil_v5\ARM\ARMCC\include\assert.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\errno.h)(0x588BE5B4)
@@ -167,8 +167,8 @@ I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart_ex.h)(0x59BFC4A2)
 I (C:\Keil_v5\ARM\ARMCC\include\math.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x588BE5B4)
-I (../Inc/defines.h)(0x5A338389)
-I (../Inc/tasks.h)(0x5A2BB017)
+I (../Inc/defines.h)(0x5A378A81)
+I (../Inc/tasks.h)(0x5A37ACCE)
 I (C:\Keil_v5\ARM\ARMCC\include\assert.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\errno.h)(0x588BE5B4)
@@ -183,7 +183,7 @@ I (../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h)(0x59BFC4A6)
 I (../Inc/usbd_conf.h)(0x59BFC4A4)
 I (../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h)(0x59BFC4A6)
 I (../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h)(0x59BFC4A6)
-F (.\do_task.c)(0x5A2A4773)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O1 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc/Legacy -I ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I ../Drivers/CMSIS/Device/ST/STM32F3xx/Include -I ../Drivers/CMSIS/Include --C99-I.\RTE\_Welding_adapter-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F3xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_ -DSTM32F373xC -DUSE_HAL_DRIVER -DSTM32F373xC -DARM_MATH_CM4 -D__FPU_PRESENT="1U" -D__USE_CMSIS-o welding_adapter\do_task.o --omf_browse welding_adapter\do_task.crf --depend welding_adapter\do_task.d)
+F (.\do_task.c)(0x5A378A80)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O1 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc/Legacy -I ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I ../Drivers/CMSIS/Device/ST/STM32F3xx/Include -I ../Drivers/CMSIS/Include --C99-I.\RTE\_Welding_adapter-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F3xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_ -DSTM32F373xC -DUSE_HAL_DRIVER -DSTM32F373xC -DARM_MATH_CM4 -D__FPU_PRESENT="1U" -D__USE_CMSIS-o welding_adapter\do_task.o --omf_browse welding_adapter\do_task.crf --depend welding_adapter\do_task.d)
 I (../Inc/do_task.h)(0x5A03723A)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x588BE5B4)
 I (../Inc/sdadc.h)(0x5A2A476D)
@@ -195,7 +195,7 @@ I (../Drivers/CMSIS/Include/core_cmFunc.h)(0x59BFC49E)
 I (../Drivers/CMSIS/Include/core_cmSimd.h)(0x59BFC49E)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\math.h)(0x588BE5B4)
-I (../Inc/defines.h)(0x5A338389)
+I (../Inc/defines.h)(0x5A378A81)
 I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal.h)(0x59BFC4A2)
 I (../Inc/stm32f3xx_hal_conf.h)(0x59BFC4A4)
 I (../Inc/main.h)(0x59BFC4A4)
@@ -228,27 +228,49 @@ I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_tim_ex.h)(0x59BFC4A2)
 I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart.h)(0x59BFC4A2)
 I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart_ex.h)(0x59BFC4A2)
 I (../Inc/os.h)(0x59E84188)
-I (../Inc/tasks.h)(0x5A2BB017)
+I (../Inc/tasks.h)(0x5A37ACCE)
 I (../Drivers/CMSIS/Include/arm_const_structs.h)(0x59BFC49E)
 I (../Drivers/CMSIS/Include/arm_common_tables.h)(0x59CE0228)
 I (../Inc/rel_driver.h)(0x59D75B7C)
 I (../Inc/comunication.h)(0x59FB3C58)
 I (../Inc/serial_com.h)(0x5A2A476D)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x588BE5B4)
-F (..\Src\cord.c)(0x5A33E562)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O1 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc/Legacy -I ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I ../Drivers/CMSIS/Device/ST/STM32F3xx/Include -I ../Drivers/CMSIS/Include --C99-I.\RTE\_Welding_adapter-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F3xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_ -DSTM32F373xC -DUSE_HAL_DRIVER -DSTM32F373xC -DARM_MATH_CM4 -D__FPU_PRESENT="1U" -D__USE_CMSIS-o welding_adapter\cord.o --omf_browse welding_adapter\cord.crf --depend welding_adapter\cord.d)
+F (..\Src\cord.c)(0x5A37AC70)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O1 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc/Legacy -I ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I ../Drivers/CMSIS/Device/ST/STM32F3xx/Include -I ../Drivers/CMSIS/Include --C99-I.\RTE\_Welding_adapter-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F3xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_ -DSTM32F373xC -DUSE_HAL_DRIVER -DSTM32F373xC -DARM_MATH_CM4 -D__FPU_PRESENT="1U" -D__USE_CMSIS-o welding_adapter\cord.o --omf_browse welding_adapter\cord.crf --depend welding_adapter\cord.d)
 I (../Inc/do_task.h)(0x5A03723A)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x588BE5B4)
-I (../Inc/defines.h)(0x5A338389)
+I (../Inc/defines.h)(0x5A378A81)
 I (../Inc/os.h)(0x59E84188)
-I (../Inc/tasks.h)(0x5A2BB017)
+I (../Inc/tasks.h)(0x5A37ACCE)
 I (../Inc/rel_driver.h)(0x59D75B7C)
 I (../Inc/comunication.h)(0x59FB3C58)
-I (../Inc/cord.h)(0x5A338EE7)
+I (../Inc/cord.h)(0x5A356DD9)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x588BE5B4)
 I (../Inc/serial_com.h)(0x5A2A476D)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x588BE5B4)
+F (..\Src\machines.c)(0x5A37AD67)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O1 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc/Legacy -I ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I ../Drivers/CMSIS/Device/ST/STM32F3xx/Include -I ../Drivers/CMSIS/Include --C99-I.\RTE\_Welding_adapter-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F3xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_ -DSTM32F373xC -DUSE_HAL_DRIVER -DSTM32F373xC -DARM_MATH_CM4 -D__FPU_PRESENT="1U" -D__USE_CMSIS-o welding_adapter\machines.o --omf_browse welding_adapter\machines.crf --depend welding_adapter\machines.d)
+I (../Inc/machines.h)(0x5A37AD6C)
+I (../Inc/defines.h)(0x5A378A81)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x588BE5B4)
+I (../Inc/rel_driver.h)(0x59D75B7C)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x588BE5B4)
+I (../Inc/serial_com.h)(0x5A2A476D)
+I (../Inc/do_task.h)(0x5A03723A)
+I (../Inc/tasks.h)(0x5A37ACCE)
+I (../Inc/os.h)(0x59E84188)
+I (C:\Keil_v5\ARM\ARMCC\include\stdio.h)(0x588BE5B4)
+I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x588BE5B4)
+I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x588BE5B4)
+F (..\Src\com_meas_tasks.c)(0x5A37ACCE)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O1 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc/Legacy -I ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I ../Drivers/CMSIS/Device/ST/STM32F3xx/Include -I ../Drivers/CMSIS/Include --C99-I.\RTE\_Welding_adapter-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F3xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_ -DSTM32F373xC -DUSE_HAL_DRIVER -DSTM32F373xC -DARM_MATH_CM4 -D__FPU_PRESENT="1U" -D__USE_CMSIS-o welding_adapter\com_meas_tasks.o --omf_browse welding_adapter\com_meas_tasks.crf --depend welding_adapter\com_meas_tasks.d)
+I (../Inc/com_meas_tasks.h)(0x5A378F07)
+I (../Inc/defines.h)(0x5A378A81)
+I (../Inc/rel_driver.h)(0x59D75B7C)
+I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x588BE5B4)
+I (../Inc/serial_com.h)(0x5A2A476D)
+I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x588BE5B4)
+I (../Inc/do_task.h)(0x5A03723A)
+F (..\Inc\com_meas_tasks.h)(0x5A378F07)()
 F (../Middlewares/ST/STM32_USB_Device_Library/Core/Src/usbd_ioreq.c)(0x59BFC4A6)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O1 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc/Legacy -I ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I ../Drivers/CMSIS/Device/ST/STM32F3xx/Include -I ../Drivers/CMSIS/Include --C99-I.\RTE\_Welding_adapter-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F3xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_ -DSTM32F373xC -DUSE_HAL_DRIVER -DSTM32F373xC -DARM_MATH_CM4 -D__FPU_PRESENT="1U" -D__USE_CMSIS-o welding_adapter\usbd_ioreq.o --omf_browse welding_adapter\usbd_ioreq.crf --depend welding_adapter\usbd_ioreq.d)
 I (../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h)(0x59BFC4A6)
 I (../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h)(0x59BFC4A6)
@@ -1481,7 +1503,7 @@ F (startup_stm32f373xc.s)(0x5A337781)(--cpu Cortex-M4.fp -g --apcs=interwork --p
 F (..\Src\os.c)(0x59C10190)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O1 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc/Legacy -I ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I ../Drivers/CMSIS/Device/ST/STM32F3xx/Include -I ../Drivers/CMSIS/Include --C99-I.\RTE\_Welding_adapter-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F3xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_ -DSTM32F373xC -DUSE_HAL_DRIVER -DSTM32F373xC -DARM_MATH_CM4 -D__FPU_PRESENT="1U" -D__USE_CMSIS-o welding_adapter\os.o --omf_browse welding_adapter\os.crf --depend welding_adapter\os.d)
 I (../Inc/os.h)(0x59E84188)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x588BE5B4)
-I (../Inc/defines.h)(0x5A338389)
+I (../Inc/defines.h)(0x5A378A81)
 I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal.h)(0x59BFC4A2)
 I (../Inc/stm32f3xx_hal_conf.h)(0x59BFC4A4)
 I (../Inc/main.h)(0x59BFC4A4)
@@ -1518,7 +1540,7 @@ I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_tim.h)(0x59BFC4A2)
 I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_tim_ex.h)(0x59BFC4A2)
 I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart.h)(0x59BFC4A2)
 I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart_ex.h)(0x59BFC4A2)
-I (../Inc/tasks.h)(0x5A2BB017)
+I (../Inc/tasks.h)(0x5A37ACCE)
 F (../Src/usbd_cdc_if.c)(0x59F9E97C)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O1 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc/Legacy -I ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I ../Drivers/CMSIS/Device/ST/STM32F3xx/Include -I ../Drivers/CMSIS/Include --C99-I.\RTE\_Welding_adapter-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F3xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_ -DSTM32F373xC -DUSE_HAL_DRIVER -DSTM32F373xC -DARM_MATH_CM4 -D__FPU_PRESENT="1U" -D__USE_CMSIS-o welding_adapter\usbd_cdc_if.o --omf_browse welding_adapter\usbd_cdc_if.crf --depend welding_adapter\usbd_cdc_if.d)
 I (../Inc/usbd_cdc_if.h)(0x59BFC4A4)
 I (../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc/usbd_cdc.h)(0x59BFC4A6)
@@ -1616,8 +1638,8 @@ I (../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h)(0x59BFC4A6
 I (../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc/usbd_cdc.h)(0x59BFC4A6)
 I (../Inc/includes.h)(0x59BFC4A4)
 I (C:\Keil_v5\ARM\ARMCC\include\math.h)(0x588BE5B4)
-I (../Inc/defines.h)(0x5A338389)
-I (../Inc/tasks.h)(0x5A2BB017)
+I (../Inc/defines.h)(0x5A378A81)
+I (../Inc/tasks.h)(0x5A37ACCE)
 I (C:\Keil_v5\ARM\ARMCC\include\assert.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\errno.h)(0x588BE5B4)
@@ -1660,7 +1682,7 @@ I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_tim.h)(0x59BFC4A2)
 I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_tim_ex.h)(0x59BFC4A2)
 I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart.h)(0x59BFC4A2)
 I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart_ex.h)(0x59BFC4A2)
-I (../Inc/defines.h)(0x5A338389)
+I (../Inc/defines.h)(0x5A378A81)
 F (../Src/usb_device.c)(0x59F9A476)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O1 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc/Legacy -I ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I ../Drivers/CMSIS/Device/ST/STM32F3xx/Include -I ../Drivers/CMSIS/Include --C99-I.\RTE\_Welding_adapter-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F3xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_ -DSTM32F373xC -DUSE_HAL_DRIVER -DSTM32F373xC -DARM_MATH_CM4 -D__FPU_PRESENT="1U" -D__USE_CMSIS-o welding_adapter\usb_device.o --omf_browse welding_adapter\usb_device.crf --depend welding_adapter\usb_device.d)
 I (../Inc/usb_device.h)(0x59BFC4A4)
 I (../Drivers/CMSIS/Device/ST/STM32F3xx/Include/stm32f3xx.h)(0x59BFC49E)
@@ -1712,8 +1734,8 @@ I (../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc/usbd_cdc.h)(0x59BFC4
 I (../Inc/usbd_cdc_if.h)(0x59BFC4A4)
 I (../Inc/includes.h)(0x59BFC4A4)
 I (C:\Keil_v5\ARM\ARMCC\include\math.h)(0x588BE5B4)
-I (../Inc/defines.h)(0x5A338389)
-I (../Inc/tasks.h)(0x5A2BB017)
+I (../Inc/defines.h)(0x5A378A81)
+I (../Inc/tasks.h)(0x5A37ACCE)
 I (C:\Keil_v5\ARM\ARMCC\include\assert.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\errno.h)(0x588BE5B4)
@@ -1806,7 +1828,7 @@ I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart_ex.h)(0x59BFC4A2)
 F (..\Src\comunication.c)(0x5A04BB92)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O1 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc/Legacy -I ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I ../Drivers/CMSIS/Device/ST/STM32F3xx/Include -I ../Drivers/CMSIS/Include --C99-I.\RTE\_Welding_adapter-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F3xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_ -DSTM32F373xC -DUSE_HAL_DRIVER -DSTM32F373xC -DARM_MATH_CM4 -D__FPU_PRESENT="1U" -D__USE_CMSIS-o welding_adapter\comunication.o --omf_browse welding_adapter\comunication.crf --depend welding_adapter\comunication.d)
 I (../Inc/comunication.h)(0x59FB3C58)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x588BE5B4)
-I (../Inc/defines.h)(0x5A338389)
+I (../Inc/defines.h)(0x5A378A81)
 I (C:\Keil_v5\ARM\ARMCC\include\string.h)(0x588BE5B4)
 I (../Inc/usbd_cdc_if.h)(0x59BFC4A4)
 I (../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc/usbd_cdc.h)(0x59BFC4A6)
@@ -1852,7 +1874,7 @@ I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart.h)(0x59BFC4A2)
 I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart_ex.h)(0x59BFC4A2)
 I (../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h)(0x59BFC4A6)
 I (../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h)(0x59BFC4A6)
-I (../Inc/tasks.h)(0x5A2BB017)
+I (../Inc/tasks.h)(0x5A37ACCE)
 I (../Inc/os.h)(0x59E84188)
 I (../Inc/test.h)(0x59BFC4A4)
 I (../Inc/includes.h)(0x59BFC4A4)
@@ -1904,7 +1926,7 @@ I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_tim_ex.h)(0x59BFC4A2)
 I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart.h)(0x59BFC4A2)
 I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart_ex.h)(0x59BFC4A2)
 I (../Inc/gpio.h)(0x59BFC4A4)
-I (../Inc/defines.h)(0x5A338389)
+I (../Inc/defines.h)(0x5A378A81)
 F (..\Src\sdadc.c)(0x5A2A4773)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O1 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc/Legacy -I ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I ../Drivers/CMSIS/Device/ST/STM32F3xx/Include -I ../Drivers/CMSIS/Include --C99-I.\RTE\_Welding_adapter-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F3xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_ -DSTM32F373xC -DUSE_HAL_DRIVER -DSTM32F373xC -DARM_MATH_CM4 -D__FPU_PRESENT="1U" -D__USE_CMSIS-o welding_adapter\sdadc.o --omf_browse welding_adapter\sdadc.crf --depend welding_adapter\sdadc.d)
 I (../Inc/sdadc.h)(0x5A2A476D)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x588BE5B4)
@@ -1948,11 +1970,11 @@ I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_tim_ex.h)(0x59BFC4A2)
 I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart.h)(0x59BFC4A2)
 I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart_ex.h)(0x59BFC4A2)
 I (../Inc/do_task.h)(0x5A03723A)
-I (../Inc/defines.h)(0x5A338389)
+I (../Inc/defines.h)(0x5A378A81)
 I (../Inc/test.h)(0x59BFC4A4)
 I (../Inc/includes.h)(0x59BFC4A4)
 I (C:\Keil_v5\ARM\ARMCC\include\stdlib.h)(0x588BE5B4)
-I (../Inc/tasks.h)(0x5A2BB017)
+I (../Inc/tasks.h)(0x5A37ACCE)
 I (C:\Keil_v5\ARM\ARMCC\include\assert.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\ctype.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\errno.h)(0x588BE5B4)
@@ -1997,11 +2019,11 @@ I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_tim.h)(0x59BFC4A2)
 I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_tim_ex.h)(0x59BFC4A2)
 I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart.h)(0x59BFC4A2)
 I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart_ex.h)(0x59BFC4A2)
-I (../Inc/defines.h)(0x5A338389)
+I (../Inc/defines.h)(0x5A378A81)
 F (.\rel_driver.c)(0x59DCB058)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O1 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc/Legacy -I ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I ../Drivers/CMSIS/Device/ST/STM32F3xx/Include -I ../Drivers/CMSIS/Include --C99-I.\RTE\_Welding_adapter-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F3xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_ -DSTM32F373xC -DUSE_HAL_DRIVER -DSTM32F373xC -DARM_MATH_CM4 -D__FPU_PRESENT="1U" -D__USE_CMSIS-o welding_adapter\rel_driver.o --omf_browse welding_adapter\rel_driver.crf --depend welding_adapter\rel_driver.d)
 I (../Inc/rel_driver.h)(0x59D75B7C)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x588BE5B4)
-I (../Inc/defines.h)(0x5A338389)
+I (../Inc/defines.h)(0x5A378A81)
 I (../Inc/timer.h)(0x59E64E4A)
 I (../Inc/comunication.h)(0x59FB3C58)
 I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal.h)(0x59BFC4A2)
@@ -2089,15 +2111,15 @@ I (../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc/usbd_cdc.h)(0x59BFC4
 I (../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h)(0x59BFC4A6)
 I (../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h)(0x59BFC4A6)
 I (../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h)(0x59BFC4A6)
-I (../Inc/defines.h)(0x5A338389)
+I (../Inc/defines.h)(0x5A378A81)
 I (../Inc/serial_com.h)(0x5A2A476D)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x588BE5B4)
 I (../Inc/comunication.h)(0x59FB3C58)
-I (../Inc/tasks.h)(0x5A2BB017)
+I (../Inc/tasks.h)(0x5A37ACCE)
 I (../Inc/os.h)(0x59E84188)
 F (.\serial_com.c)(0x5A337D15)(--c99 -c --cpu Cortex-M4.fp -D__MICROLIB -g -O1 --apcs=interwork --split_sections -I ../Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc -I ../Drivers/STM32F3xx_HAL_Driver/Inc/Legacy -I ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc -I ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc -I ../Drivers/CMSIS/Device/ST/STM32F3xx/Include -I ../Drivers/CMSIS/Include --C99-I.\RTE\_Welding_adapter-IC:\Keil_v5\ARM\PACK\ARM\CMSIS\5.1.1\CMSIS\Include-IC:\Keil_v5\ARM\PACK\Keil\STM32F3xx_DFP\1.4.0\Device\Include-D__UVISION_VERSION="524" -D_RTE_ -DSTM32F373xC -DUSE_HAL_DRIVER -DSTM32F373xC -DARM_MATH_CM4 -D__FPU_PRESENT="1U" -D__USE_CMSIS-o welding_adapter\serial_com.o --omf_browse welding_adapter\serial_com.crf --depend welding_adapter\serial_com.d)
 I (../Inc/serial_com.h)(0x5A2A476D)
-I (../Inc/defines.h)(0x5A338389)
+I (../Inc/defines.h)(0x5A378A81)
 I (C:\Keil_v5\ARM\ARMCC\include\stdint.h)(0x588BE5B4)
 I (C:\Keil_v5\ARM\ARMCC\include\stdbool.h)(0x588BE5B4)
 I (../Inc/do_task.h)(0x5A03723A)
@@ -2151,6 +2173,6 @@ I (../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart_ex.h)(0x59BFC4A2)
 I (../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h)(0x59BFC4A6)
 I (../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h)(0x59BFC4A6)
 I (../Inc/comunication.h)(0x59FB3C58)
-I (../Inc/tasks.h)(0x5A2BB017)
+I (../Inc/tasks.h)(0x5A37ACCE)
 I (../Inc/os.h)(0x59E84188)
-I (../Inc/cord.h)(0x5A338EE7)
+I (../Inc/cord.h)(0x5A356DD9)

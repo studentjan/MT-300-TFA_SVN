@@ -453,9 +453,10 @@ enum CONNECTION_MASKS
 	__CHECK_TO_TERMINAL		=0x00000020,
 	__CHECK_TO_PAT				=0x00000040,
 };
-enum CORD_TASK_MASKS
+enum MEAS_TASK_MASKS
 {
 	__CORD_MEAS_IN_PROG												=0x00000001,
+	__MACH_MEAS_IN_PROG												=0x00000002,
 //	__CORD_RPE_RES_REQUESTED									=0x00000002,
 //	__CORD_RISO_RES_REQUESTED									=0x00000004,
 //	__CORD_CORECT_WIRING_MEASURED							=0x00000008,
@@ -607,7 +608,7 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 //TEST
 #define __PROTOCOL_TEST__ "PROTOCOL_TEST"
 
-//CONNECTION
+//++++++++++CONNECTION+++++++++++++++
 //--additionalcode
 #define __CONNECTION_REQUEST__	"CONNECT_REQUEST"
 #define __CONNECTION_ESTABLISHED__	"CONNECTION_ESTABLED"
@@ -619,11 +620,12 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define __CON_NOK_		"NOK"
 
 
-//CORD
+//+++++++++++++++CORD+++++++++++++++++
 //--additionalcode
 #define __INIT_CORD__	"INIT"
 #define __START_CORRECT_WIRING__	"START_C_W"
 #define __CORD_CW__					"CW"
+#define __CORD_CW_STARTED__	"CW_STARTED"
 #define __STOP_C__						"STOP"
 #define __INIT_C__					"INIT"
 #define __CORD_INITIATED__			"INITIATED"
@@ -631,8 +633,8 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define __RPE_LOW_STARTED__		"RPE_L_STARTED"
 #define __START_RPE_HIGH__		"RPE_H_START"
 #define __RPE_HIGH_STARTED__	"RPE_H_STARTED"
-#define __STOP_RPE__			"RPE_STOP"
-#define __RPE_STOPPED__			"RPE_STOPPED"
+#define __STOP_RPE__					"RPE_STOP"
+#define __RPE_STOPPED__				"RPE_STOPPED"
 #define __GET_RPE_RES__			"RPE_RES_GET"
 #define __RPE_RESISTANCE__		"RPE_RES"
 #define __START_RISO__			"RISO_START"
@@ -712,9 +714,11 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define __N_PE_CRIS_CROSSED__		"N_PE_CRIS"
 //--PHASES TO PE
 #define __START_PHASES_TO_PE__		"START_ALL-PE"
+#define __PHASES_TO_PE_STARTED__	"ALL-PE_STARTED"
 #define __RISO_PHASES_TO_PE__			"RISO_ALL-PE"
 //--ONE PHASE TO PE
 #define __START_ONE_PHASE_TO_PE__	"START_ONE-PE"
+#define __ONE_PHASE_TO_PE_STARTED__	"ONE-PE_STARTED"
 #define __RISO_ONE_PHASE_TO_PE__	"RISO_ONE-PE"
 #define	__L1_PE_FAIL__						"L1-PE_F"
 #define	__L2_PE_FAIL__						"L2-PE_F"
@@ -722,6 +726,7 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define	__N_PE_FAIL__							"N-PE_F"
 //--PHASE TO PHASE
 #define __START_PHASE_TO_PHASE__	"START_PH_PH"
+#define __PHASE_TO_PHASE_STARTED__	"PH_PH_STARTED"
 #define __RISO_PHASE_TO_PHASE__		"RISO_PH-PH"
 #define __L1_N_FAIL__						"L1-N_F"
 #define __L2_N_FAIL__						"L2-N_F"
@@ -731,6 +736,7 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define __L2_L3_FAIL__						"L2-L3_F"
 //--CONTINUITY
 #define __START_CONTINUITY__		"START_CONT"
+#define __CONTINUITY_STARTED__	"CONT_STARTED"
 #define __CORD_CONTINUITY__			"CONT"
 #define __CORD_L1__					"L1"
 #define __CORD_L2__					"L2"
@@ -763,7 +769,16 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 //--add
 #define __MAINS_STAT__			"MAINS_STAT"
 
-	
+//+++++++++++++++MACH+++++++++++++++++
+#define __MACHINES__				"MACH"
+#define __INIT_MACHINES__		"INIT"
+#define __MECH_RPE_START__	"START_RPE"
+#define __MECH_RPE_STARTED__	"RPE_STARTED"
+#define __MECH_RPE_STOP__			"STOP_RPE"
+#define __MECH_RPE_STOPPED__	"RPE_STOPPED"
+#define __STOP_MACH__				"STOP"
+#define __MACH_INITIATED__			"INITIATED"
+
 //++++++++++++++++++++++++++++++++++++++++++++++++
 
 #endif

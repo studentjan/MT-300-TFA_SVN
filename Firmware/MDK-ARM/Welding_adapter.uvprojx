@@ -437,6 +437,21 @@
               <FileType>1</FileType>
               <FilePath>..\Src\cord.c</FilePath>
             </File>
+            <File>
+              <FileName>machines.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\machines.c</FilePath>
+            </File>
+            <File>
+              <FileName>com_meas_tasks.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\com_meas_tasks.c</FilePath>
+            </File>
+            <File>
+              <FileName>com_meas_tasks.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Inc\com_meas_tasks.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

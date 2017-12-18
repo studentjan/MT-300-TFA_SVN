@@ -113,6 +113,7 @@ void cord_meas_correct_wiring(void)
 			//posljemo ukaz za start
 			if(cord_task_control & __CORD_INITIATED)
 			{
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__CORD_CW_STARTED__,"",device.device_dir);
 				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__START_RPE_LOW__,"",device.device_dir);
 				cord_correct_wiring_init();
 				cord_cw_count++;
@@ -4996,6 +4997,7 @@ void cord_RISO_phasesToPE(void)
 	{
 		case 0:
 			cord_RISO_init();
+			SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__PHASES_TO_PE_STARTED__,"",device.device_dir);
 			cord_task_control |=__CORD_RISO_PHASES_TO_PE_IN_PROGRESS;
 			SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__START_RISO__,"",device.device_dir);
 			cord_RISO_count++;
@@ -5069,6 +5071,7 @@ void cord_RISO_onePhaseToPE(void)
 		{
 			case 0:
 				cord_RISO_init();
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__PHASES_TO_PE_STARTED__,"",device.device_dir);
 				cord_task_control |=__CORD_RISO_PHASES_TO_PE_IN_PROGRESS;
 				cord_RISO_count++;
 				break;
@@ -5108,6 +5111,7 @@ void cord_RISO_onePhaseToPE(void)
 				}
 			break;
 			case 3:
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__ONE_PHASE_TO_PE_STARTED__,"",device.device_dir);
 				cord_task_control |= __CORD_RISO_ONE_PHASE_TO_PE_IN_PROGRESS;
 				//cord_task_control |= __CORD_RISO_RES_REQUESTED;
 				cord_RISO_count++;
@@ -5301,6 +5305,7 @@ void cord_RISO_phaseToPhase(void)
 	{
 		if(cord_RISO_count<=11) cord_RISO_count=10;	//damo count za ena nazaj zato da lahko se enkrat posljemo get resistance
 		cord_task_control |= __CORD_RISO_PHASE_TO_PHASE_IN_PROGRESS;
+		SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__PHASE_TO_PHASE_STARTED__,"",device.device_dir);
 		SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__START_RISO__,"",device.device_dir);
 	}
 	if(cord_task_control & __CORD_RISO_STARTED)
@@ -5637,6 +5642,7 @@ void cord_continuity_test(void)
 		case 0:
 			cord_continuity_init();
 			cord_continuity_count++;
+			SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__CONTINUITY_STARTED__,"",device.device_dir);
 			cord_task_control |= __CORD_CONTINUITY_IN_PROGRESS;
 			CON_L1_A;
 			CON_L1_B;
@@ -5831,7 +5837,6 @@ void cord_transmittContiunuity(bool pass)
 
 void stop_cord(void)
 {
-	struct connected_device device = get_connected_device();
 	cord_task_control &= (~__CORD_MEAS_IN_PROG);
 	rst_REL(6);
 	rst_REL(2);
