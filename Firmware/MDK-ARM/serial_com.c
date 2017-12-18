@@ -48,6 +48,7 @@ extern uint32_t meas_task_control;
 extern uint32_t mach_task_control;
 extern int start_cord_count;
 extern uint32_t start_mach_count;
+extern uint32_t current_URES_measurement;
 //-----------GLOBALNE SPREMENLJIVKE----------------------
 uint8_t SERIAL_direction;
 uint8_t event_status; 

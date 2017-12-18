@@ -35,8 +35,20 @@ void stop_mach(void);
 #define __MACH_RISO_ONE_PHASE_TO_PE_MEASURED		0x00000080
 #define __MACH_INIT_RECIEVED										0x00000100
 #define __MACH_INITIATED												0x00000200
+#define __MACH_URES_IN_PROGRESS									0x00000400
+#define	__MACH_URES_L1_PE_MEASURED							0x00000800
+#define	__MACH_URES_L2_PE_MEASURED							0x00001000
+#define	__MACH_URES_L3_PE_MEASURED							0x00002000
+#define	__MACH_URES_L1_N_MEASURED								0x00004000
+#define	__MACH_URES_L2_N_MEASURED								0x00008000
+#define	__MACH_URES_L3_N_MEASURED								0x00010000
+#define	__MACH_URES_L1_L2_MEASURED							0x00020000
+#define	__MACH_URES_L1_L3_MEASURED							0x00040000
+#define	__MACH_URES_L2_L3_MEASURED							0x00080000
+
 
 #define MACH_RISO_MASKS				0x00000000FC
+#define MACH_URES_MASKS				0x00000000FC
 //++++++++++++++++++++++++++++++zastavice za mach_insolation_status+++++++++++++++++++++++++++++++
 #define L1_PE_FAIL					0x00000001
 #define L2_PE_FAIL					0x00000002
@@ -53,6 +65,9 @@ void stop_mach(void);
 #define __L1_N		4
 #define __L2_N		5
 #define __L3_N		6
+#define __L1_L2		7
+#define __L1_L3		8
+#define __L2_L3		9
 
 
 

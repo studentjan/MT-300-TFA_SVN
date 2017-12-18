@@ -32,11 +32,13 @@ void mach_RISO_init(void);
 void mach_transmittOnePhaseToPE(void);
 void mach_transmittPhasesToPE(bool pass);
 void MachinesInit(void);
+void mach_URES_init(void);
 
 uint32_t MACH_PHASE_NUM_SETTING = _3_PHASE;
 
 uint32_t mach_RISO_count=0;
 uint32_t start_mach_count=0;
+uint32_t mach_URES_count=0;
 
 static struct connected_device device;
 
@@ -554,9 +556,168 @@ bool mach_check_RISO_resistance(void)
 		return true;
 }
 
+void mach_URES_init(void)
+{
+	mach_URES_count=0;
+	mach_task_control &= (~MACH_URES_MASKS);
+	if(connection_control & __CON_TO_MT310)
+	{
+		set_REL(2);
+		set_REL(3);
+		set_REL(4);
+		set_REL(5);
+		rst_REL(8);
+		rst_REL(10);
+		rst_REL(11);
+		rst_REL(12);
+		rst_REL(13);
+		rst_REL(30);
+		rst_REL(33);
+		rst_REL(34);
+		rst_REL(35);
+		rst_REL(36);
+		rst_REL(39);
+		rst_REL(40);
+		rst_REL(6);
+		rst_REL(9);
+		rst_REL(17);
+		rst_REL(18);
+		rst_REL(19);
+		rst_REL(20);
+		set_REL(27);
+		set_REL(22);
+		rst_REL(28);
+		set_REL(16);
+	}
+}
+	
 void mach_URES(void)
 {
-	switch()
+	if(mach_URES_count==0)
+	{
+		mach_URES_init();
+	}
+	switch(current_URES_measurement)
+	{
+		case __L1_PE: 
+			rst_REL(11);
+			rst_REL(12);
+			rst_REL(13);
+			rst_REL(33);
+			rst_REL(34);
+			rst_REL(35);
+			rst_REL(36);
+			rst_REL(20);
+			set_REL(15);
+			set_REL(10);
+			break;
+		case __L2_PE: 
+			rst_REL(10);
+			rst_REL(12);
+			rst_REL(13);
+			rst_REL(33);
+			rst_REL(34);
+			rst_REL(35);
+			rst_REL(36);
+			rst_REL(20);
+			set_REL(15);
+			set_REL(11);
+			break;
+		case __L3_PE: 
+			rst_REL(10);
+			rst_REL(11);
+			rst_REL(13);
+			rst_REL(33);
+			rst_REL(34);
+			rst_REL(35);
+			rst_REL(36);
+			rst_REL(20);
+			set_REL(15);
+			set_REL(12);
+			break;
+		case __L1_N: 
+			rst_REL(11);
+			rst_REL(12);
+			rst_REL(13);
+			rst_REL(33);
+			rst_REL(34);
+			rst_REL(35);
+			rst_REL(36);
+			rst_REL(15);
+			set_REL(20);
+			set_REL(10);
+			break;
+		case __L2_N: 
+			rst_REL(10);
+			rst_REL(12);
+			rst_REL(13);
+			rst_REL(33);
+			rst_REL(34);
+			rst_REL(35);
+			rst_REL(36);
+			rst_REL(15);
+			set_REL(20);
+			set_REL(11);
+			break;
+		case __L3_N: 
+			rst_REL(11);
+			rst_REL(10);
+			rst_REL(13);
+			rst_REL(33);
+			rst_REL(34);
+			rst_REL(35);
+			rst_REL(36);
+			rst_REL(15);
+			set_REL(20);
+			set_REL(12);
+			break;
+		case __L1_L2: 
+			rst_REL(11);
+			rst_REL(12);
+			rst_REL(13);
+			rst_REL(33);
+			rst_REL(34);
+			rst_REL(35);
+			rst_REL(36);
+			rst_REL(15);
+			rst_REL(17);
+			rst_REL(19);
+			rst_REL(20);
+			set_REL(10);
+			set_REL(18);
+			break;
+		case __L1_L3: 
+			rst_REL(11);
+			rst_REL(12);
+			rst_REL(13);
+			rst_REL(33);
+			rst_REL(34);
+			rst_REL(35);
+			rst_REL(36);
+			rst_REL(15);
+			rst_REL(18);
+			rst_REL(17);
+			rst_REL(20);
+			set_REL(10);
+			set_REL(19);
+			break;
+		case __L2_L3: 
+			rst_REL(10);
+			rst_REL(12);
+			rst_REL(13);
+			rst_REL(33);
+			rst_REL(34);
+			rst_REL(35);
+			rst_REL(36);
+			rst_REL(15);
+			rst_REL(18);
+			rst_REL(17);
+			rst_REL(20);
+			set_REL(11);
+			set_REL(19);
+			break;
+		default: break;
+	}
 }	
 
 
