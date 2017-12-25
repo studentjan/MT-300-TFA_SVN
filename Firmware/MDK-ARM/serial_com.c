@@ -11,9 +11,14 @@
 //				- za preverjanje ACK:	CheckIfACK(...)
 //	*****************************************************************************
 //	*	najprej v serial_com.h definieamo mozne smeri (vodila) iz katerih lahko dobivamo podatke (Makroji smeri)
-//	*	nastavimo TRANSMIT_COMMAND_CHECK na _ON ali OFF
+//	*	nastavimo TRANSMIT_COMMAND_CHECK na _ON ali _OFF
+//	*	nastavimo SYNCHRONUS_TRANSMITT na _ON ali _OFF
 //  * preverimo ce so vsi makroji nastavljeni pravilno
-//	*	dodamo funkcije za posiljanje v funkcijo serial_send_handler(..) - dodane funkcije morajo biti odvisne od speri prejema podatkov
+//	* ce smo nastavili SYNCHRONUS_TRANSMITT na _OFF potem:
+//	*	--	dodamo funkcije za posiljanje v funkcijo serial_send_handler(..) - dodane funkcije morajo biti odvisne od speri prejema podatkov
+//	* ce smo nastavili SYNCHRONUS_TRANSMITT na _OFF potem:
+//	* -- napisemo funkcijo z imenom void SendTimerInit(void), v kateri inicializiramo timer
+//  * -- dodamo SINCHRONUS_TRANSMITT v tasks.h operacijskega sistema
 //	*	dodamo svojo kodo za analiziranje prejete komande v command_analyze(..)
 //	***************************************************************************
 //	* ko imamo vse nastavljeno lahko v main.c - ju poklicemo inicializacijo serial_com_init()
@@ -39,6 +44,9 @@
 #include <stdio.h>
 #include "cord.h"
 #include "machines.h"
+#include "stm32f3xx_it.h"
+#include "stm32f3xx_hal.h"
+#include "stm32f3xx.h"
 
 //-----------ZUNANJE SPREMENLJIVKE-----------------------
 extern uint8_t event_status; 
@@ -55,8 +63,12 @@ uint8_t event_status;
 SERIAL_RX_t SERIAL_in_queue_buffer[SERIAL_IN_QUEUE_SIZE]; //array of UART3 RX commands
 volatile uint32_t RxFifoIndex = 0;
 static uint8_t INPUT_Buffer[RxBufferSize_MAX];
+static void increaseWritePtr(void);
+static void SinchronusTransmittFunc(void);
 int int_from_str;
 char* float_from_str;
+
+TIM_HandleTypeDef htim2;
 
 int indikator1;
 int indikator2;
@@ -877,12 +889,11 @@ static void command_analyze(uint8_t dir)
 //inicializacija cakalne vrste komand
 void serial_com_init(void)
 {
- uint8_t queue_cnt;
- 
- event_status=QUEUE_PASS; //first do event is enabled 		
+	uint8_t queue_cnt;
+	event_status=QUEUE_PASS; //first do event is enabled 		
 	
- queue_cnt=0;
- while(queue_cnt<SERIAL_IN_QUEUE_SIZE)
+	queue_cnt=0;
+	while(queue_cnt<SERIAL_IN_QUEUE_SIZE)
   {
    SERIAL_in_queue_buffer[queue_cnt].command_ID=QUEUE_FREE;
    queue_cnt++;
@@ -1120,21 +1131,24 @@ static bool CheckCRC(unsigned char isCRC, unsigned char CRCvalue, char *message)
 //pazi da ni string, ki ga posiljas dolg 64 bytov, ker ne bo delal prov !!!!!!!!!!!!!!!
 static void serial_send_handler(char * send_buff, uint16_t buffer_size,uint8_t dir)
 {
-	if(buffer_size==64)
+//	if(buffer_size==64)//neki zajebava ce je 64 dolg
+//	{
+//		//CDC_Transmit_FS((uint8_t *)"DOLZINA BUFERJA JE 64 BITOV - PROSIM SPREMENI KER NE BO DELAL", 61);
+//	}
+	if(SYNCHRONUS_TRANSMITT == _ON)
 	{
-		//CDC_Transmit_FS((uint8_t *)"DOLZINA BUFERJA JE 64 BITOV - PROSIM SPREMENI KER NE BO DELAL", 61);
+		Transmit_out_buff[write_out_count].size=buffer_size;
+		Transmit_out_buff[write_out_count].dirrection =dir;
+		Transmit_out_buff[write_out_count].msg_ptr=(char*)malloc(buffer_size+1);
+		if(!(Transmit_out_buff[write_out_count].msg_ptr==NULL))	//v HEAP-u je zmanjkalo spomina
+			strcpy(Transmit_out_buff[write_out_count].msg_ptr, send_buff);
+		increaseWritePtr();
 	}
 	else
 	{
 		if((dir==_UART_DIR_USB)||(dir==_UART_DIR_DEBUG))
 		{
 			CDC_Transmit_FS((uint8_t *)send_buff, buffer_size);
-			//pogledamo ce je buffer polm
-			if((write_out_count==(TRANSMIT_OUT_BUFF_SIZE-1))&&(read_out_count==0)) ;//buffer je poln
-			else if(write_out_count==(read_out_count-1));;//buffer je poln
-			//ce je poln ne povecamo stevca ampak smo se zmeri na zadnjem mestu
-			else if(write_out_count>=(TRANSMIT_OUT_BUFF_SIZE-1))write_out_count=0;
-			else write_out_count++;
 		}
 	}
 	
@@ -1452,3 +1466,61 @@ static void command_return(uint8_t ans, uint8_t dir)
 
 }
 
+static void increaseWritePtr(void)
+{
+	if((write_out_count==(TRANSMIT_OUT_BUFF_SIZE-1))&&(read_out_count==0)) ;//buffer je poln
+	else if(write_out_count==(read_out_count-1));//buffer je poln
+	//ce je poln ne povecamo stevca ampak smo se zmeri na zadnjem mestu
+	else if(write_out_count>=(TRANSMIT_OUT_BUFF_SIZE-1))write_out_count=0;//povecanje stevca ce je buffer poln
+	else write_out_count++;
+}
+//RS485 TIMER
+void TIM2_IRQHandler(void)  
+{
+	HAL_TIM_Base_Stop_IT(&htim2);
+	set_event(SINCHRONUS_TRANSMITT, SinchronusTransmittFunc);
+}
+
+static void SinchronusTransmittFunc(void)
+{
+	if(write_out_count != read_out_count)//izvede se ce buffer ni prazen
+	{
+		CDC_Transmit_FS((uint8_t *)Transmit_out_buff[read_out_count].msg_ptr, Transmit_out_buff[read_out_count].size);
+		if((read_out_count+1)==TRANSMIT_HANDLE_BUFF_SIZE)read_out_count=0;//gre na zacetek ker je ciklicen buffer
+		else read_out_count++;
+	}
+}
+//Inicializacija timerja za sinhrono posiljanje
+//Ce zelis definirati drug timer ali uporabljas drug procesor potem napisi svojo inicializacijo, ki ima enako ime kot ta
+//ker je funkcija definirana kot __weak, bo na novo definirana funkcija zamenjala spodnjo. Timer inicializiraj s podobnimi nastavitvami kot v tem primeru. 
+__weak void SendTimerInit(void)
+{
+	/* TIM2 init function -- v mojem primeru uporabljen timer 2*/ 
+  TIM_ClockConfigTypeDef sClockSourceConfig;
+  TIM_MasterConfigTypeDef sMasterConfig;
+
+  htim2.Instance = TIM2;
+  htim2.Init.Prescaler = 71;
+  htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim2.Init.Period = 50000;
+  htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+
+}
