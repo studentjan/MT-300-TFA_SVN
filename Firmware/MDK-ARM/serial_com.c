@@ -87,6 +87,13 @@ typedef struct
 
 typedef struct
 {
+	uint32_t dirrection;
+	uint32_t size;
+	char * msg_ptr;
+}TRANSMIT_OUT_BUFFER;
+
+typedef struct
+{
 	char transmitter, reciever;
   int msg_ID;
   char * replay_function;
@@ -96,11 +103,18 @@ typedef struct
 }MESSAGE_CONSTRUCTOR;
 
 TRANSMIT_BUFFER Transmit_handle_buff[TRANSMIT_HANDLE_BUFF_SIZE];
+TRANSMIT_OUT_BUFFER Transmit_out_buff[TRANSMIT_OUT_BUFF_SIZE];
 
+//---------------------CIKLICEN BUFFER ZA TRANSMIT HANDLE BUFFER------------------------
 //stevca za vpisovanje in branje v ciklicen buffer
 uint32_t write_count=0;
 uint32_t read_count=0;
 uint32_t g;
+//---------------------CIKLICEN BUFFER ZA TRANSMIT OUT BUFFER------------------------
+uint32_t write_out_count=0;
+uint32_t read_out_count=0;
+
+
 #endif
 
 //funkcija za razbijanje stringov po delimiterjih - nadomesti delimiter z 0 zato jih moramo nekako dat nazaj
@@ -444,122 +458,120 @@ static void command_analyze(uint8_t dir)
 	{
 		set_event(SEND_WARNING_MSG,send_warning_MSG);
 	}
-	else if(!strcmp(m_function,__MT_300__))
-	{
 /*******************************************************************************/
 /**															MEASURING METODS															**/
 /*******************************************************************************/
-		if(!strcmp(m_command,__POWER__))
-	  {     
-			if(!strcmp(&additionalCode[0][0][0],__START__))
-			{
-				start_measure();
-			}
-			else if(!strcmp(&additionalCode[0][0][0],__STOP__))
-			{
-				stop_measure();
-			}
-			else if(!strcmp(&additionalCode[0][0][0],__START_NO_THD__))
-			{
-				start_measure_no_THD();
-			}
-			
-		} 
+	else if(!strcmp(m_function,__POWER__))
+	{     
+		if(!strcmp(m_command,__START__))
+		{
+			start_measure();
+		}
+		else if(!strcmp(m_command,__STOP__))
+		{
+			stop_measure();
+		}
+		else if(!strcmp(m_command,__START_NO_THD__))
+		{
+			start_measure_no_THD();
+		}
+		
+	} 
 /*********************************************************************************/
 /**									RELAYS										**/
 /*********************************************************************************/
-	else if(!strcmp(m_command,__RELAY__))
+	else if(!strcmp(m_function,__RELAY__))
 	{ 
-		if(!strcmp(&additionalCode[0][0][0],__1_38_ON__))				set_REL(1);
-		else if(!strcmp(&additionalCode[0][0][0],__1_38_OFF__))	rst_REL(1);
-		else if(!strcmp(&additionalCode[0][0][0],__2_ON__))	set_REL(2);
-		else if(!strcmp(&additionalCode[0][0][0],__2_OFF__))	rst_REL(2);
-		else if(!strcmp(&additionalCode[0][0][0],__3_ON__))	set_REL(3);		
-		else if(!strcmp(&additionalCode[0][0][0],__3_OFF__))	rst_REL(3);
-		else if(!strcmp(&additionalCode[0][0][0],__4_ON__))	set_REL(4);
-		else if(!strcmp(&additionalCode[0][0][0],__4_OFF__))	rst_REL(4);
-		else if(!strcmp(&additionalCode[0][0][0],__5_ON__))	set_REL(5);
-		else if(!strcmp(&additionalCode[0][0][0],__5_OFF__))	rst_REL(5);
-		else if(!strcmp(&additionalCode[0][0][0],__6_ON__))	set_REL(6);		
-		else if(!strcmp(&additionalCode[0][0][0],__6_OFF__))	rst_REL(6);
-		else if(!strcmp(&additionalCode[0][0][0],__7_ON__))	set_REL(7);
-		else if(!strcmp(&additionalCode[0][0][0],__7_OFF__))	rst_REL(7);
-		else if(!strcmp(&additionalCode[0][0][0],__8_ON__))	set_REL(8);
-		else if(!strcmp(&additionalCode[0][0][0],__8_OFF__))	rst_REL(8);
-		else if(!strcmp(&additionalCode[0][0][0],__9_ON__))	set_REL(9);		
-		else if(!strcmp(&additionalCode[0][0][0],__9_OFF__))	rst_REL(9);
-		else if(!strcmp(&additionalCode[0][0][0],__10_ON__))	set_REL(10);
-		else if(!strcmp(&additionalCode[0][0][0],__10_OFF__))	rst_REL(10);
-		else if(!strcmp(&additionalCode[0][0][0],__11_ON__))	set_REL(11);
-		else if(!strcmp(&additionalCode[0][0][0],__11_OFF__))	rst_REL(11);
-		else if(!strcmp(&additionalCode[0][0][0],__12_ON__))	set_REL(12);		
-		else if(!strcmp(&additionalCode[0][0][0],__12_OFF__))	rst_REL(12);
-		else if(!strcmp(&additionalCode[0][0][0],__13_ON__))	set_REL(13);
-		else if(!strcmp(&additionalCode[0][0][0],__13_OFF__))	rst_REL(13);
-		else if(!strcmp(&additionalCode[0][0][0],__14_ON__))	set_REL(14);
-		else if(!strcmp(&additionalCode[0][0][0],__14_OFF__))	rst_REL(14);
-		else if(!strcmp(&additionalCode[0][0][0],__15_ON__))	set_REL(15);		
-		else if(!strcmp(&additionalCode[0][0][0],__15_OFF__))	rst_REL(15);
-		else if(!strcmp(&additionalCode[0][0][0],__16_ON__))	set_REL(16);
-		else if(!strcmp(&additionalCode[0][0][0],__16_OFF__))	rst_REL(16);
-		else if(!strcmp(&additionalCode[0][0][0],__17_ON__))	set_REL(17);
-		else if(!strcmp(&additionalCode[0][0][0],__17_OFF__))	rst_REL(17);
-		else if(!strcmp(&additionalCode[0][0][0],__18_ON__))	set_REL(18);		
-		else if(!strcmp(&additionalCode[0][0][0],__18_OFF__))	rst_REL(18);
-		else if(!strcmp(&additionalCode[0][0][0],__19_ON__))	set_REL(19);
-		else if(!strcmp(&additionalCode[0][0][0],__19_OFF__))	rst_REL(19);
-		else if(!strcmp(&additionalCode[0][0][0],__20_ON__))	set_REL(20);
-		else if(!strcmp(&additionalCode[0][0][0],__20_OFF__))	rst_REL(20);
-		else if(!strcmp(&additionalCode[0][0][0],__21_43_ON__))	set_REL(21);		
-		else if(!strcmp(&additionalCode[0][0][0],__21_43_OFF__))	rst_REL(21);
-		else if(!strcmp(&additionalCode[0][0][0],__22_ON__))	set_REL(22);
-		else if(!strcmp(&additionalCode[0][0][0],__22_OFF__))	rst_REL(22);
-		else if(!strcmp(&additionalCode[0][0][0],__23_ON__))	set_REL(23);
-		else if(!strcmp(&additionalCode[0][0][0],__23_OFF__))	rst_REL(23);
-		else if(!strcmp(&additionalCode[0][0][0],__24_ON__))	set_REL(24);		
-		else if(!strcmp(&additionalCode[0][0][0],__24_OFF__))	rst_REL(24);
-		else if(!strcmp(&additionalCode[0][0][0],__25_ON__))	set_REL(25);
-		else if(!strcmp(&additionalCode[0][0][0],__25_OFF__))	rst_REL(25);
-		else if(!strcmp(&additionalCode[0][0][0],__26_ON__))	set_REL(26);
-		else if(!strcmp(&additionalCode[0][0][0],__26_OFF__))	rst_REL(26);
-		else if(!strcmp(&additionalCode[0][0][0],__27_ON__))	set_REL(27);		
-		else if(!strcmp(&additionalCode[0][0][0],__27_OFF__))	rst_REL(27);
-		else if(!strcmp(&additionalCode[0][0][0],__28_ON__))	set_REL(28);
-		else if(!strcmp(&additionalCode[0][0][0],__28_OFF__))	rst_REL(28);
-		else if(!strcmp(&additionalCode[0][0][0],__29_ON__))	set_REL(29);
-		else if(!strcmp(&additionalCode[0][0][0],__29_OFF__))	rst_REL(29);
-		else if(!strcmp(&additionalCode[0][0][0],__30_ON__))	set_REL(30);
-		else if(!strcmp(&additionalCode[0][0][0],__30_OFF__))	rst_REL(30);
-		else if(!strcmp(&additionalCode[0][0][0],__31_ON__))	set_REL(31);
-		else if(!strcmp(&additionalCode[0][0][0],__31_OFF__))	rst_REL(31);
-		else if(!strcmp(&additionalCode[0][0][0],__32_ON__))	set_REL(32);
-		else if(!strcmp(&additionalCode[0][0][0],__32_OFF__))	rst_REL(32);
-		else if(!strcmp(&additionalCode[0][0][0],__33_ON__))	set_REL(33);
-		else if(!strcmp(&additionalCode[0][0][0],__33_OFF__))	rst_REL(33);
-		else if(!strcmp(&additionalCode[0][0][0],__34_ON__))	set_REL(34);
-		else if(!strcmp(&additionalCode[0][0][0],__34_OFF__))	rst_REL(34);
-		else if(!strcmp(&additionalCode[0][0][0],__35_ON__))	set_REL(35);
-		else if(!strcmp(&additionalCode[0][0][0],__35_OFF__))	rst_REL(35);
-		else if(!strcmp(&additionalCode[0][0][0],__36_ON__))	set_REL(36);
-		else if(!strcmp(&additionalCode[0][0][0],__36_OFF__))	rst_REL(36);
-		else if(!strcmp(&additionalCode[0][0][0],__37_ON__))	set_REL(37);
-		else if(!strcmp(&additionalCode[0][0][0],__37_OFF__))	rst_REL(37);
-		else if(!strcmp(&additionalCode[0][0][0],__39_ON__))	set_REL(39);
-		else if(!strcmp(&additionalCode[0][0][0],__39_OFF__))	rst_REL(39);
-		else if(!strcmp(&additionalCode[0][0][0],__40_ON__))	set_REL(40);
-		else if(!strcmp(&additionalCode[0][0][0],__40_OFF__))	rst_REL(40);
-		else if(!strcmp(&additionalCode[0][0][0],__41_ON__))	set_REL(41);
-		else if(!strcmp(&additionalCode[0][0][0],__41_OFF__))	rst_REL(41);
-		else if(!strcmp(&additionalCode[0][0][0],__42_ON__))	set_REL(42);
-		else if(!strcmp(&additionalCode[0][0][0],__42_OFF__))	rst_REL(42);
-		else if(!strcmp(&additionalCode[0][0][0],__RESET_ALL__))	reset_all_REL();
+		if(!strcmp(m_command,__1_38_ON__))				set_REL(1);
+		else if(!strcmp(m_command,__1_38_OFF__))	rst_REL(1);
+		else if(!strcmp(m_command,__2_ON__))	set_REL(2);
+		else if(!strcmp(m_command,__2_OFF__))	rst_REL(2);
+		else if(!strcmp(m_command,__3_ON__))	set_REL(3);		
+		else if(!strcmp(m_command,__3_OFF__))	rst_REL(3);
+		else if(!strcmp(m_command,__4_ON__))	set_REL(4);
+		else if(!strcmp(m_command,__4_OFF__))	rst_REL(4);
+		else if(!strcmp(m_command,__5_ON__))	set_REL(5);
+		else if(!strcmp(m_command,__5_OFF__))	rst_REL(5);
+		else if(!strcmp(m_command,__6_ON__))	set_REL(6);		
+		else if(!strcmp(m_command,__6_OFF__))	rst_REL(6);
+		else if(!strcmp(m_command,__7_ON__))	set_REL(7);
+		else if(!strcmp(m_command,__7_OFF__))	rst_REL(7);
+		else if(!strcmp(m_command,__8_ON__))	set_REL(8);
+		else if(!strcmp(m_command,__8_OFF__))	rst_REL(8);
+		else if(!strcmp(m_command,__9_ON__))	set_REL(9);		
+		else if(!strcmp(m_command,__9_OFF__))	rst_REL(9);
+		else if(!strcmp(m_command,__10_ON__))	set_REL(10);
+		else if(!strcmp(m_command,__10_OFF__))	rst_REL(10);
+		else if(!strcmp(m_command,__11_ON__))	set_REL(11);
+		else if(!strcmp(m_command,__11_OFF__))	rst_REL(11);
+		else if(!strcmp(m_command,__12_ON__))	set_REL(12);		
+		else if(!strcmp(m_command,__12_OFF__))	rst_REL(12);
+		else if(!strcmp(m_command,__13_ON__))	set_REL(13);
+		else if(!strcmp(m_command,__13_OFF__))	rst_REL(13);
+		else if(!strcmp(m_command,__14_ON__))	set_REL(14);
+		else if(!strcmp(m_command,__14_OFF__))	rst_REL(14);
+		else if(!strcmp(m_command,__15_ON__))	set_REL(15);		
+		else if(!strcmp(m_command,__15_OFF__))	rst_REL(15);
+		else if(!strcmp(m_command,__16_ON__))	set_REL(16);
+		else if(!strcmp(m_command,__16_OFF__))	rst_REL(16);
+		else if(!strcmp(m_command,__17_ON__))	set_REL(17);
+		else if(!strcmp(m_command,__17_OFF__))	rst_REL(17);
+		else if(!strcmp(m_command,__18_ON__))	set_REL(18);		
+		else if(!strcmp(m_command,__18_OFF__))	rst_REL(18);
+		else if(!strcmp(m_command,__19_ON__))	set_REL(19);
+		else if(!strcmp(m_command,__19_OFF__))	rst_REL(19);
+		else if(!strcmp(m_command,__20_ON__))	set_REL(20);
+		else if(!strcmp(m_command,__20_OFF__))	rst_REL(20);
+		else if(!strcmp(m_command,__21_43_ON__))	set_REL(21);		
+		else if(!strcmp(m_command,__21_43_OFF__))	rst_REL(21);
+		else if(!strcmp(m_command,__22_ON__))	set_REL(22);
+		else if(!strcmp(m_command,__22_OFF__))	rst_REL(22);
+		else if(!strcmp(m_command,__23_ON__))	set_REL(23);
+		else if(!strcmp(m_command,__23_OFF__))	rst_REL(23);
+		else if(!strcmp(m_command,__24_ON__))	set_REL(24);		
+		else if(!strcmp(m_command,__24_OFF__))	rst_REL(24);
+		else if(!strcmp(m_command,__25_ON__))	set_REL(25);
+		else if(!strcmp(m_command,__25_OFF__))	rst_REL(25);
+		else if(!strcmp(m_command,__26_ON__))	set_REL(26);
+		else if(!strcmp(m_command,__26_OFF__))	rst_REL(26);
+		else if(!strcmp(m_command,__27_ON__))	set_REL(27);		
+		else if(!strcmp(m_command,__27_OFF__))	rst_REL(27);
+		else if(!strcmp(m_command,__28_ON__))	set_REL(28);
+		else if(!strcmp(m_command,__28_OFF__))	rst_REL(28);
+		else if(!strcmp(m_command,__29_ON__))	set_REL(29);
+		else if(!strcmp(m_command,__29_OFF__))	rst_REL(29);
+		else if(!strcmp(m_command,__30_ON__))	set_REL(30);
+		else if(!strcmp(m_command,__30_OFF__))	rst_REL(30);
+		else if(!strcmp(m_command,__31_ON__))	set_REL(31);
+		else if(!strcmp(m_command,__31_OFF__))	rst_REL(31);
+		else if(!strcmp(m_command,__32_ON__))	set_REL(32);
+		else if(!strcmp(m_command,__32_OFF__))	rst_REL(32);
+		else if(!strcmp(m_command,__33_ON__))	set_REL(33);
+		else if(!strcmp(m_command,__33_OFF__))	rst_REL(33);
+		else if(!strcmp(m_command,__34_ON__))	set_REL(34);
+		else if(!strcmp(m_command,__34_OFF__))	rst_REL(34);
+		else if(!strcmp(m_command,__35_ON__))	set_REL(35);
+		else if(!strcmp(m_command,__35_OFF__))	rst_REL(35);
+		else if(!strcmp(m_command,__36_ON__))	set_REL(36);
+		else if(!strcmp(m_command,__36_OFF__))	rst_REL(36);
+		else if(!strcmp(m_command,__37_ON__))	set_REL(37);
+		else if(!strcmp(m_command,__37_OFF__))	rst_REL(37);
+		else if(!strcmp(m_command,__39_ON__))	set_REL(39);
+		else if(!strcmp(m_command,__39_OFF__))	rst_REL(39);
+		else if(!strcmp(m_command,__40_ON__))	set_REL(40);
+		else if(!strcmp(m_command,__40_OFF__))	rst_REL(40);
+		else if(!strcmp(m_command,__41_ON__))	set_REL(41);
+		else if(!strcmp(m_command,__41_OFF__))	rst_REL(41);
+		else if(!strcmp(m_command,__42_ON__))	set_REL(42);
+		else if(!strcmp(m_command,__42_OFF__))	rst_REL(42);
+		else if(!strcmp(m_command,__RESET_ALL__))	reset_all_REL();
 	}
 /*********************************************************************************/
 /**									TEST										**/
 /*********************************************************************************/
-	else if(!strcmp(m_command,__TEST__))
+	else if(!strcmp(m_function,__TEST__))
 	{ 
-		if(!strcmp(&additionalCode[0][0][0],__PROTOCOL_TEST__))
+		if(!strcmp(m_command,__PROTOCOL_TEST__))
 		{
 			SendComMessage(_ON,_ID_TFA,transmitter_ID,__MT_300__,__TEST__,__PROTOCOL_TEST__,"",dir);
 			SendComMessage(_ON,_ID_TFA,transmitter_ID,__MT_300__,__TEST__,__PROTOCOL_TEST__,"KRNEKI",dir);
@@ -572,9 +584,9 @@ static void command_analyze(uint8_t dir)
 /*********************************************************************************/
 /**									CONNECTION									**/
 /*********************************************************************************/
-	else if(!strcmp(m_command,__CONNECTION__))
+	else if(!strcmp(m_function,__CONNECTION__))
 	{ 
-		if(!strcmp(&additionalCode[0][0][0],__CONNECTION_REQUEST__))
+		if(!strcmp(m_command,__CONNECTION_REQUEST__))
 		{
 			if(!strcmp(m_value,__MT_310__))
 			{
@@ -587,7 +599,7 @@ static void command_analyze(uint8_t dir)
 			}
 			
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__CHECK_CONNECTION__))
+		else if(!strcmp(m_command,__CHECK_CONNECTION__))
 		{
 			if(!strcmp(m_value,__CON_OK_))
 			{
@@ -608,9 +620,9 @@ static void command_analyze(uint8_t dir)
 /*********************************************************************************/
 /**									CORD										**/
 /*********************************************************************************/
-	else if(!strcmp(m_command,__CORD__))
+	else if(!strcmp(m_function,__CORD__))
 	{ 
-		if(!strcmp(&additionalCode[0][0][0],__INIT_CORD__))
+		if(!strcmp(m_command,__INIT_CORD__))
 		{
 			if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
 			{
@@ -625,7 +637,7 @@ static void command_analyze(uint8_t dir)
 			}
 		}
 		//ce CORD se ni inicializiran ga najprej inicializira nato pa zacne meritev
-		else if(!strcmp(&additionalCode[0][0][0],__START_CORRECT_WIRING__))
+		else if(!strcmp(m_command,__START_CORRECT_WIRING__))
 		{
 			//ce je katerakoli meritev v delu se ne izvede
 			if(!(cord_task_control & CORD_MEAS_IN_PROG_MASK))
@@ -642,7 +654,7 @@ static void command_analyze(uint8_t dir)
 				}
 			}
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__START_CONTINUITY__))
+		else if(!strcmp(m_command,__START_CONTINUITY__))
 		{
 			//ce je katerakoli meritev v delu se ne izvede
 			if(!(cord_task_control & CORD_MEAS_IN_PROG_MASK))
@@ -659,7 +671,7 @@ static void command_analyze(uint8_t dir)
 				}
 			}
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__START_PHASES_TO_PE__))
+		else if(!strcmp(m_command,__START_PHASES_TO_PE__))
 		{
 			//ce je katerakoli meritev v delu se ne izvede
 			if(!(cord_task_control & CORD_MEAS_IN_PROG_MASK))
@@ -676,7 +688,7 @@ static void command_analyze(uint8_t dir)
 				}
 			}
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__START_ONE_PHASE_TO_PE__))
+		else if(!strcmp(m_command,__START_ONE_PHASE_TO_PE__))
 		{
 			//ce je katerakoli meritev v delu se ne izvede
 			if(!(cord_task_control & CORD_MEAS_IN_PROG_MASK))
@@ -693,7 +705,7 @@ static void command_analyze(uint8_t dir)
 				}
 			}
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__START_PHASE_TO_PHASE__))
+		else if(!strcmp(m_command,__START_PHASE_TO_PHASE__))
 		{
 			//ce je katerakoli meritev v delu se ne izvede
 			if(!(cord_task_control & CORD_MEAS_IN_PROG_MASK))
@@ -710,52 +722,52 @@ static void command_analyze(uint8_t dir)
 				}
 			}
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__STOP_C__))
+		else if(!strcmp(m_command,__STOP_C__))
 		{
 			if(cord_task_control & __CORD_MEAS_IN_PROG)	//se izvede samo ce je meritev v teku
 				set_event(STOP_CORD,stop_cord);
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__INIT_C__))
+		else if(!strcmp(m_command,__INIT_C__))
 		{
 			//cord_correct_wiring_init();
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__RPE_RESISTANCE__))
+		else if(!strcmp(m_command,__RPE_RESISTANCE__))
 		{
 			if((cord_task_control & __CORD_MEAS_IN_PROG) && (cord_task_control & __CORD_RPE_RES_REQUESTED))	//se izvede samo ce je meritev v teku
 				set_RPE_cord_resistance(&additionalCode[1][0][0]);
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__RISO_RESISTANCE__))
+		else if(!strcmp(m_command,__RISO_RESISTANCE__))
 		{
 			if((cord_task_control & __CORD_MEAS_IN_PROG) && (cord_task_control & __CORD_RISO_RES_REQUESTED))	//se izvede samo ce je meritev v teku
 				set_RISO_cord_resistance(&additionalCode[1][0][0]);
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__RISO_STARTED__))
+		else if(!strcmp(m_command,__RISO_STARTED__))
 		{
 			if(cord_task_control & __CORD_MEAS_IN_PROG)
 				cord_task_control |= __CORD_RISO_STARTED;
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__RPE_LOW_STARTED__))
+		else if(!strcmp(m_command,__RPE_LOW_STARTED__))
 		{
 			if(cord_task_control & __CORD_MEAS_IN_PROG)
 				cord_task_control |= __CORD_RPE_L_STARTED;
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__RPE_HIGH_STARTED__))
+		else if(!strcmp(m_command,__RPE_HIGH_STARTED__))
 		{
 			if(cord_task_control & __CORD_MEAS_IN_PROG)
 				cord_task_control |= __CORD_RPE_H_STARTED;
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__RISO_STARTED__))
+		else if(!strcmp(m_command,__RISO_STARTED__))
 		{
 			if(cord_task_control & __CORD_MEAS_IN_PROG)
 				cord_task_control |= __CORD_RISO_STARTED;
 		}
 
-		else if(!strcmp(&additionalCode[0][0][0],__RISO_STOPPED__))
+		else if(!strcmp(m_command,__RISO_STOPPED__))
 		{
 			if(cord_task_control & __CORD_MEAS_IN_PROG)
 				cord_task_control &= (~__CORD_RISO_STARTED);
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__RPE_STOPPED__))
+		else if(!strcmp(m_command,__RPE_STOPPED__))
 		{
 			if(cord_task_control & __CORD_MEAS_IN_PROG)
 				cord_task_control &=~(__CORD_RPE_L_STARTED|__CORD_RPE_H_STARTED);
@@ -765,9 +777,9 @@ static void command_analyze(uint8_t dir)
 /*********************************************************************************/
 /**																	MACHINES																		**/
 /*********************************************************************************/
-	else if(!strcmp(m_command,__MACHINES__))
+	else if(!strcmp(m_function,__MACHINES__))
 	{ 
-		if(!strcmp(&additionalCode[0][0][0],__INIT_MACHINES__))
+		if(!strcmp(m_command,__INIT_MACHINES__))
 		{
 			if(!(meas_task_control & __MACH_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
 			{
@@ -781,7 +793,7 @@ static void command_analyze(uint8_t dir)
 				mach_task_control |= __MACH_INIT_RECIEVED;
 			}
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__START_PHASES_TO_PE__))
+		else if(!strcmp(m_command,__START_PHASES_TO_PE__))
 		{
 			//ce je katerakoli meritev v delu se ne izvede
 			if(!(meas_task_control & __MACH_MEAS_IN_PROG))
@@ -798,7 +810,7 @@ static void command_analyze(uint8_t dir)
 				}
 			}
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__START_ONE_PHASE_TO_PE__))
+		else if(!strcmp(m_command,__START_ONE_PHASE_TO_PE__))
 		{
 			//ce je katerakoli meritev v delu se ne izvede
 			if(!(meas_task_control & __MACH_MEAS_IN_PROG))
@@ -815,33 +827,33 @@ static void command_analyze(uint8_t dir)
 				}
 			}
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__STOP_MACH__))
+		else if(!strcmp(m_command,__STOP_MACH__))
 		{
 			if(meas_task_control & __MACH_MEAS_IN_PROG)	//se izvede samo ce je meritev v teku
 				set_event(STOP_MACH,stop_mach);
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__RISO_RESISTANCE__))
+		else if(!strcmp(m_command,__RISO_RESISTANCE__))
 		{
 			if((meas_task_control & __MACH_MEAS_IN_PROG) && (mach_task_control & __MACH_RISO_RES_REQUESTED))	//se izvede samo ce je meritev v teku
 				set_RISO_mach_resistance(&additionalCode[1][0][0]);
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__RISO_STARTED__))
+		else if(!strcmp(m_command,__RISO_STARTED__))
 		{
 			if(meas_task_control & __MACH_MEAS_IN_PROG)
 				mach_task_control |= __MACH_RISO_STARTED;
 		}
 
-		else if(!strcmp(&additionalCode[0][0][0],__RISO_STOPPED__))
+		else if(!strcmp(m_command,__RISO_STOPPED__))
 		{
 			if(meas_task_control & __MACH_MEAS_IN_PROG)
 				mach_task_control &= (~__MACH_RISO_STARTED);
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__MECH_RPE_START__))
+		else if(!strcmp(m_command,__MECH_RPE_START__))
 		{
 			if((meas_task_control & __MACH_MEAS_IN_PROG))
 				set_event(MACH_RPE_START,MachinesRPEStart);
 		}
-		else if(!strcmp(&additionalCode[0][0][0],__MECH_RPE_STOP__))
+		else if(!strcmp(m_command,__MECH_RPE_STOP__))
 		{
 			if((meas_task_control & __MACH_MEAS_IN_PROG)&&(mach_task_control & __MACH_RPE_IN_PROGRESS))
 				set_event(MACH_RPE_STOP,MachinesRPEStop);
@@ -852,7 +864,6 @@ static void command_analyze(uint8_t dir)
 /**															ADITIONAL SETTINGS														**/
 /*******************************************************************************/
 			
-  }
 }
 
 
@@ -1111,13 +1122,19 @@ static void serial_send_handler(char * send_buff, uint16_t buffer_size,uint8_t d
 {
 	if(buffer_size==64)
 	{
-		CDC_Transmit_FS((uint8_t *)"DOLZINA BUFERJA JE 64 BITOV - PROSIM SPREMENI KER NE BO DELAL", 61);
+		//CDC_Transmit_FS((uint8_t *)"DOLZINA BUFERJA JE 64 BITOV - PROSIM SPREMENI KER NE BO DELAL", 61);
 	}
 	else
 	{
 		if((dir==_UART_DIR_USB)||(dir==_UART_DIR_DEBUG))
 		{
 			CDC_Transmit_FS((uint8_t *)send_buff, buffer_size);
+			//pogledamo ce je buffer polm
+			if((write_out_count==(TRANSMIT_OUT_BUFF_SIZE-1))&&(read_out_count==0)) ;//buffer je poln
+			else if(write_out_count==(read_out_count-1));;//buffer je poln
+			//ce je poln ne povecamo stevca ampak smo se zmeri na zadnjem mestu
+			else if(write_out_count>=(TRANSMIT_OUT_BUFF_SIZE-1))write_out_count=0;
+			else write_out_count++;
 		}
 	}
 	

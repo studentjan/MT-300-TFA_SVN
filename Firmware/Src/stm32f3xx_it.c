@@ -43,6 +43,7 @@
 #include "usbd_cdc.h"
 #include "usbd_desc.h"
 #include "usbd_ioreq.h"
+#include "machines.h"
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
@@ -60,6 +61,8 @@ extern uint32_t interrupt_control;
 extern TIM_HandleTypeDef htim7;
 extern USBD_HandleTypeDef hUsbDeviceFS;
 extern uint32_t il_thd_channel;
+extern uint32_t mach_task_control;
+extern uint32_t current_URES_measurement;
 uint32_t stevec3;
 uint32_t global;
 uint32_t global2;
@@ -298,6 +301,7 @@ void EXTI15_10_IRQHandler(void)
 	USBConnected_Handler();
   /* USER CODE END EXTI15_10_IRQn 1 */
 }
+//interrupt na ULN1 zero cross
 void EXTI9_5_IRQHandler(void)
 {
 	static float perm_temp1=0;
@@ -400,6 +404,29 @@ void EXTI9_5_IRQHandler(void)
 		}
 		else count2++;
 	}
+	else if((mach_task_control & __MACH_URES_DISCONNECT_PS)&&(!(meas_control & __START_TIMER_ON)))
+	{
+		if(count2>=URES_PERIODS_TO_WAIT)
+		{
+			if((current_URES_measurement==__L1_PE)||(current_URES_measurement==__L1_N))
+				htim7.Instance -> ARR=URES_TIME_TO_DIS_L1;
+			else if((current_URES_measurement==__L2_PE)||(current_URES_measurement==__L2_N))
+				htim7.Instance -> ARR=URES_TIME_TO_DIS_L2;
+			else if((current_URES_measurement==__L3_PE)||(current_URES_measurement==__L3_N))
+				htim7.Instance -> ARR=URES_TIME_TO_DIS_L3;
+			else if(current_URES_measurement==__L1_L2)
+				htim7.Instance -> ARR=URES_TIME_TO_DIS_L1_L2;
+			else if(current_URES_measurement==__L1_L3)
+				htim7.Instance -> ARR=URES_TIME_TO_DIS_L1_L3;
+			else if(current_URES_measurement==__L2_L3)
+				htim7.Instance -> ARR=URES_TIME_TO_DIS_L2_L3;
+			htim7.Instance -> CNT=0;
+			HAL_TIM_Base_Start_IT(&htim7);
+			meas_control |= __START_TIMER_ON;
+			count2=0;
+		}
+		else count2++;
+	}		
 	if((global_control & __ON_TEST_IN_PROG)&&(meas_control & __MEAS_IN_PROGRESS)&&(!(global_control & __INPUT_PHASES_DET)))
 	{
 		float temp1;

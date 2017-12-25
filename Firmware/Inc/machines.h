@@ -12,6 +12,7 @@
 #define __MACH_RPE
 #define MACH_AUTO_CONTINUE_MEAS		_OFF
 #define MACH_RISO_LIMIT	 					1.0f	//n*Mohm
+#define URES_PERIODS_TO_WAIT			1
 
 void set_RISO_mach_resistance(char* value);
 bool mach_check_RISO_resistance(void);
@@ -45,10 +46,11 @@ void stop_mach(void);
 #define	__MACH_URES_L1_L2_MEASURED							0x00020000
 #define	__MACH_URES_L1_L3_MEASURED							0x00040000
 #define	__MACH_URES_L2_L3_MEASURED							0x00080000
+#define __MACH_URES_DISCONNECT_PS								0x00100000
 
 
-#define MACH_RISO_MASKS				0x00000000FC
-#define MACH_URES_MASKS				0x00000000FC
+#define MACH_RISO_MASKS				0x000000FC
+#define MACH_URES_MASKS				0x000FFC00
 //++++++++++++++++++++++++++++++zastavice za mach_insolation_status+++++++++++++++++++++++++++++++
 #define L1_PE_FAIL					0x00000001
 #define L2_PE_FAIL					0x00000002
@@ -69,7 +71,12 @@ void stop_mach(void);
 #define __L1_L3		8
 #define __L2_L3		9
 
-
+#define URES_TIME_TO_DIS_L1			100;//se treba doloct
+#define URES_TIME_TO_DIS_L2			100;//se treba doloct
+#define URES_TIME_TO_DIS_L3			100;//se treba doloct
+#define URES_TIME_TO_DIS_L1_L2	100;//se treba doloct
+#define URES_TIME_TO_DIS_L1_L3	100;//se treba doloct
+#define URES_TIME_TO_DIS_L2_L3	100;//se treba doloct
 
 #define CON_L1_A	set_REL(10)
 #define DIS_L1_A	rst_REL(10)

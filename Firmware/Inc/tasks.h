@@ -42,7 +42,10 @@
 #define MACH_RISO_PHASES_TO_PE								30
 #define MACH_RISO_ONE_PHASE_TO_PE							31
 #define MACH_RISO_PHASE_TO_PHASE							32
-#define INIT_MACH															33
-#define STOP_MACH															34
+#define MACH_RPE_STOP													33
+#define MACH_RPE_START												34
+#define INIT_MACH															35
+#define STOP_MACH															36
+#define MACH_URES															36
 
 #endif // __TASKS_H

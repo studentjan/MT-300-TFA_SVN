@@ -596,128 +596,132 @@ void mach_URES(void)
 	if(mach_URES_count==0)
 	{
 		mach_URES_init();
+		mach_URES_count++;
+		switch(current_URES_measurement)
+		{
+			case __L1_PE:
+				rst_REL(11);
+				rst_REL(12);
+				rst_REL(13);
+				rst_REL(33);
+				rst_REL(34);
+				rst_REL(35);
+				rst_REL(36);
+				rst_REL(20);
+				set_REL(15);
+				set_REL(10);
+				break;
+			case __L2_PE:
+				rst_REL(10);
+				rst_REL(12);
+				rst_REL(13);
+				rst_REL(33);
+				rst_REL(34);
+				rst_REL(35);
+				rst_REL(36);
+				rst_REL(20);
+				set_REL(15);
+				set_REL(11);
+				break;
+			case __L3_PE: 
+				rst_REL(10);
+				rst_REL(11);
+				rst_REL(13);
+				rst_REL(33);
+				rst_REL(34);
+				rst_REL(35);
+				rst_REL(36);
+				rst_REL(20);
+				set_REL(15);
+				set_REL(12);
+				break;
+			case __L1_N: 
+				rst_REL(11);
+				rst_REL(12);
+				rst_REL(13);
+				rst_REL(33);
+				rst_REL(34);
+				rst_REL(35);
+				rst_REL(36);
+				rst_REL(15);
+				set_REL(20);
+				set_REL(10);
+				break;
+			case __L2_N: 
+				rst_REL(10);
+				rst_REL(12);
+				rst_REL(13);
+				rst_REL(33);
+				rst_REL(34);
+				rst_REL(35);
+				rst_REL(36);
+				rst_REL(15);
+				set_REL(20);
+				set_REL(11);
+				break;
+			case __L3_N: 
+				rst_REL(11);
+				rst_REL(10);
+				rst_REL(13);
+				rst_REL(33);
+				rst_REL(34);
+				rst_REL(35);
+				rst_REL(36);
+				rst_REL(15);
+				set_REL(20);
+				set_REL(12);
+				break;
+			case __L1_L2: 
+				rst_REL(11);
+				rst_REL(12);
+				rst_REL(13);
+				rst_REL(33);
+				rst_REL(34);
+				rst_REL(35);
+				rst_REL(36);
+				rst_REL(15);
+				rst_REL(17);
+				rst_REL(19);
+				rst_REL(20);
+				set_REL(10);
+				set_REL(18);
+				break;
+			case __L1_L3: 
+				rst_REL(11);
+				rst_REL(12);
+				rst_REL(13);
+				rst_REL(33);
+				rst_REL(34);
+				rst_REL(35);
+				rst_REL(36);
+				rst_REL(15);
+				rst_REL(18);
+				rst_REL(17);
+				rst_REL(20);
+				set_REL(10);
+				set_REL(19);
+				break;
+			case __L2_L3: 
+				rst_REL(10);
+				rst_REL(12);
+				rst_REL(13);
+				rst_REL(33);
+				rst_REL(34);
+				rst_REL(35);
+				rst_REL(36);
+				rst_REL(15);
+				rst_REL(18);
+				rst_REL(17);
+				rst_REL(20);
+				set_REL(11);
+				set_REL(19);
+				break;
+			default: break;
+		}
 	}
-	switch(current_URES_measurement)
-	{
-		case __L1_PE: 
-			rst_REL(11);
-			rst_REL(12);
-			rst_REL(13);
-			rst_REL(33);
-			rst_REL(34);
-			rst_REL(35);
-			rst_REL(36);
-			rst_REL(20);
-			set_REL(15);
-			set_REL(10);
-			break;
-		case __L2_PE: 
-			rst_REL(10);
-			rst_REL(12);
-			rst_REL(13);
-			rst_REL(33);
-			rst_REL(34);
-			rst_REL(35);
-			rst_REL(36);
-			rst_REL(20);
-			set_REL(15);
-			set_REL(11);
-			break;
-		case __L3_PE: 
-			rst_REL(10);
-			rst_REL(11);
-			rst_REL(13);
-			rst_REL(33);
-			rst_REL(34);
-			rst_REL(35);
-			rst_REL(36);
-			rst_REL(20);
-			set_REL(15);
-			set_REL(12);
-			break;
-		case __L1_N: 
-			rst_REL(11);
-			rst_REL(12);
-			rst_REL(13);
-			rst_REL(33);
-			rst_REL(34);
-			rst_REL(35);
-			rst_REL(36);
-			rst_REL(15);
-			set_REL(20);
-			set_REL(10);
-			break;
-		case __L2_N: 
-			rst_REL(10);
-			rst_REL(12);
-			rst_REL(13);
-			rst_REL(33);
-			rst_REL(34);
-			rst_REL(35);
-			rst_REL(36);
-			rst_REL(15);
-			set_REL(20);
-			set_REL(11);
-			break;
-		case __L3_N: 
-			rst_REL(11);
-			rst_REL(10);
-			rst_REL(13);
-			rst_REL(33);
-			rst_REL(34);
-			rst_REL(35);
-			rst_REL(36);
-			rst_REL(15);
-			set_REL(20);
-			set_REL(12);
-			break;
-		case __L1_L2: 
-			rst_REL(11);
-			rst_REL(12);
-			rst_REL(13);
-			rst_REL(33);
-			rst_REL(34);
-			rst_REL(35);
-			rst_REL(36);
-			rst_REL(15);
-			rst_REL(17);
-			rst_REL(19);
-			rst_REL(20);
-			set_REL(10);
-			set_REL(18);
-			break;
-		case __L1_L3: 
-			rst_REL(11);
-			rst_REL(12);
-			rst_REL(13);
-			rst_REL(33);
-			rst_REL(34);
-			rst_REL(35);
-			rst_REL(36);
-			rst_REL(15);
-			rst_REL(18);
-			rst_REL(17);
-			rst_REL(20);
-			set_REL(10);
-			set_REL(19);
-			break;
-		case __L2_L3: 
-			rst_REL(10);
-			rst_REL(12);
-			rst_REL(13);
-			rst_REL(33);
-			rst_REL(34);
-			rst_REL(35);
-			rst_REL(36);
-			rst_REL(15);
-			rst_REL(18);
-			rst_REL(17);
-			rst_REL(20);
-			set_REL(11);
-			set_REL(19);
-			break;
-		default: break;
-	}
+	if(current_URES_measurement <= 10)
+		restart_timer(MACH_URES,5,mach_URES);
+	
 }	
 
 

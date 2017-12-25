@@ -212,6 +212,7 @@
 #define SDADC_ON_IL1THD_DELAY 1189 //zato da zacnemo ravno ko signal precka nulo3
 #define SDADC_ON_IL2THD_DELAY 1187 //sdadc potrebuje cca 70us za zagon
 #define SDADC_ON_IL3THD_DELAY 1185 //cca 1,24ms da se vklopi interrupt po preckanju nule torej 1,3ms do 1. sampla za THD je maks 1200, ker potem podaljsa cas >500ms
+
 //THD zamik zato, da damo SDADCju cas da se ustali preden pomerimo vzorce
 #define CALIBRATION_TIMEOUT			30
 //stevilo samplov za racunanje efektivne vrednosti
