@@ -46,6 +46,7 @@
 #define MACH_RPE_START												34
 #define INIT_MACH															35
 #define STOP_MACH															36
-#define MACH_URES															36
+#define MACH_URES															37
+#define SINCHRONUS_TRANSMITT									38
 
 #endif // __TASKS_H

@@ -10,6 +10,7 @@
  #include "defines.h"
  //#include "includes.h"
 
+//pozor, inicializacija za TIMER 2 je v serial_com.c
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim7;
 TIM_HandleTypeDef htim6;

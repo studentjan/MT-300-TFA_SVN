@@ -8,11 +8,18 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+
+
+
 #define _ON 	1
 #define _OFF 	0
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
 //																NASTAVITVE																	 //
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
+#define	TRANSMIT_COMMAND_CHECK		_ON				//s tem makrojem vklopimo ali izklopimo preverjanje posiljanja
+																						//ce je preverjanje izklopljeno, se tudi koda ne nalozi
+#define SYNCHRONUS_TRANSMITT			_ON				//vklopima ali izklopimo sinhrono oddajanje	(na 50 ms se izmenjujeta transmitter in receiver)
+
 #define SERIAL_COMMAND_SIZE     				200   		//maksimalna velikost komande
 //Nastavitve bufferja za prejemanje
 #define _SER_BUFFER_SIZE            		256  			//dolzina bufferja za celoten ukaz
@@ -24,8 +31,7 @@
 #define MAX_ADDITIONAL_COMMANDS_LENGTH 	100
 
 //Nastavitve bufferja za oddajanje
-#define	TRANSMIT_COMMAND_CHECK		_ON				//s tem makrojem vklopimo ali izklopimo preverjanje posiljanja
-																						//ce je preverjanje izklopljeno, se tudi koda ne nalozi
+
 #if TRANSMIT_COMMAND_CHECK == _ON
 #define TRANSMIT_BUFF_SIZE				100
 #define TRANSMIT_HANDLE_BUFF_SIZE 10
@@ -46,6 +52,7 @@ static void communication_init(void);
 #define _UART_DIR_DEBUG       				2
 #define _UART_DIR_485		       				3
 #define _UART_DIR_USB		       				4
+#define _EMPTY_DIR										10	//smer rezervirana za idntifikacijo posiljanja praznega stringa
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
 
 
@@ -62,6 +69,7 @@ static void communication_init(void);
 #define _ID_MT		            			'M'    //ID Machinnery tester
 #define _ID_PAT											'P'
 #define _ID_TFA            					'A'    //ID Three phase adapter
+#define _ID_NONE										'N'
 
 #define _MESSAGE_NACK  				      "NACK"
 #define _MESSAGE_ACK      				  "ACK" 
@@ -94,6 +102,7 @@ void serial_com_init(void);
 void add_command_to_queue(uint8_t* Buf, uint32_t Len,uint8_t dir);	//doda komando v cakalno vrsto za analiziranje. Poklici ko dobis podatke iz serijskega vodila
 uint32_t SendComMessage(int send_control,char transmitter, char receiver, char * function, char * command, char * additional_code, char * data, int dirrection);	//ko zelis posilati komando poklici to funkcijo in ji dodaj potrebne parametre
 bool CheckIfACK(uint32_t msg_id);
+__weak void SendTimerInit(void);
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
 
 //struktura za shranjevanje prejete komande
