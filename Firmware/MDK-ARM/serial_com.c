@@ -15,10 +15,11 @@
 //	*	nastavimo SYNCHRONUS_TRANSMITT na _ON ali _OFF
 //  * preverimo ce so vsi makroji nastavljeni pravilno
 //	* ce smo nastavili SYNCHRONUS_TRANSMITT na _OFF potem:
-//	*	--	dodamo funkcije za posiljanje v funkcijo serial_send_handler(..) - dodane funkcije morajo biti odvisne od speri prejema podatkov
+//	*	--	dodamo funkcije za posiljanje v funkcijo SerialSend(..) - dodane funkcije so lahko odvisne od smeri prejema podatkov (dirrection), tako lahko definiramo posiljanje po razlicnih vodilih, kot je USB in RS485. Ne pozabi prilagoditi nastavljanje smeri v primeru posiljanja praznega stringa.
 //	* ce smo nastavili SYNCHRONUS_TRANSMITT na _OFF potem:
-//	* -- napisemo funkcijo z imenom void SendTimerInit(void), v kateri inicializiramo timer
-//  * -- dodamo SINCHRONUS_TRANSMITT v tasks.h operacijskega sistema
+//	* -- 	napisemo funkcijo z imenom void SendTimerInit(void), v kateri inicializiramo timer
+//  * -- 	dodamo SINCHRONUS_TRANSMITT v tasks.h operacijskega sistema
+//  * --	dodamo funkcije za posiljanje v funkcijo SerialSend(..) - dodane funkcije so lahko odvisne od smeri prejema podatkov (dirrection), tako lahko definiramo posiljanje po razlicnih vodilih, kot je USB in RS485. Ne pozabi prilagoditi nastavljanje smeri v primeru posiljanja praznega stringa.
 //	*	dodamo svojo kodo za analiziranje prejete komande v command_analyze(..)
 //	***************************************************************************
 //	* ko imamo vse nastavljeno lahko v main.c - ju poklicemo inicializacijo serial_com_init()
@@ -65,6 +66,8 @@ volatile uint32_t RxFifoIndex = 0;
 static uint8_t INPUT_Buffer[RxBufferSize_MAX];
 static void increaseWritePtr(void);
 static void SinchronusTransmittFunc(void);
+static void transmittEmptyStr(void);
+static void SerialSend(uint8_t *,uint16_t msg_size, uint32_t dir);
 int int_from_str;
 char* float_from_str;
 
@@ -75,7 +78,6 @@ int indikator2;
 int indikator3;
 int indikator4;
 int indikator5;
-
 
 typedef enum {
     STR2INT_SUCCESS,
@@ -164,8 +166,8 @@ static char m_value[50];
 static char m_is_crc[5];
 static char m_crc_value[5];
 static char m_leftover[10];
-char transmitter_ID;
-char reciever_ID;
+char transmitter_ID = _ID_NONE;			//tisti ki posilja zadjne prejeto sporocilo	-- se ponastavi ob vsakem prejetem sporocilu
+char reciever_ID = _ID_NONE;					//tisti kateremu je prejeto sporocilo namenjeno -- se ponastavi ob vsakem prejetem sporocilu
 int ID;
 char additionalCode[2][MAX_ADDITIONAL_COMMANDS][MAX_ADDITIONAL_COMMANDS_LENGTH]; //0 so funkcije 1 pa vrednosti : http://stackoverflow.com/questions/19863417/how-to-declare-and-initialize-in-a-4-dimensional-array-in-c
 
@@ -1481,14 +1483,51 @@ void TIM2_IRQHandler(void)
 	set_event(SINCHRONUS_TRANSMITT, SinchronusTransmittFunc);
 }
 
+//ko je procesor na vrsti za posiljanje posilja dokler ne izprazni izhodnega bufferja
 static void SinchronusTransmittFunc(void)
 {
 	if(write_out_count != read_out_count)//izvede se ce buffer ni prazen
 	{
 		CDC_Transmit_FS((uint8_t *)Transmit_out_buff[read_out_count].msg_ptr, Transmit_out_buff[read_out_count].size);
-		if((read_out_count+1)==TRANSMIT_HANDLE_BUFF_SIZE)read_out_count=0;//gre na zacetek ker je ciklicen buffer
+		if((read_out_count+1)==TRANSMIT_OUT_BUFF_SIZE)read_out_count=0;//gre na zacetek ker je ciklicen buffer
 		else read_out_count++;
+		if(write_out_count != read_out_count)
+			set_event(SINCHRONUS_TRANSMITT, SinchronusTransmittFunc);
 	}
+	//ce v izhodnemu bufferju ni nic posljemo prazen string
+	else
+		transmittEmptyStr();
+}
+//oddajanje praznega stringa
+static void transmittEmptyStr(void)
+{
+	char tmp_msg[20]=">";
+	uint32_t dir;
+	strcat(tmp_msg,(char*)_ID_TFA);
+	strcat(tmp_msg,&transmitter_ID);
+	strcat(tmp_msg,"::::::0:000:");
+	strcat(tmp_msg,(char*)13);
+	strcat(tmp_msg,(char*)10);
+	strcat(tmp_msg,"\0");
+	SerialSend((uint8_t *)tmp_msg, 19,_EMPTY_DIR);	//zadnji podatek "dir" je namenjen identifikaciji posiljanja praznega stringa dir spremenljivko v tem primeru v funkciji SerialSend(..) nastavimo po svoje
+}
+static void SerialSend(uint8_t * msg_ptr,uint16_t msg_size, uint32_t dir)
+{
+	//smer ce posiljamo prazen string je dir spremenljivka brezpredmetna, zato ji znova dolocimo vrednost
+	if(dir == _EMPTY_DIR)
+	{
+		//v mojem primeru se za smer posiljanja praznega stringa odlocim glede na posiljatelja zadnjega prejetega sporocila
+		if(transmitter_ID==_ID_NONE || transmitter_ID==_ID_MT || transmitter_ID==_ID_DEBUG)
+			dir = _UART_DIR_USB;
+		else
+			dir = _UART_DIR_485;
+	}
+	if(dir == _UART_DIR_MT || dir == _UART_DIR_DEBUG)
+		CDC_Transmit_FS(msg_ptr, msg_size);
+//	else if(dir == neki_tvojga || ...)
+//		;
+//	else if
+//		...
 }
 //Inicializacija timerja za sinhrono posiljanje
 //Ce zelis definirati drug timer ali uporabljas drug procesor potem napisi svojo inicializacijo, ki ima enako ime kot ta
