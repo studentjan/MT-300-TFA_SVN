@@ -19,7 +19,8 @@
 #define	TRANSMIT_COMMAND_CHECK		_ON				//s tem makrojem vklopimo ali izklopimo preverjanje posiljanja
 																						//ce je preverjanje izklopljeno, se tudi koda ne nalozi
 #define SYNCHRONUS_TRANSMITT			_ON				//vklopima ali izklopimo sinhrono oddajanje	(na 50 ms se izmenjujeta transmitter in receiver)
-
+#define SERIAL_COM_ERROR_TIMEOUT				1000			//toliko systick-ov pocakamo od zadnjega prejetega sporocila nato vrzemo error
+#define SYNCHRONUS_ERROR_CNT						3					//koliko timeoutov se mora isteci, da vrzemo error (ob vsakem timeoutu se poslje prazen msg)
 #define SERIAL_COMMAND_SIZE     				200   		//maksimalna velikost komande
 //Nastavitve bufferja za prejemanje
 #define _SER_BUFFER_SIZE            		256  			//dolzina bufferja za celoten ukaz
@@ -31,6 +32,7 @@
 #define MAX_ADDITIONAL_COMMANDS_LENGTH 	100
 
 //Nastavitve bufferja za oddajanje
+#define SYNCHRONUS_SEND_WAIT			50		//koliko casa pocakamo pred posiljanjem ob prejetem sporocilu [ms]
 
 #if TRANSMIT_COMMAND_CHECK == _ON
 #define TRANSMIT_BUFF_SIZE				100
@@ -38,7 +40,7 @@
 #define TRANSMIT_OUT_BUFF_SIZE		10
 #define TRANSMIT_SLOT_FREE				0		//mora bit 0
 #define NUM_NACK_EVENTS						3		//kolikokrat ponovi posiljanje ce dobi nack
-#define TRANSMIT_HANDLE_WAIT			10		//n*10ms - koliko casa cakamo na to da dobimo odgovor pred ponovnim posiljanjem
+#define TRANSMIT_HANDLE_WAIT			30		//n*10ms - koliko casa cakamo na to da dobimo odgovor pred ponovnim posiljanjem
 																			//za program v visual studiu rabmo okol 50ms
 #define WAIT_FOR_MSG_ACK					3		//koliko casa cakamo na ack TRANSMIT_HANDLE_WAIT * n
 static uint32_t recieve_ack_func(void);
@@ -70,6 +72,7 @@ static void communication_init(void);
 #define _ID_PAT											'P'
 #define _ID_TFA            					'A'    //ID Three phase adapter
 #define _ID_NONE										'N'
+#define _ID_SIMULATION							'S'
 
 #define _MESSAGE_NACK  				      "NACK"
 #define _MESSAGE_ACK      				  "ACK" 
@@ -99,10 +102,12 @@ static void communication_init(void);
 //funkcije dostopne tudi od zunaj
 //ne pozabi dodati kodo v serial send handler
 void serial_com_init(void);
+void serial_com_deinit(void);
 void add_command_to_queue(uint8_t* Buf, uint32_t Len,uint8_t dir);	//doda komando v cakalno vrsto za analiziranje. Poklici ko dobis podatke iz serijskega vodila
 uint32_t SendComMessage(int send_control,char transmitter, char receiver, char * function, char * command, char * additional_code, char * data, int dirrection);	//ko zelis posilati komando poklici to funkcijo in ji dodaj potrebne parametre
 bool CheckIfACK(uint32_t msg_id);
 __weak void SendTimerInit(void);
+__weak void SendTimerDeInit(void);
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&//
 
 //struktura za shranjevanje prejete komande

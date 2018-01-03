@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 
 using System.Linq;
+using System.Security.AccessControl;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Diagnostics;
+using System.Timers;
 
 namespace MT_300_TFA_application
 {
@@ -80,6 +82,11 @@ namespace MT_300_TFA_application
         private int transmitt_handle_write_count = 0;
         private int transmitt_handle_read_count = 0;
 
+        //cakalne vrste
+        private Queue<transmittOutBuffer> TransmittSynchroQueue = new Queue<transmittOutBuffer>();
+
+        //timerji
+        public System.Timers.Timer synchroTimer;
        
 
         //+++++++++++++++++++++++++++++++++++++++++KOMANDE ZA PREJEMANJE IN POSILJANJE+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -87,18 +94,22 @@ namespace MT_300_TFA_application
         //                                                  0           1           2           3           4           5           6           7           8           9           10          11          12          13          14          15          16          17          18          19          20          21          22          23          24          25          26          27          28          29          30          31          32          33          34          35          36       
         public static String[] FUNCTION_COMMUNICATON_NAMES = {"MT-300-TFA"};
 
-        public static String[] COMMAND_TYPE_NAMES =  {        "POWER", "RELAY", "WARNING", "TEST", "COMMUNICATION", "CORD", "STATUS"  };
+        public static String[] COMMAND_TYPE_NAMES =  {        "POWER", "RELAY", "WARNING", "TEST", "COMMUN", "CORD", "STATUS" ,"MACH" };
 
         public static String[] CONNECTION_CODE_NAMES = {"CONNECT_REQUEST", "CONNECTION_ESTABLED", "CONNECTION_CHECK"};
         public static String[] CONNECTION_ADD_NAMES = {"MT-310", "OK", "NOK"};
         public static String[] TEST_CODE_NAMES = {"PROTOCOL_TEST"};
-             //                                           0          1      2               3           4       5           6           7               8               9               10      11      12           13         14              15              16              17              18          19              20              21              22          23              24          25          26              27      28
-        public static String[] CORD_CODE_NAMES = { "START_NORMAL", "STOP", "INIT", "RPE_RES_GET", "RPE_RES", "STOPPED", "INITIATED", "RISO_ALL-PE", "RISO_ONE-PE", "RISO_PH-PH", "START_C_W", "CW", "START_CONT", "CONT", "START_ALL-PE", "START_ONE-PE", "START_PH_PH", "RISO_RES_GET", "RISO_RES", "RPE_L_START", "RPE_L_STARTED", "RPE_H_START","RPE_H_STARTED","RISO_START","RISO_STARTED","RPE_STOP","RPE_STOPPED","RISO_STOP","RISO_STOPPED"};
+             //                                           0          1      2               3           4       5           6                   7                    8                      9               10          11          12           13         14              15              16              17              18          19              20              21              22          23              24          25          26              27      28          29          30          31
+        public static String[] CORD_CODE_NAMES = { "START_NORMAL", "STOP", "INIT", "RPE_RES_GET", "RPE_RES", "STOPPED", "INITIATED", "RISO_ALL-PE_RESULT", "RISO_ONE-PE_RESULT", "RISO_PH-PH_RESULT", "START_C_W", "CW_RESULT", "START_CONT", "CONT", "START_ALL-PE", "START_ONE-PE", "START_PH_PH", "RISO_RES_GET", "RISO_RES", "RPE_L_START", "RPE_L_STARTED", "RPE_H_START","RPE_H_STARTED","RISO_START","RISO_STARTED","RPE_STOP","RPE_STOPPED","RISO_STOP","RISO_STOPPED","RES","DEINITIATED","DEINIT"};
         public static String[] CORD_LEFTOVER_NAMES = { "L1_L1", "L1_L2", "L1_L3", "L1_N", "L1_PE", "L2_L1", "L2_L2", "L2_L3", "L2_N", "L2_PE",
                                                         "L3_L1","L3_L2", "L3_L3", "L3_N", "L3_PE", "N_L1" , "N_L2" , "N_L3" , "N_N" , "N_PE" ,
                                                         "PE_L1", "PE_L2", "PE_L3", "PE_N","PE_PE", "1_P","3_P"};
         //                                                          0           1           2        3      4       5       6           7           8         9     10      11      12      13          14      15
         public static String[] CORD_LEFTOVER_RISO_NAMES = { "L1-L2-L3-N_PE","L2-L3-N_PE","L3-N_PE","N_PE","L3_PE", "L2_PE", "L1_PE","L1-L2-L3_N","L2-L3_N","L3_N","L2_N","L1_N", "L1-L2_L3","L2_L3", "L1_L3","L1_L2"};
+        //                                            0           1       2       3       4           5       6       7          8
+        public static String[] URES_PARAM_NAMES = { "L1-PE" , "L2-PE", "L3-PE", "L1-N" , "L2-N" , "L3-N" , "L1-L2" , "L2-L3" ,"L1-L3" };
+        public static String[] MACH_COMMAND_NAMES = { "START_URES" , "INIT", "DEINIT"};
+        public static String[] MACH_ADD_NAMES = { "TEST" };
         public static String[] STATUS_CODE_NAMES = {""};
         public static String[] STATUS_VALUE_NAMES = {""};
         public static String[] WARNING_CODE_NAMES = {"COMMAND_SEND_ERROR"};
@@ -127,6 +138,7 @@ namespace MT_300_TFA_application
                 command_queue_buffer[i].command_ID = QUEUE_FREE;
                 command_queue_buffer[i].command = new char[QUEUE_COMMAND_BUFFER_SIZE];
             }
+            setSynchroTimer();
             task1 = new Thread(command_do_events);
             task2 = new Thread(transmit_command_handle);
             event_status = QUEUE_PASS;
@@ -254,26 +266,107 @@ namespace MT_300_TFA_application
                 }
                 queue_counter = 0;
                 queue_RxBuffer_index = 0;
+                if (Settings1.Default.SYNCHRONUS_TRANSMITT)
+                {
+                    //resetira timer
+                    synchroTimer.Enabled = true;
+                    synchroTimer.Stop();
+                    synchroTimer.Start();
+                    //ko timer pride do konca smo na vrsti za posiljanje mi
+                }
+
             }
         }
+        private void OnSynchtoTimedEvent(Object source, ElapsedEventArgs e)
+        {
+            string temp_str;
+            if (TransmittSynchroQueue.Count > 0)
+            {
+                transmittOutBuffer temp_struct;
+                temp_struct = TransmittSynchroQueue.Dequeue();
+                temp_str = temp_struct.out_str;
+                if (temp_struct.out_dir == Settings1.Default._COMMUNICATION_DIR_PORT1)
+                {
+                    try
+                    {
+                        mainForm.serialPort1.Write(temp_str);
+                    }
+                    catch (System.InvalidOperationException)
+                    {
+                        MessageBox.Show("COM port closed!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    catch (System.IO.IOException)
+                    {
+                        MessageBox.Show("COM port terminated!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+
+            }
+            else
+            {
+                temp_str = String.Format("{0}{1}{2}::::::0:000:\r\n", Settings1.Default._SER_START_SIGN, Settings1.Default._ID_MT, transmitter_ID);
+                if (transmitter_ID == Settings1.Default._ID_TFA)
+                {
+                    try
+                    {
+                        mainForm.serialPort1.Write(temp_str);
+                    }
+                    catch (System.InvalidOperationException)
+                    {
+                        MessageBox.Show("COM port closed!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    catch (System.IO.IOException)
+                    {
+                        MessageBox.Show("COM port terminated!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            mainForm.write_to_send_textbox(temp_str);
+        }
+        private void setSynchroTimer()
+        {
+            synchroTimer = new System.Timers.Timer(Settings1.Default.SYNCHRO_SEND_WAIT);
+            synchroTimer.AutoReset = false;
+            synchroTimer.Elapsed += OnSynchtoTimedEvent;
+            synchroTimer.Stop();
+        }
+
         //ce zelimo poslati sporocilo, ki ni po protokolu lahko direktno uporabimo to funkcijo
         public void serial_send(int dir, string send_string)
         {
-            if (dir == Settings1.Default._COMMUNICATION_DIR_PORT1)
+            transmittOutBuffer temp_buf = new transmittOutBuffer(send_string,dir);
+            if (Settings1.Default.SYNCHRONUS_TRANSMITT)
             {
-                
-                try
+                //dodamo komando v cakalno vrsto
+                TransmittSynchroQueue.Enqueue(temp_buf);
+            }
+            else
+            {
+                if (dir == Settings1.Default._COMMUNICATION_DIR_PORT1)
                 {
-                    mainForm.serialPort1.Write(send_string);
-                }
-                catch (System.InvalidOperationException)
-                {
-                    MessageBox.Show("COM port closed!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-                mainForm.write_to_send_textbox(send_string);
+
+                    try
+                    {
+                        mainForm.serialPort1.Write(send_string);
+                    }
+                    catch (System.InvalidOperationException)
+                    {
+                        MessageBox.Show("COM port closed!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    catch (System.IO.IOException)
+                    {
+                        MessageBox.Show("COM port terminated!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                    mainForm.write_to_send_textbox(send_string);
+                }   
             }
         }
-        
+
+        private void SerialSynchroTasK()
+        {
+
+        }
+
         private struct message_constructor
         {
             public char transmitter, reciever;
@@ -311,6 +404,17 @@ namespace MT_300_TFA_application
             public int command_ID;
             public char[] command;
             public int direction;
+        }
+        public struct transmittOutBuffer
+        {
+            public string out_str;
+            public int out_dir;
+
+            public transmittOutBuffer(string str, int dir)
+            {
+                out_str = str;
+                out_dir = dir;
+            }
         }
         queue_buffer[] command_queue_buffer = new queue_buffer[QUEUE_BUFFER_SIZE];//= new queue_buffer[5];
         transmitt_buffer[] Transmitt_handle_Buffer = new transmitt_buffer[TRANSMIT_HANDLE_BUFF_SIZE];
@@ -398,6 +502,8 @@ namespace MT_300_TFA_application
             tokens = message.Split(delim);
             if (tokens.Length != NUMBER_OF_DELIMITERS+1)
                 return 1;
+            if (tokens[0].Length != 3 || (!(tokens[1].Length == 2 || tokens[1].Length == 0)))
+                return 1;
             m_start_tag = String.Copy(tokens[0]);
             m_msg_ID = String.Copy(tokens[1]);
             m_function = String.Copy(tokens[2]);
@@ -413,11 +519,15 @@ namespace MT_300_TFA_application
             if (reciever_ID != Settings1.Default._ID_MT)
                 return 4;
 
+            
+
+            if (!(m_function.Length > 1)) //pomeni da smo dobili prazen msg
+                return 5;
+
             SetID(int.Parse(m_msg_ID));
-            //pomeni da id ni pravilen
+                //pomeni da id ni pravilen
             if (!(GetID() >= 0 && GetID() < 100))
                 return 1;
-
             //if (!CheckFunctionExistion(m_function))
             //    return 1;
 
@@ -430,12 +540,13 @@ namespace MT_300_TFA_application
                 return Settings1.Default._ANS_MESSAGE_NACK_RECIEVED;
 
             FindAllAdditionalCmdParameters(m_additional_code);
+
             //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
             //nnaslednja koda namenjena testu protokola
             //ce gre za test protokola potem ne naredi nic
-            if (String.Equals(m_command, COMMAND_TYPE_NAMES[3]))
+            if (String.Equals(m_function, COMMAND_TYPE_NAMES[3]))
             {
-                if (String.Equals(additionalCode[0, 0], TEST_CODE_NAMES[0]))
+                if (String.Equals(m_command, TEST_CODE_NAMES[0]))
                 {
                     if (String.Equals(m_leftover, "KRNEKI"))
                     {
@@ -516,7 +627,7 @@ namespace MT_300_TFA_application
             crcVal = int.Parse(m_crc_value);
             if (!CheckCRC(crc, crcVal, message))
                 return 1;
-            command_analyze(transmitter);
+            //command_analyze(transmitter);
             return 0;
         }
 
@@ -610,15 +721,11 @@ namespace MT_300_TFA_application
         private void command_analyze(int dir)
         {
 
-            /*******************************************************************************/
-            /**	                    INPUT CONNECTION NOT OK						          **/
-            /*******************************************************************************/
-            if (String.Equals(m_function, FUNCTION_COMMUNICATON_NAMES[0]) == true)//preveri ce je MT-300-TFA
-            {
+
                 /*******************************************************************************/
                 /**								MEASURING METOD 								**/
                 /*******************************************************************************/
-                if (String.Equals(m_command, COMMAND_TYPE_NAMES[0]) == true)///POWER
+                if (String.Equals(m_function, COMMAND_TYPE_NAMES[0]) == true)///POWER
                 {
 
 
@@ -626,19 +733,19 @@ namespace MT_300_TFA_application
                 /*******************************************************************************/
                 /**									RELAYS									**/
                 /*******************************************************************************/
-                else if (String.Equals(m_command, COMMAND_TYPE_NAMES[1]) == true)
+                else if (String.Equals(m_function, COMMAND_TYPE_NAMES[1]) == true)
                 {
                 }
                 /*******************************************************************************/
                 /**									COMMUNCATION   							  **/
                 /*******************************************************************************/
-                else if (String.Equals(m_command, COMMAND_TYPE_NAMES[4]) == true)//communication
+                else if (String.Equals(m_function, COMMAND_TYPE_NAMES[4]) == true)//communication
                 {
-                    if (String.Equals(additionalCode[0, 0], CONNECTION_CODE_NAMES[1]) == true) //connected
+                    if (String.Equals(m_command, CONNECTION_CODE_NAMES[1]) == true) //connected
                     {
                         mainForm.AdapterCOM_status.BackColor = Color.LightGreen;
                     }
-                    else if (String.Equals(additionalCode[0, 0], CONNECTION_CODE_NAMES[2]) == true) //connected
+                    else if (String.Equals(m_command, CONNECTION_CODE_NAMES[2]) == true) //connected
                     {
                         message_to_send = 1;
                         task3 = new Thread(send_message);
@@ -648,51 +755,50 @@ namespace MT_300_TFA_application
                 /*******************************************************************************/
                 /**									CORD          							  **/
                 /*******************************************************************************/
-                else if (String.Equals(m_command, COMMAND_TYPE_NAMES[5]))//cord
+                else if (String.Equals(m_function, COMMAND_TYPE_NAMES[5]))//cord
                 {
-                    if (String.Equals(additionalCode[0, 0], CORD_CODE_NAMES[3])) //get resistance
+                    if (String.Equals(m_command, CORD_CODE_NAMES[3])) //get resistance
                     {
-                        cord_return_event(m_leftover, additionalCode[0, 0]);
+                        cord_return_event(m_leftover, m_command);
                     }
-                    else if (String.Equals(additionalCode[0, 0], CORD_CODE_NAMES[5])) //stopped
+                    else if (String.Equals(m_command, CORD_CODE_NAMES[5])) //stopped
                     {
-                        cord_return_event(m_leftover, additionalCode[0, 0]);
+                        cord_return_event(m_leftover, m_command);
                     }
-                    else if (String.Equals(additionalCode[0, 0], CORD_CODE_NAMES[6])) //initiated
+                    else if (String.Equals(m_command, CORD_CODE_NAMES[6])) //initiated
                     {
-                        cord_return_event("", additionalCode[0, 0]);
+                        cord_return_event("", m_command);
                     }
-                    else if (String.Equals(additionalCode[0, 0], CORD_CODE_NAMES[7])) //RISO_ALL-PE
+                    else if (String.Equals(m_command, CORD_CODE_NAMES[7])) //RISO_ALL-PE
                     {
-                        if ((String.Equals(additionalCode[1, 0], "PASS"))||(String.Equals(additionalCode[1, 0], "FAIL")))
-                            cord_return_event(additionalCode[1, 0], additionalCode[0, 0]);
+                        if ((String.Equals(additionalCode[0, 0], "PASS"))||(String.Equals(additionalCode[0, 0], "FAIL")))
+                            cord_return_event(additionalCode[0, 0], m_command);
                         else
-                            cord_return_event("", additionalCode[0, 0]);
+                            cord_return_event("", m_command);
                     }
-                    else if (String.Equals(additionalCode[0, 0], CORD_CODE_NAMES[8])) //RISO_ONE-PE
+                    else if (String.Equals(m_command, CORD_CODE_NAMES[8])) //RISO_ONE-PE
                     {
-                        if ((String.Equals(additionalCode[1, 0], "PASS")) || (String.Equals(additionalCode[1, 0], "FAIL")))
-                            cord_return_event(additionalCode[1, 0], additionalCode[0, 0]);
+                        if ((String.Equals(additionalCode[0, 0], "PASS")) || (String.Equals(additionalCode[0, 0], "FAIL")))
+                            cord_return_event(additionalCode[0, 0], m_command);
                         else
-                            cord_return_event("", additionalCode[0, 0]);
+                            cord_return_event("", m_command);
                     }
-                    else if (String.Equals(additionalCode[0, 0], CORD_CODE_NAMES[9])) //RISO_PH-PH
+                    else if (String.Equals(m_command, CORD_CODE_NAMES[9])) //RISO_PH-PH
                     {
-                        if ((String.Equals(additionalCode[1, 0], "PASS")) || (String.Equals(additionalCode[1, 0], "FAIL")))
-                            cord_return_event(additionalCode[1, 0], additionalCode[0, 0]);
+                        if ((String.Equals(additionalCode[0, 0], "PASS")) || (String.Equals(additionalCode[0, 0], "FAIL")))
+                            cord_return_event(additionalCode[0, 0], m_command);
                         else
-                            cord_return_event("", additionalCode[0, 0]); cord_return_event("", additionalCode[0, 0]);
+                            cord_return_event("", m_command); cord_return_event("", m_command);
                     }
-                    else if (String.Equals(additionalCode[0, 0], CORD_CODE_NAMES[17])) //get RISO resistance
+                    else if (String.Equals(m_command, CORD_CODE_NAMES[17])) //get RISO resistance
                     {
-                        cord_return_event(m_leftover, additionalCode[0, 0]);
+                        cord_return_event(m_leftover, m_command);
                     }
                     else
                     {
-                        cord_return_event("", additionalCode[0, 0]);
+                        cord_return_event("", m_command);
                     }
                 }
-             }
         }
         public delegate void cord_return_result(object sender, string meas_con, string cmd);
         public event cord_return_result cordReturnEventHandler = delegate { };
@@ -705,7 +811,7 @@ namespace MT_300_TFA_application
         {
             if (message_to_send == 1)
             {
-                Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, FUNCTION_COMMUNICATON_NAMES[0], COMMAND_TYPE_NAMES[4], CONNECTION_CODE_NAMES[2], CONNECTION_ADD_NAMES[1]);
+                Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, COMMAND_TYPE_NAMES[4], CONNECTION_CODE_NAMES[2], CONNECTION_ADD_NAMES[1],"");
                 message_to_send = 0;
             }
         }
@@ -924,7 +1030,7 @@ namespace MT_300_TFA_application
                         //1X poslje warning in pobrise sporocilo iz vrste za posiljanje
                         //--------ce hoces posiljanje mesiđa po protokolu potem odkomentiraj naslednjo vrstico in zakomentiraj naslednje 3---------
                         //Send_protocol_message(Transmitt_handle_Buffer[transmitt_handle_read_count + j].dirrection, Settings1.Default._ID_MT, Transmitt_handle_Buffer[transmitt_handle_read_count + j].transmitt_to_ID, FUNCTION_COMMUNICATON_NAMES[0], COMMAND_TYPE_NAMES[2], WARNING_CODE_NAMES[0], Transmitt_handle_Buffer[transmitt_handle_read_count + j].message_ID.ToString());
-                        message_constructor warning_constructor = new message_constructor(Settings1.Default._ID_MT, Transmitt_handle_Buffer[transmitt_handle_read_count + j].transmitt_to_ID, 99, FUNCTION_COMMUNICATON_NAMES[0], COMMAND_TYPE_NAMES[2], WARNING_CODE_NAMES[0], Transmitt_handle_Buffer[transmitt_handle_read_count + j].message_ID.ToString());
+                        message_constructor warning_constructor = new message_constructor(Settings1.Default._ID_MT, Transmitt_handle_Buffer[transmitt_handle_read_count + j].transmitt_to_ID, 99, COMMAND_TYPE_NAMES[2], WARNING_CODE_NAMES[0], Transmitt_handle_Buffer[transmitt_handle_read_count + j].message_ID.ToString(),"");
                         string warning_message = ConstructReplyMsg(warning_constructor);
                         serial_send(Transmitt_handle_Buffer[transmitt_handle_read_count + j].dirrection, warning_message);
                         //ce posiljanje v tretje ne uspe zbrisemo podatke in gremo naprej

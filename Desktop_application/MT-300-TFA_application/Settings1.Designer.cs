@@ -12,7 +12,7 @@ namespace MT_300_TFA_application {
     
     
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "15.3.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "12.0.0.0")]
     internal sealed partial class Settings1 : global::System.Configuration.ApplicationSettingsBase {
         
         private static Settings1 defaultInstance = ((Settings1)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings1())));
@@ -229,7 +229,7 @@ namespace MT_300_TFA_application {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("M")]
+        [global::System.Configuration.DefaultSettingValueAttribute("S")]
         public char _ID_MT {
             get {
                 return ((char)(this["_ID_MT"]));
@@ -296,6 +296,30 @@ namespace MT_300_TFA_application {
             }
             set {
                 this["_TIME_FOR_ACK"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool SYNCHRONUS_TRANSMITT {
+            get {
+                return ((bool)(this["SYNCHRONUS_TRANSMITT"]));
+            }
+            set {
+                this["SYNCHRONUS_TRANSMITT"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("100")]
+        public int SYNCHRO_SEND_WAIT {
+            get {
+                return ((int)(this["SYNCHRO_SEND_WAIT"]));
+            }
+            set {
+                this["SYNCHRO_SEND_WAIT"] = value;
             }
         }
     }

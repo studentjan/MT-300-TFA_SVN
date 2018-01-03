@@ -58,6 +58,18 @@ void disable_interrupt(void)
 		interrupt_control &= (~__EXTI_9_5);
 	}
 }
+void enable_sinchro_interrupt(void)
+{
+	HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);	//vklopi interrupt na sinhronizacijo
+		__DSB();
+		__ISB();
+}
+void disable_sinchro_interrupt(void)
+{
+	HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);	//vklopi interrupt na sinhronizacijo
+		__DSB();
+		__ISB();
+}
 void start_measure(void)
 {
 	if(!(meas_control & __MEAS_IN_PROGRESS))
@@ -576,48 +588,59 @@ void power_on_test(void)
 			set_event(SEND_WARNING_MSG,send_warning_MSG);
 			IND_PE_ON;
 			global_control |= __INIT_TEST_FAIL;
+			global_control &= ~__INIT_TEST_PASS;
 		}
 		else if(global_control & __N_DISCONECTED)
 		{
 			set_event(SEND_WARNING_MSG,send_warning_MSG);
 			global_control |= __INIT_TEST_FAIL;
+			global_control &= ~__INIT_TEST_PASS;
 			set_timer(LED_BLINKING_TASK,10,led_blinking_task);
 		}
 		else if(global_control & __WRONG_CONNECTION)
 		{
 			set_event(SEND_WARNING_MSG,send_warning_MSG);
 			global_control |= __INIT_TEST_FAIL;
+			global_control &= ~__INIT_TEST_PASS;
 			set_timer(LED_BLINKING_TASK,10,led_blinking_task);
 		}
 		else if(global_control & __IN_CONNECTION_OK)
 		{
 			if(global_control & __1P_CONNECTION)
 			{
-				if((temp5<MAINS_MINUS10)||(temp5>MAINS_PLUS10)) {global_control |= __ULN1_OUT_OF_RANGE;global_control |= __INIT_TEST_FAIL;}
+				if((temp5<MAINS_MINUS10)||(temp5>MAINS_PLUS10)) {global_control |= __ULN1_OUT_OF_RANGE;global_control |= __INIT_TEST_FAIL;global_control &= ~__INIT_TEST_PASS;}
 			}
 			else if(global_control & __3P_CONNECTION)
 			{
-				if((temp5<MAINS_MINUS10)||(temp5>MAINS_PLUS10)) {global_control |= __ULN1_OUT_OF_RANGE;global_control |= __INIT_TEST_FAIL;}
-				if((temp3<MAINS_MINUS10)||(temp3>MAINS_PLUS10)) {global_control |= __ULN2_OUT_OF_RANGE;global_control |= __INIT_TEST_FAIL;}
-				if((temp4<MAINS_MINUS10)||(temp4>MAINS_PLUS10)) {global_control |= __ULN3_OUT_OF_RANGE;global_control |= __INIT_TEST_FAIL;}
+				if((temp5<MAINS_MINUS10)||(temp5>MAINS_PLUS10)) {global_control |= __ULN1_OUT_OF_RANGE;global_control |= __INIT_TEST_FAIL;global_control &= ~__INIT_TEST_PASS;}
+				if((temp3<MAINS_MINUS10)||(temp3>MAINS_PLUS10)) {global_control |= __ULN2_OUT_OF_RANGE;global_control |= __INIT_TEST_FAIL;global_control &= ~__INIT_TEST_PASS;}
+				if((temp4<MAINS_MINUS10)||(temp4>MAINS_PLUS10)) {global_control |= __ULN3_OUT_OF_RANGE;global_control |= __INIT_TEST_FAIL;global_control &= ~__INIT_TEST_PASS;}
 			}
 			//v naslednji stavek skoci ce ni pravega zaporedja faz 3 faznega sistema
 			if((global_control & __3P_CONNECTION)&&((global_control &__PHASE_SEQ_132)||(global_control &__PHASE_SEQ_UNKNOWN)||(global_control &__PHASE_SEQ_INPHASE)))
 			{
 				set_timer(LED_BLINKING_TASK,10,led_blinking_task);
+				global_control |= __INIT_TEST_FAIL;
+				global_control &= ~__INIT_TEST_PASS;
 			}
 			//v naslednji if stavek skoci ce so vse napetosti v mejah
 			else if(((global_control & __1P_CONNECTION)&&(!(global_control & __ULN1_OUT_OF_RANGE)))||
 				((global_control & __3P_CONNECTION)&&(!(global_control & __ULN1_OUT_OF_RANGE))&&(!(global_control & __ULN2_OUT_OF_RANGE))&&(!(global_control & __ULN3_OUT_OF_RANGE))))
 			{
-				if(global_control & __1P_CONNECTION)	IND_1P_ON;
-				else if(global_control & __3P_CONNECTION)	IND_3P_ON;
+				if(global_control & __1P_CONNECTION)	
+					IND_1P_ON;
+				else if(global_control & __3P_CONNECTION)	
+					IND_3P_ON;
 				global_control |= __INIT_TEST_PASS;
-				if(set_REL(37)!=_OK) _Error_Handler(__FILE__, __LINE__);	//ko vidomo da je vse vredulahko vlkopimo rel 37 ki poveze maso iz komunikacije na procesorsko
+				global_control &= ~__INIT_TEST_FAIL;
+				//naslednji stavek se ponovem odvija v setNormal() funkciji
+				//if(set_REL(37)!=_OK) _Error_Handler(__FILE__, __LINE__);	//ko vidomo da je vse vredulahko vlkopimo rel 37 ki poveze maso iz komunikacije na procesorsko
 			}
 			else
 			{
 				set_timer(LED_BLINKING_TASK,10,led_blinking_task);
+				global_control |= __INIT_TEST_FAIL;
+				global_control &= ~__INIT_TEST_PASS;
 			}
 		}
 		stop_measure();
@@ -661,21 +684,10 @@ void send_mains_status(void)
 	char temp_trans;
 	int temp_dir;
 	char temp_buff[MAX_ADDITIONAL_COMMANDS_LENGTH];
-	if(connection_control & __CON_TO_MT310)
-	{
-		temp_trans=_ID_MT;
-		temp_dir=_UART_DIR_USB;
-	}
-	else if(connection_control & __CON_TO_TERMINAL)
-	{
-		temp_trans=_ID_DEBUG;
-		temp_dir=_UART_DIR_USB;
-	}
-	else if(connection_control & __CON_TO_PAT)
-	{
-		temp_trans=_ID_PAT;
-		temp_dir=_UART_DIR_485;
-	}
+	struct connected_device device;
+	device = get_connected_device();
+	temp_trans = device.device_ID;
+	temp_dir= device.device_dir;
 	if(global_control & __1P_CONNECTION)
 	{
 		if(global_control & __L_ON_L)
@@ -695,7 +707,7 @@ void send_mains_status(void)
 			strcat(temp_buff,",");
 			strcat(temp_buff,__ULN1_OOR__);
 		}
-		SendComMessage(_ON,_ID_TFA,temp_trans,__MT_300__,__STATUS__,temp_buff,__MAINS_STAT__,temp_dir);
+		SendComMessage(_ON,_ID_TFA,temp_trans,__STATUS__,__MAINS__,temp_buff,"",temp_dir);
 	}
 	else if(global_control & __3P_CONNECTION)
 	{
@@ -730,27 +742,32 @@ void send_mains_status(void)
 			strcat(temp_buff,",");
 			strcat(temp_buff,__ILN3_OOR__);
 		}
-		SendComMessage(_ON,_ID_TFA,temp_trans,__MT_300__,__STATUS__,temp_buff,__MAINS_STAT__,temp_dir);
+		SendComMessage(_ON,_ID_TFA,temp_trans,__STATUS__,__MAINS__,temp_buff,"",temp_dir);
 	}
 	
 }
 struct connected_device get_connected_device(void)
 {
 	struct connected_device temp_connected;
-	if(connection_control & __CON_TO_MT310)
+	if(connection_control & __ESTABLISHED_TO_SIM_USB)
+	{
+		temp_connected.device_ID=_ID_SIMULATION;
+		temp_connected.device_dir=_UART_DIR_USB;
+	}
+	else if(connection_control & __ESTABLISHED_TO_MT310)
 	{
 		temp_connected.device_ID=_ID_MT;
-		temp_connected.device_dir=_UART_DIR_USB;
+		temp_connected.device_dir=_UART_DIR_485;
 	}
-	else if(connection_control & __CON_TO_TERMINAL)
-	{
-		temp_connected.device_ID=_ID_DEBUG;
-		temp_connected.device_dir=_UART_DIR_USB;
-	}
-	else if(connection_control & __CON_TO_PAT)
+	else if(connection_control & __ESTABLISHED_TO_PAT_USB)
 	{
 		temp_connected.device_ID=_ID_PAT;
-		temp_connected.device_dir=_UART_DIR_485;
+		temp_connected.device_dir=_UART_DIR_USB;
+	}
+	else
+	{
+		temp_connected.device_ID = _ID_NONE;
+		temp_connected.device_dir = _EMPTY_DIR;
 	}
 	return temp_connected;
 }

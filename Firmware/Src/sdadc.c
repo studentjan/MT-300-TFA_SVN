@@ -1146,7 +1146,6 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 		}
 		case ULN2_CHANNEL: 
 		{
-			test3_on;
 			SDADC1_sample = ConvertionResult*uln2_temp; 
 			#if	THD_COMPUTATION_METHOD == CORELATION
 			if(meas_control & __THD_MEASURING)
@@ -1224,7 +1223,6 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 		}
 		case ULN3_CHANNEL: 
 		{
-			test4_on;
 			SDADC1_sample = ConvertionResult*uln3_temp;
 			#if	THD_COMPUTATION_METHOD == CORELATION
 			if(meas_control & __THD_MEASURING)
@@ -1401,7 +1399,6 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 						meas_control |= __ULN2_MEASURED;
 					}
 					else SDADC1_CH2s.sample_count++;
-					test3_off;
 				}
 				break;
 			}
@@ -1449,7 +1446,6 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 						meas_control |= __ULN3_MEASURED;
 					}
 					else SDADC1_CH3s.sample_count++;
-					test4_off;
 				}
 				break;
 			}

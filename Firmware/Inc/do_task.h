@@ -19,6 +19,8 @@ void led_blinking_task(void);
 void get_phase_seq(void);
 void send_mains_status(void);
 struct connected_device get_connected_device(void);
+void enable_sinchro_interrupt(void);
+void disable_sinchro_interrupt(void);
 
 struct connected_device{
 	char device_ID;

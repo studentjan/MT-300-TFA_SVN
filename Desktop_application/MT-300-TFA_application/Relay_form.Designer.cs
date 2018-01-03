@@ -987,6 +987,7 @@
             this.Controls.Add(this.rel_2_on_button);
             this.Name = "Relay_form";
             this.Text = "RELAY TEST";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Relay_form_FormClosing);
             this.ResumeLayout(false);
 
         }

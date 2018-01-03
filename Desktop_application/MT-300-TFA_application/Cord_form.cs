@@ -16,6 +16,7 @@ namespace MT_300_TFA_application
     {
         public bool CordMeasInProg = false;
         private serial_com Serial_object;
+        private Form1 MainForm;
         private Thread task1;
         private Thread mainThread;
         private string current_meas;
@@ -42,10 +43,11 @@ namespace MT_300_TFA_application
         private bool _cordOneToPEState = false;
         private bool _cordPhaseToPhaseState = false;
 
-        public Cord_form(serial_com S_object)
+        public Cord_form(serial_com S_object, Form1 main_form)
         {
             InitializeComponent();
             Serial_object = S_object;
+            MainForm = main_form;
             Serial_object.cordReturnEventHandler += new serial_com.cord_return_result(OnCordReturnResult);
             Cable_state_comboBox.SelectedIndex = 0;
             Cable_type_comboBox.SelectedIndex = 0;
@@ -63,6 +65,9 @@ namespace MT_300_TFA_application
             fail_return_textbox.AppendText("5.0");
             _failReturnTXT = fail_return_textbox.Text;
             _passReturnTXT = resistance_return_value.Text;
+            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                                serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[2], "", "");
         }
 
         private void polarity_test_start_button_Click(object sender, EventArgs e)
@@ -75,6 +80,7 @@ namespace MT_300_TFA_application
                 polarity_test_start_button.Text = "STOP";
                 mainThread = new Thread(cord_sim_functin);
                 mainThread.Start();
+                
                 //zazenemo meritev
             }
             //stop
@@ -82,8 +88,22 @@ namespace MT_300_TFA_application
             {
                 //ustavimo meritev
                 Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                    Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                    serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[1], "");
+                    Settings1.Default._ID_TFA, serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[1], "","");
+                _cordInitiated = false;
+                _cordCorrectWitingInProg = false;
+                _cordCorrectWitingMeasured = false;
+                _cordContinuityInProg = false;
+                _cordContinuityMeasured = false;
+                _cordAllToPEInProg = false;
+                _cordAllToPEMeasured = false;
+                _cordOneToPEInProg = false;
+                _cordOneToPEMeasured = false;
+                _cordPhaseToPhaseInProg = false;
+                _cordPhaseToPhaseMeasured = false;
+                _cordAllToPEState = false;
+                _cordOneToPEState = false;
+                _cordPhaseToPhaseState = false;
+                mainThread.Abort();
                 //set_stop_cord();
             }
         }
@@ -114,23 +134,22 @@ namespace MT_300_TFA_application
                         _cordPhaseToPhaseState = false;
                         if (String.Equals(getCableTypeComboValue(), "1 PHASE"))
                             Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
                                 serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[2],
-                                serial_com.CORD_LEFTOVER_NAMES[25]);
+                                serial_com.CORD_LEFTOVER_NAMES[25],"");
                         else if (String.Equals(getCableTypeComboValue(), "3 PHASE"))
                             Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
                                 serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[2],
-                                serial_com.CORD_LEFTOVER_NAMES[26]);
+                                serial_com.CORD_LEFTOVER_NAMES[26], "");
                         cord_sim_count++;
                         break;
                     case 1:
                         if (_cordInitiated)
                         {
                             Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[10],
-                                "");
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                                serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[10],"","");
                             cord_sim_count++;
                             _cordCorrectWitingInProg = true;
                         }
@@ -139,9 +158,8 @@ namespace MT_300_TFA_application
                         if (_cordCorrectWitingMeasured)
                         {
                             Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[12],
-                                "");
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                                serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[12],"","");
                             cord_sim_count++;
                             _cordContinuityInProg = true;
                         }
@@ -150,9 +168,8 @@ namespace MT_300_TFA_application
                         if (_cordContinuityMeasured)
                         {
                             Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[14],
-                                "");
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                                serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[14],"","");
                             cord_sim_count++;
                             _cordAllToPEInProg = true;
                         }
@@ -163,9 +180,8 @@ namespace MT_300_TFA_application
                             if (_cordAllToPEState)
                             {
                                 Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[16],
-                                "");
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA, 
+                                serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[16],"","");
                                 cord_sim_count=6;
                                 _cordPhaseToPhaseInProg = true;
                             }
@@ -173,9 +189,7 @@ namespace MT_300_TFA_application
                             {
                                 Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
                                     Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                    serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                    serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[15],
-                                    "");
+                                    serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[15],"","");
                                 cord_sim_count++;
                                 _cordOneToPEInProg = true;
                             }
@@ -186,9 +200,8 @@ namespace MT_300_TFA_application
                         if (_cordOneToPEMeasured)
                         {
                             Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[16],
-                                "");
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                                serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[16],"","");
                             cord_sim_count++;
                             _cordPhaseToPhaseInProg = true;
                         }
@@ -197,9 +210,8 @@ namespace MT_300_TFA_application
                         if (_cordPhaseToPhaseMeasured)
                         {
                             Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[1],        //stop
-                                "");
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA, 
+                                serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[1], "","");
                             cord_sim_count++;
                         }
                         break;
@@ -235,8 +247,8 @@ namespace MT_300_TFA_application
                     _cordAllToPEState = true;
                 else if (String.Equals(returned_string, "FAIL"))
                     _cordAllToPEState = false;
-                _cordAllToPEMeasured = true;
-                _cordAllToPEInProg = false;
+                    _cordAllToPEMeasured = true;
+                    _cordAllToPEInProg = false;
             }
             else if (String.Equals(command, serial_com.CORD_CODE_NAMES[8])) //RISO_ONE-PE
             {
@@ -273,39 +285,34 @@ namespace MT_300_TFA_application
             else if (String.Equals(command, serial_com.CORD_CODE_NAMES[19])) //start RPE L START
             {
                 Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                               Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                               serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[20],
-                               "");
+                               Settings1.Default._ID_MT, Settings1.Default._ID_TFA, 
+                               serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[20],"","");
             }
             else if (String.Equals(command, serial_com.CORD_CODE_NAMES[21])) //start RPE H START
             {
                 Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                               Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                               serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[22],
-                               "");
+                               Settings1.Default._ID_MT, Settings1.Default._ID_TFA, 
+                               serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[22],"","");
             }
             else if (String.Equals(command, serial_com.CORD_CODE_NAMES[25])) //start RPE STOP
             {
                 Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                               Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                               serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[26],
-                               "");
+                               Settings1.Default._ID_MT, Settings1.Default._ID_TFA, 
+                               serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[26],"","");
             }
             else if (String.Equals(command, serial_com.CORD_CODE_NAMES[23])) //start RISO START
             {
                 Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                               Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                               serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[24],
-                               "");
+                               Settings1.Default._ID_MT, Settings1.Default._ID_TFA, 
+                               serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[24],"","");
             }
             else if (String.Equals(command, serial_com.CORD_CODE_NAMES[27])) //start RISO STOP
             {
                 Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                               Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                               serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[28],
-                               "");
+                               Settings1.Default._ID_MT, Settings1.Default._ID_TFA, 
+                               serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[28],"","");
             }
-            else if (String.Equals(command, serial_com.CORD_CODE_NAMES[3])) //get RISO resistance
+            else if (String.Equals(command, serial_com.CORD_CODE_NAMES[30])) //CORD deinitiated
             {
                
             }
@@ -352,19 +359,19 @@ namespace MT_300_TFA_application
                 switch (getCableInsulationComboValue())
                 {
                     case "L1 - PE":
-                        temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _failTempString;
+                        temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
                         break;
                     case "L3 - PE":
-                        temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _failTempString;
+                        temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
                         break;
                     case "L1,N -PE":
-                        temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _failTempString;
+                        temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
                         break;
                     case "N - PE":
-                        temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _failTempString;
+                        temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
                         break;
                     default:
-                        temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _passTempString;
+                        temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString;
                         break;
                 }
             }
@@ -374,30 +381,30 @@ namespace MT_300_TFA_application
                 {
                     case "L1 - PE":
                         if (String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[1]))
-                            temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _passTempString;
+                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString;
                         else
-                            temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _failTempString; 
+                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString; 
                         break;
                     case "L3 - PE":
                         if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[1]))||(String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[2])))
-                            temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _failTempString;
+                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
                         else
-                            temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _passTempString; 
+                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString; 
                         break;
                     case "L1,N -PE":
                         if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[1]))||(String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[2]))||(String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[3]))||(String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[6])))
-                            temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _failTempString;
+                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
                         else
-                            temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _passTempString; 
+                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString; 
                         break;
                     case "N - PE":
                         if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[1]))||(String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[2]))||(String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[3])))
-                            temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _failTempString;
+                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
                         else
-                            temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _passTempString; 
+                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString; 
                         break;
                     default:
-                        temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _passTempString;
+                        temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString;
                         break;
                 }
             }
@@ -407,24 +414,24 @@ namespace MT_300_TFA_application
                 {
                      case "L1 - N":
                         if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[7])))
-                            temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _failTempString;
+                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
                         else
-                            temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _passTempString; 
+                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString; 
                         break;
                     case "L2,L3 - N":
                         if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[7])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[8])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[9])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[10])))
-                            temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _failTempString;
+                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
                         else
-                            temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _passTempString; 
+                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString; 
                         break;
                     case "L1 - L2":
                         if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[15])))
-                            temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _failTempString;
+                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
                         else
-                            temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _passTempString; 
+                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString; 
                         break;
                     default:
-                        temp_str = serial_com.CORD_CODE_NAMES[18] + delimiter + _passTempString;
+                        temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString;
                         break;
                 }
             }
@@ -434,8 +441,8 @@ namespace MT_300_TFA_application
             }
             Serial_object.Send_protocol_message(
                                 Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], temp_str, "");
+                                Settings1.Default._ID_TFA,serial_com.COMMAND_TYPE_NAMES[5],
+                                serial_com.CORD_CODE_NAMES[18], temp_str, "");
         }
 
         private void cord_get_RPE_task()
@@ -443,10 +450,11 @@ namespace MT_300_TFA_application
             int current_msg_id = 0;
             string failTempString;
             string passTempString;
+            string temp_string;
             if (_cordCorrectWitingInProg)
             {
-                failTempString = serial_com.CORD_CODE_NAMES[4] + delimiter + _failReturnTXT;
-                passTempString = serial_com.CORD_CODE_NAMES[4] + delimiter + _passReturnTXT;
+                failTempString = serial_com.CORD_CODE_NAMES[29] + delimiter + _failReturnTXT;
+                passTempString = serial_com.CORD_CODE_NAMES[29] + delimiter + _passReturnTXT;
                 Thread.Sleep(100);
                 switch (_selectedStateTxt)
                 {
@@ -457,35 +465,20 @@ namespace MT_300_TFA_application
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[12])) ||
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[18])) ||
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24])))
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                            temp_string = passTempString;
                         else
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                            temp_string = failTempString;
                         break;
                     case "L - N CROSSED":
                         //vsi L2_L2.. razen L1_L1 in N_N
                         if ((String.Equals(current_meas, "L2_L2")) || (String.Equals(current_meas, "L3_L3")) ||
                             (String.Equals(current_meas, "PE_PE")))
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                             temp_string = passTempString;
                             //L1_N in N_L1
                         else if ((String.Equals(current_meas, "L1_N")) || (String.Equals(current_meas, "N_L1")))
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                             temp_string = passTempString;
                         else
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                            temp_string = failTempString;
                         break;
                     case "N - OPEN":
                         //ce je L1_L1... razen N_N
@@ -493,15 +486,9 @@ namespace MT_300_TFA_application
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[6])) ||
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[12])) ||
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24])))
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                             temp_string = passTempString;
                         else
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                            temp_string = failTempString;
                         break;
                     case "L1 - N SHORTED":
                         //ce je L1_L1...
@@ -510,21 +497,12 @@ namespace MT_300_TFA_application
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[12])) ||
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[18])) ||
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24])))
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                             temp_string = passTempString;
                             //L1_N in N_L1
                         else if ((String.Equals(current_meas, "L1_N")) || (String.Equals(current_meas, "N_L1")))
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                             temp_string = passTempString;
                         else
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                            temp_string = failTempString;
                         break;
                     case "L1 - PE SHORTED":
                         //ce je L1_L1...
@@ -533,101 +511,55 @@ namespace MT_300_TFA_application
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[12])) ||
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[18])) ||
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24])))
-                            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5],
-                                passTempString,
-                                "");
+                             temp_string = passTempString;
                             //L1_N in N_L1
                         else if ((String.Equals(current_meas, "L1_PE")) || (String.Equals(current_meas, "PE_L1")))
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                             temp_string = passTempString;
                         else
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                            temp_string = failTempString;
                         break;
                     case "L1 - L3 CROSSED":
                         //ce je L2_L2, N_N, PE_PE
                         if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[6])) ||
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[18])) ||
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24])))
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                             temp_string = passTempString;
                             //L1_N in N_L1
                         else if ((String.Equals(current_meas, "L1_L3")) || (String.Equals(current_meas, "L3_L1")))
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                             temp_string = passTempString;
                         else
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                            temp_string = failTempString;
                         break;
                     case "1P_L - N SHORTED":
                         //ce je L1_L1...
                         if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[0])) ||
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[18])) ||
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24])))
-                            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5],
-                                passTempString,
-                                "");
+                             temp_string = passTempString;
                             //L1_N in N_L1
                         else if ((String.Equals(current_meas, "L1_N")) || (String.Equals(current_meas, "N_L1")))
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                             temp_string = passTempString;
                         else
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                            temp_string = failTempString;
+
                         break;
                     case "1P_L OPEN":
                         //ce je L1_L1...
                         if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[18])) ||
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24])))
-                            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5],
-                                passTempString,
-                                "");
+                             temp_string = passTempString;
                         else
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                            temp_string = failTempString;
                         break;
                     case "L1-L2, L3-N CROSSED":
                         //ce je L1_L1...
                         if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24])))
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                             temp_string = passTempString;
                         else if ((String.Equals(current_meas, "L1_L2")) || (String.Equals(current_meas, "L2_L1")) ||
                                  (String.Equals(current_meas, "L3_N")) || (String.Equals(current_meas, "N_L3")))
-                            current_msg_id =
-                                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                    Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                    serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5],
-                                    passTempString, "");
+                             temp_string = passTempString;
                         else
-                            current_msg_id =
-                                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                    Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                    serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5],
-                                    failTempString, "");
+                            temp_string = failTempString;
                         break;
                     case "PE-L1, L2-N SHORTED":
                         //ce je L1_L1...
@@ -636,38 +568,21 @@ namespace MT_300_TFA_application
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[12])) ||
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[18])) ||
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24])))
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                             temp_string = passTempString;
                         else if ((String.Equals(current_meas, "PE_L1")) || (String.Equals(current_meas, "L1_PE")) ||
                                  (String.Equals(current_meas, "L2_N")) || (String.Equals(current_meas, "N_L2")))
-                            current_msg_id =
-                                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                    Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                    serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5],
-                                    passTempString, "");
+                             temp_string = passTempString;
                         else
-                            current_msg_id =
-                                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                    Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                    serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5],
-                                    failTempString, "");
+                            temp_string = failTempString;
                         break;
                     case "ALL CROSSED":
                         //ce je L1_L1...
                         if ((String.Equals(current_meas, "L1_L2")) || (String.Equals(current_meas, "L2_L3")) ||
                             (String.Equals(current_meas, "L3_N")) || (String.Equals(current_meas, "N_PE")) ||
                             (String.Equals(current_meas, "PE_L1")))
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                            temp_string = passTempString;
                         else
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                            temp_string = failTempString;
                         break;
                     case "PE-L1 CROSSED AND OPEN":
                         //ce je L1_L1...
@@ -675,24 +590,19 @@ namespace MT_300_TFA_application
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[12])) ||
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[18])) ||
                             (String.Equals(current_meas, serial_com.CORD_LEFTOVER_NAMES[24])))
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                            temp_string = passTempString;
                         else if ((String.Equals(current_meas, "L1_PE")))
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], passTempString, "");
+                            temp_string = passTempString;
                         else
-                            current_msg_id = Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                                serial_com.COMMAND_TYPE_NAMES[5], failTempString, "");
+                            temp_string = failTempString;
                         break;
                     default:
+                        temp_string = "0.00";
                         break;
                 }
+                current_msg_id = Serial_object.Send_protocol_message(
+                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
+                                Settings1.Default._ID_TFA, serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[4], temp_string, "");
             }
             else if (_cordContinuityInProg)
             {
@@ -700,30 +610,29 @@ namespace MT_300_TFA_application
                string temp_str;
                if(String.Equals(current_meas, "L1_L1"))
                {
-                   temp_str = serial_com.CORD_CODE_NAMES[4] + delimiter + getContL1TxtValue();
+                   temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + getContL1TxtValue();
                }
                else if (String.Equals(current_meas, "L2_L2"))
                {
-                   temp_str = serial_com.CORD_CODE_NAMES[4] + delimiter + getContL2TxtValue();
+                   temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + getContL2TxtValue();
                }
                else if (String.Equals(current_meas, "L3_L3"))
                {
-                   temp_str = serial_com.CORD_CODE_NAMES[4] + delimiter + getContL3TxtValue();
+                   temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + getContL3TxtValue();
                }
                else if (String.Equals(current_meas, "N_N"))
                {
-                   temp_str = serial_com.CORD_CODE_NAMES[4] + delimiter + getContNTxtValue();
+                   temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + getContNTxtValue();
                }
                else if (String.Equals(current_meas, "PE_PE"))
                {
-                   temp_str = serial_com.CORD_CODE_NAMES[4] + delimiter + getContPETxtValue();
+                   temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + getContPETxtValue();
                }
                else
                    temp_str = "0.00";
                Serial_object.Send_protocol_message(
                   Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                  Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0],
-                  serial_com.COMMAND_TYPE_NAMES[5], temp_str, "");
+                  Settings1.Default._ID_TFA, serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[4], temp_str, "");
             }
             task1_ex = false;
         }
@@ -831,6 +740,24 @@ namespace MT_300_TFA_application
                 this.polarity_test_start_button.Text = message;
                 //this.terminal_textbox_send.AppendText(Environment.NewLine);
             }
+        }
+
+        private void Cord_form_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Cord_form_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                                serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[31], "", "");
+            MainForm.machines_button.Enabled = true;
+            MainForm.rescan_button.Enabled = true;
+            MainForm.test_com_protocol_button.Enabled = true;
+            MainForm.test_relays_button.Enabled = true;
+            MainForm.port_connect.Enabled = true;
+            MainForm.cord_button.Enabled = true;
         }
 
 

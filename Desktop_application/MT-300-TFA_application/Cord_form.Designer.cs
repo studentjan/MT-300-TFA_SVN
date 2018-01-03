@@ -299,6 +299,8 @@
             this.Controls.Add(this.polarity_test_start_button);
             this.Name = "Cord_form";
             this.Text = "Form2";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Cord_form_FormClosing);
+            this.Load += new System.EventHandler(this.Cord_form_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

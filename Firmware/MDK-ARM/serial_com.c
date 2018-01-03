@@ -18,7 +18,9 @@
 //	*	--	dodamo funkcije za posiljanje v funkcijo SerialSend(..) - dodane funkcije so lahko odvisne od smeri prejema podatkov (dirrection), tako lahko definiramo posiljanje po razlicnih vodilih, kot je USB in RS485. Ne pozabi prilagoditi nastavljanje smeri v primeru posiljanja praznega stringa.
 //	* ce smo nastavili SYNCHRONUS_TRANSMITT na _OFF potem:
 //	* -- 	napisemo funkcijo z imenom void SendTimerInit(void), v kateri inicializiramo timer
-//  * -- 	dodamo SINCHRONUS_TRANSMITT v tasks.h operacijskega sistema
+//  * --  prilagodimo funkcijo resetSendTimer()
+//  * --  dodaj serialComErrorTimeout++; v SysTich_Handler() in nastavi SERIAL_COM_ERROR_TIMEOUT 
+//  * -- 	dodamo SINCHRONUS_TRANSMITT in SYNCHRONUS_PROCESS v tasks.h operacijskega sistema
 //  * --	dodamo funkcije za posiljanje v funkcijo SerialSend(..) - dodane funkcije so lahko odvisne od smeri prejema podatkov (dirrection), tako lahko definiramo posiljanje po razlicnih vodilih, kot je USB in RS485. Ne pozabi prilagoditi nastavljanje smeri v primeru posiljanja praznega stringa.
 //	*	dodamo svojo kodo za analiziranje prejete komande v command_analyze(..)
 //	***************************************************************************
@@ -60,6 +62,7 @@ extern uint32_t start_mach_count;
 extern uint32_t current_URES_measurement;
 //-----------GLOBALNE SPREMENLJIVKE----------------------
 uint8_t SERIAL_direction;
+uint32_t synchronus_error_count=0;
 uint8_t event_status; 
 SERIAL_RX_t SERIAL_in_queue_buffer[SERIAL_IN_QUEUE_SIZE]; //array of UART3 RX commands
 volatile uint32_t RxFifoIndex = 0;
@@ -68,9 +71,13 @@ static void increaseWritePtr(void);
 static void SinchronusTransmittFunc(void);
 static void transmittEmptyStr(void);
 static void SerialSend(uint8_t *,uint16_t msg_size, uint32_t dir);
+static void resetSendTimer(void);
+static void SynchronusSendInit(void);
+void SynchronusProcess(void);
 int int_from_str;
 char* float_from_str;
-
+uint32_t serialComErrorTimeout=0;
+bool serialComErrorDetected=false;
 TIM_HandleTypeDef htim2;
 
 int indikator1;
@@ -116,17 +123,16 @@ typedef struct
   char * replay_data;
 }MESSAGE_CONSTRUCTOR;
 
-TRANSMIT_BUFFER Transmit_handle_buff[TRANSMIT_HANDLE_BUFF_SIZE];
-TRANSMIT_OUT_BUFFER Transmit_out_buff[TRANSMIT_OUT_BUFF_SIZE];
-
 //---------------------CIKLICEN BUFFER ZA TRANSMIT HANDLE BUFFER------------------------
 //stevca za vpisovanje in branje v ciklicen buffer
 uint32_t write_count=0;
 uint32_t read_count=0;
 uint32_t g;
+TRANSMIT_BUFFER Transmit_handle_buff[TRANSMIT_HANDLE_BUFF_SIZE];
 //---------------------CIKLICEN BUFFER ZA TRANSMIT OUT BUFFER------------------------
 uint32_t write_out_count=0;
 uint32_t read_out_count=0;
+TRANSMIT_OUT_BUFFER Transmit_out_buff[TRANSMIT_OUT_BUFF_SIZE];
 
 
 #endif
@@ -249,7 +255,7 @@ static uint32_t recieve_nack_func(void)
 	else return 3;
 	return 0;
 }
-//++++++++++++++++++++funkcija postavi sporocilo v ciklicen buffer+++++++++++++++++++++++
+//++++++++++++++++++++funkcija izbrise sporocilo iz ciklicnega bufferja+++++++++++++++++++++++
 //funkcija vrne:	0 - vse ok
 //								2 - sporocila ni v ciklicnem bufferju
 //								3 - neznan ID
@@ -372,6 +378,7 @@ static void transmit_command_handle(void)
 		serial_send_handler(Transmit_handle_buff[read_count+j].msg_ptr,(Transmit_handle_buff[read_count+j].size),Transmit_handle_buff[read_count+j].dirrection);	//funkcija izbere vodilo glede na dir in poslje sporocilo
 		//serial_send_handler("5555555555555555555555555555555555555555555555555555555555555555",64,Transmit_handle_buff[read_count+j].dirrection);// pazi 64 bytni bufferji ne delajo dobr
 		
+		//ce presezemo stevilo ponovitev
 		if(Transmit_handle_buff[read_count+j].nack_count>=(NUM_NACK_EVENTS-1)) 
 		{
 			//pretvorba int v str veliko hitrejsa kot sprintf
@@ -394,7 +401,7 @@ static void transmit_command_handle(void)
 			char additional_command[3];
 			sprintf(additional_command,"%.2d",Transmit_handle_buff[read_count+j].message_ID);
 			//ce zelimo poslati warning z send kontrolom mora biti zacetni parameter spodaj _ON
-			SendComMessage(_OFF,_ID_TFA,Transmit_handle_buff[read_count+j].transmitt_to_ID,__MT_300__,_MESSAGE_WAR,_MESSAGE_COM_ERR,additional_command,Transmit_handle_buff[read_count+j].dirrection);
+			SendComMessage(_OFF,_ID_TFA,Transmit_handle_buff[read_count+j].transmitt_to_ID,_MESSAGE_WAR,_MESSAGE_COM_ERR,additional_command,"",Transmit_handle_buff[read_count+j].dirrection);
 			//send_com_message(_MESSAGE_WAR,_MESSAGE_COM_ERR,_VALID,temp_array,Transmit_handle_buff[read_count+j].dirrection);
 			//ce posiljanje v tretje ne uspe zbrisemo podatke in gremo naprej
 			free(Transmit_handle_buff[read_count+j].msg_ptr);
@@ -587,12 +594,12 @@ static void command_analyze(uint8_t dir)
 	{ 
 		if(!strcmp(m_command,__PROTOCOL_TEST__))
 		{
-			SendComMessage(_ON,_ID_TFA,transmitter_ID,__MT_300__,__TEST__,__PROTOCOL_TEST__,"",dir);
-			SendComMessage(_ON,_ID_TFA,transmitter_ID,__MT_300__,__TEST__,__PROTOCOL_TEST__,"KRNEKI",dir);
-			SendComMessage(_ON,_ID_TFA,transmitter_ID,__MT_300__,__TEST__,__PROTOCOL_TEST__,"KRNEKI2",dir);
-			SendComMessage(_ON,_ID_TFA,transmitter_ID,__MT_300__,__TEST__,__PROTOCOL_TEST__,"KRNEKI3",dir);
-			SendComMessage(_ON,_ID_TFA,transmitter_ID,__MT_300__,__TEST__,__PROTOCOL_TEST__,"KRNEKI4",dir);
-			SendComMessage(_ON,_ID_TFA,transmitter_ID,__MT_300__,__TEST__,__PROTOCOL_TEST__,"KRNEKI5",dir);
+			SendComMessage(_ON,_ID_TFA,transmitter_ID,__TEST__,__PROTOCOL_TEST__,"","",dir);
+			SendComMessage(_ON,_ID_TFA,transmitter_ID,__TEST__,__PROTOCOL_TEST__,"","KRNEKI",dir);
+			SendComMessage(_ON,_ID_TFA,transmitter_ID,__TEST__,__PROTOCOL_TEST__,"","KRNEKI2",dir);
+			SendComMessage(_ON,_ID_TFA,transmitter_ID,__TEST__,__PROTOCOL_TEST__,"","KRNEKI3",dir);
+			SendComMessage(_ON,_ID_TFA,transmitter_ID,__TEST__,__PROTOCOL_TEST__,"","KRNEKI4",dir);
+			SendComMessage(_ON,_ID_TFA,transmitter_ID,__TEST__,__PROTOCOL_TEST__,"","KRNEKI5",dir);
 		}
 	}
 /*********************************************************************************/
@@ -602,16 +609,74 @@ static void command_analyze(uint8_t dir)
 	{ 
 		if(!strcmp(m_command,__CONNECTION_REQUEST__))
 		{
-			if(!strcmp(m_value,__MT_310__))
+			if(!strcmp(&additionalCode[0][0][0],__MT_310__))
 			{
-				connection_control |= __CON_TO_MT310;
-				connection_control |= __CONNECTION_ESTABLISHED;
-				set_event(SEND_TFA_MAINS_STATUS,send_mains_status);
-				SendComMessage(_ON,_ID_TFA,transmitter_ID,__MT_300__,__CONNECTION__,__CONNECTION_ESTABLISHED__,"",dir);
-				if(CONNECTION_CHECK ==_ON)
-					restart_timer(CHECK_CONNECTION,CONNECTION_CHECK_INTERVAL,check_connection);	//preverjanje komunikacije po intervalih
+				if(connection_control & __CON_TO_PAT)
+				{
+					SendComMessage(_ON,_ID_TFA,transmitter_ID,__CONNECTION__,__CONNECTION_DENIED__,__DIFF_DEVICE_CONNECTED__,"",dir);
+				}
+				else if(connection_control & __CON_TO_MT310)
+				{
+					SendComMessage(_ON,_ID_TFA,transmitter_ID,__CONNECTION__,__CONNECTION_DENIED__,__ALREADY_CONNECTED__,"",dir);
+				}
+				else
+				{
+					connection_control |= __CON_TO_MT310;
+					connection_control |= __CONNECTION_ESTABLISHED;
+					switch(transmitter_ID)
+					{
+						case _ID_SIMULATION:
+							connection_control |= __ESTABLISHED_TO_SIM_USB;
+							break;
+						case _ID_MT:
+							connection_control |= __ESTABLISHED_TO_MT310;
+							break;
+						case _ID_PAT:
+							connection_control |= __ESTABLISHED_TO_PAT_USB;
+							break;
+						default:
+							break;
+					}
+					set_event(SEND_TFA_MAINS_STATUS,send_mains_status);
+					SendComMessage(_ON,_ID_TFA,transmitter_ID,__CONNECTION__,__CONNECTION_ESTABLISHED__,__MT_300__,"",dir);
+					if(CONNECTION_CHECK ==_ON)
+						restart_timer(CHECK_CONNECTION,CONNECTION_CHECK_INTERVAL,check_connection);	//preverjanje komunikacije po intervalih
+				}
 			}
-			
+			if(!strcmp(&additionalCode[0][0][0],__PAT__))
+			{
+				if(connection_control & __CON_TO_MT310)
+				{
+					SendComMessage(_ON,_ID_TFA,transmitter_ID,__CONNECTION__,__CONNECTION_DENIED__,__DIFF_DEVICE_CONNECTED__,"",dir);
+				}
+				else if(connection_control & __CON_TO_PAT)
+				{
+					SendComMessage(_ON,_ID_TFA,transmitter_ID,__CONNECTION__,__CONNECTION_DENIED__,__ALREADY_CONNECTED__,"",dir);
+				}
+				else
+				{
+					connection_control |= __CON_TO_PAT;
+					connection_control |= __CONNECTION_ESTABLISHED;
+					set_event(SEND_TFA_MAINS_STATUS,send_mains_status);
+					SendComMessage(_ON,_ID_TFA,transmitter_ID,__CONNECTION__,__CONNECTION_ESTABLISHED__,__PAT__,"",dir);
+					switch(transmitter_ID)
+					{
+						case _ID_SIMULATION:
+							connection_control |= __ESTABLISHED_TO_SIM_USB;
+							break;
+						case _ID_MT:
+							connection_control |= __ESTABLISHED_TO_MT310;
+							break;
+						case _ID_PAT:
+							connection_control |= __ESTABLISHED_TO_PAT_USB;
+							break;
+						default:
+							break;
+					}
+					if(CONNECTION_CHECK ==_ON)
+						restart_timer(CHECK_CONNECTION,CONNECTION_CHECK_INTERVAL,check_connection);	//preverjanje komunikacije po intervalih
+				}
+			}
 		}
 		else if(!strcmp(m_command,__CHECK_CONNECTION__))
 		{
@@ -643,11 +708,34 @@ static void command_analyze(uint8_t dir)
 				cord_task_control |= __CORD_MEAS_IN_PROG;
 				if(!strcmp(m_value,__1_PHASE__))
 					set_phase_num(1);
-				else
+				else if(!strcmp(m_value,__3_PHASE__))
 					set_phase_num(3);
 				start_cord_count = 0;
 				set_event(INIT_CORD,init_cord);
 				cord_task_control |= __CORD_INIT_RECIEVED;
+			}
+		}
+		else if(!strcmp(m_command,__DEINIT_CORD__))
+		{
+			if(cord_task_control & __CORD_INITIATED)	
+			{
+				start_cord_count = 0;
+				set_event(DEINIT_CORD,deinitCord);
+			}
+		}
+		//nastavimo tip kabla, potrebno samo, ce je drugacen kot v inicializaciji
+		else if(!strcmp(m_command,__SET__))
+		{
+			if(!strcmp(&additionalCode[0][0][0],__CABLE_TYPE__))
+			{
+				if(!strcmp(&additionalCode[1][0][0],__1_PHASE__))
+				{
+					set_phase_num(1);
+				}
+				else if(!strcmp(&additionalCode[1][0][0],__3_PHASE__))
+				{
+					set_phase_num(3);
+				}
 			}
 		}
 		//ce CORD se ni inicializiran ga najprej inicializira nato pa zacne meritev
@@ -807,6 +895,28 @@ static void command_analyze(uint8_t dir)
 				mach_task_control |= __MACH_INIT_RECIEVED;
 			}
 		}
+		else if(!strcmp(m_command,__DEINIT_MACHINES__))
+		{
+			if(mach_task_control & __MACH_INITIATED)
+			{
+				start_mach_count = 0;
+				set_event(DEINIT_MACH,deinitMachines);
+			}
+		}
+		else if(!strcmp(m_command,__SET__))
+		{
+			if(!strcmp(&additionalCode[0][0][0],__CABLE_TYPE__))
+			{
+				if(!strcmp(&additionalCode[1][0][0],__1_PHASE__))
+				{
+					set_phase_num_mach(1);
+				}
+				else if(!strcmp(&additionalCode[1][0][0],__3_PHASE__))
+				{
+					set_phase_num_mach(3);
+				}
+			}
+		}
 		else if(!strcmp(m_command,__START_PHASES_TO_PE__))
 		{
 			//ce je katerakoli meritev v delu se ne izvede
@@ -872,6 +982,50 @@ static void command_analyze(uint8_t dir)
 			if((meas_task_control & __MACH_MEAS_IN_PROG)&&(mach_task_control & __MACH_RPE_IN_PROGRESS))
 				set_event(MACH_RPE_STOP,MachinesRPEStop);
 		}
+		else if(!strcmp(m_command,__MACH_URES_START__))
+		{
+			if((meas_task_control & __MACH_MEAS_IN_PROG)&&(!(mach_task_control & __MACH_URES_IN_PROGRESS)))
+			{
+				if(!strcmp(&additionalCode[0][0][0],__MACH_L1_PE__))
+					current_URES_measurement = __L1_PE;
+				else if(!strcmp(&additionalCode[0][0][0],__MACH_L2_PE__))
+					current_URES_measurement = __L2_PE;
+				else if(!strcmp(&additionalCode[0][0][0],__MACH_L3_PE__))
+					current_URES_measurement = __L3_PE;
+				else if(!strcmp(&additionalCode[0][0][0],__MACH_L1_N__))
+					current_URES_measurement = __L1_N;
+				else if(!strcmp(&additionalCode[0][0][0],__MACH_L2_N__))
+					current_URES_measurement = __L2_N;
+				else if(!strcmp(&additionalCode[0][0][0],__MACH_L3_N__))
+					current_URES_measurement = __L3_N;
+				else if(!strcmp(&additionalCode[0][0][0],__MACH_L1_L2__))
+					current_URES_measurement = __L1_L2;
+				else if(!strcmp(&additionalCode[0][0][0],__MACH_L2_L3__))
+					current_URES_measurement = __L2_L3;
+				else if(!strcmp(&additionalCode[0][0][0],__MACH_L1_L3__))
+					current_URES_measurement = __L1_L3;
+				set_event(MACH_URES,mach_URES);
+			}
+			
+		}
+		else if(!strcmp(m_command,__MACH_URES_FINSHED__))
+		{
+			if((meas_task_control & __MACH_MEAS_IN_PROG) &&(mach_task_control & __MACH_URES_IN_PROGRESS))
+			{
+				set_event(MACH_URES_STOP,mach_URES_Stop);
+			}
+			
+		}
+		else if(!strcmp(m_command,__MACH_URES_OPEN__))
+		{
+			if((meas_task_control & __MACH_MEAS_IN_PROG))
+				set_event(MACH_URES,mach_URES);
+		}
+		//namenjen testu s simulatorjem
+		if(!strcmp(m_value,__MACH_TEST__))
+				mach_task_control |= __MACH_TEST_RECIEVED;
+		else
+			mach_task_control &= ~__MACH_TEST_RECIEVED;
 		
 	}
 /*******************************************************************************/
@@ -903,6 +1057,52 @@ void serial_com_init(void)
 	#if TRANSMIT_COMMAND_CHECK == _ON	
 	communication_init();
 	#endif
+	if(SYNCHRONUS_TRANSMITT == _ON)
+	{
+		SendTimerInit();
+		SynchronusSendInit();
+		set_event(SYNCHRONUS_PROCESS,SynchronusProcess);
+	}
+}
+
+void serial_com_deinit(void)
+{
+	uint8_t i;
+	uint8_t queue_cnt;
+	queue_cnt=0;
+	while(queue_cnt<SERIAL_IN_QUEUE_SIZE)
+  {
+   SERIAL_in_queue_buffer[queue_cnt].command_ID=QUEUE_FREE;
+   queue_cnt++;
+  }
+	if(SYNCHRONUS_TRANSMITT == _ON)
+	{
+		SendTimerDeInit();
+		for(i=0;i<TRANSMIT_OUT_BUFF_SIZE;i++)
+		{
+			if(Transmit_out_buff[i].msg_ptr != NULL)
+			{
+				free(Transmit_out_buff[i].msg_ptr);
+				Transmit_out_buff[i].msg_ptr = NULL;
+			}
+		}
+	}
+	#if TRANSMIT_COMMAND_CHECK == _ON	
+	for(i=0;i<TRANSMIT_HANDLE_BUFF_SIZE;i++)
+  {
+		if(Transmit_handle_buff[i].message_ID != TRANSMIT_SLOT_FREE)
+		{
+			free(Transmit_handle_buff[i].msg_ptr);
+			Transmit_handle_buff[i].message_ID=TRANSMIT_SLOT_FREE;
+			Transmit_handle_buff[i].transmitt_to_ID=0;
+			Transmit_handle_buff[i].nack_flag=0;
+			Transmit_handle_buff[i].nack_count=0;
+			Transmit_handle_buff[i].buffer_count = 0;
+			Transmit_handle_buff[i].msg_ptr=NULL;
+			Transmit_handle_buff[i].size=0;
+		}
+  }
+	#endif
 }
 //postavi prejeto komando v cakalno vrsto za analiziranje
 //to funkcijo poklices ko prejmes komando iz vodila.
@@ -913,7 +1113,7 @@ void serial_com_init(void)
 //!!NE POZABI DEFINIRATI DIR SMERI V serial_com.h
 void add_command_to_queue(uint8_t* Buf, uint32_t Len,uint8_t dir)
 {
-	uint8_t queue_cnt;	
+		uint8_t queue_cnt;	
 		uint8_t queue_index;	
 		uint32_t cnt;	
 		uint8_t status;
@@ -1002,7 +1202,16 @@ void add_command_to_queue(uint8_t* Buf, uint32_t Len,uint8_t dir)
 				set_event(COMMAND_DO_EVENTS,command_do_events); //UART3 command do events call		 
 			}	
 			counter=0;
+			//timer za izmenjevanje receiverja in transmiterja ponastavimo vsakic ko dobimo komando in tako podaljsamo cas delovanja kot receiver
+			//ce dalj casa ne dobimo nobenega sporocila preidemo v stanje transmitterja ob prekinitvi na timerju
+			
 		}	
+		if(SYNCHRONUS_TRANSMITT == _ON)
+			{
+				resetSendTimer();
+				serialComErrorTimeout=0;
+				serialComErrorDetected = false;
+			}
 }
 //commands do events
 //gre po vseh slotih v polju in najde command z najmanjsim indeksom in izvede ta command string
@@ -1055,14 +1264,20 @@ static void command_do_events(void)
 static void recieved_command_analyze(char *command,uint8_t dir)
 {
 	//zaenkat se zna bit problem, ce poslje hkrati po dveh vodilih npr PAT in MT skupaj
- uint8_t ans; 
- ans=ParseMessage(command,dir);  
- if(!(ans>	_ANS_MESSAGE_ACK))				//najprej vrnemo ACK nato sele delamo ostalo			
-		command_return(ans,dir);  
- if(ans==_ANS_MESSAGE_ACK) command_analyze(dir);  //message analyze 
+	uint8_t ans; 
+	ans=ParseMessage(command,dir);  
+	if(ans == _ANS_MESSAGE_ACK)				//najprej vrnemo ACK nato sele delamo ostalo			
+	{
+		command_return(ans,dir); 
+	  command_analyze(dir);  //message analyze 
+	}	
+	else if(ans == _ANS_MESSAGE_NACK)
+		command_return(ans,dir); 				//vrnemo NACK
 	#if TRANSMIT_COMMAND_CHECK == _ON	
-	 else if(ans==_ANS_MESSAGE_ACK_RECIEVED) recieve_ack_func();
-	 else if(ans==_ANS_MESSAGE_NACK_RECIEVED) recieve_nack_func();
+	else if(ans==_ANS_MESSAGE_ACK_RECIEVED) 
+		recieve_ack_func();
+	else if(ans==_ANS_MESSAGE_NACK_RECIEVED) 
+		recieve_nack_func();
 	#endif
 	//ce je v sporocilu acknowladge ali NACK potem ne vracamo ACK sporocila
   
@@ -1106,7 +1321,6 @@ static bool CheckCRC(unsigned char isCRC, unsigned char CRCvalue, char *message)
 		if(CRCvalue<=255) //CRCvalue>=0 && CRCvalue<=255
 		{
 			CRCresult= CalculateCRC(message);	   // racunamo crc do petega delimiterja
-			indikator1 = CRCresult;
 			if(CRCresult ==	CRCvalue)
 				return true;
 			else
@@ -1146,12 +1360,9 @@ static void serial_send_handler(char * send_buff, uint16_t buffer_size,uint8_t d
 			strcpy(Transmit_out_buff[write_out_count].msg_ptr, send_buff);
 		increaseWritePtr();
 	}
-	else
+	else	//ce nimamo vklopljenega sinhroneha posiljanja in sprejemanja potem posljemo takoj
 	{
-		if((dir==_UART_DIR_USB)||(dir==_UART_DIR_DEBUG))
-		{
-			CDC_Transmit_FS((uint8_t *)send_buff, buffer_size);
-		}
+		SerialSend((uint8_t *)send_buff, buffer_size,dir);
 	}
 	
 }
@@ -1250,6 +1461,7 @@ void SendConstructedProtocolMessage(char * ProtocolMsg, int Receiver,MESSAGE_CON
 //              2 - ACK recieved
 //              3 - NACK recieved
 //              4 - ni zame - v tem primeru ne naredimo nic (torej ne vracamo ACK ali NACK)
+//							5 - prazen string
 static int ParseMessage(char *m_msg, int transmitter)
 {
 		char message[200];
@@ -1310,7 +1522,7 @@ static int ParseMessage(char *m_msg, int transmitter)
 		}
 	//ce ni 8 delimiterjev je nekje napaka
 	if(array_nr<8)
-		return 1;
+		return _ANS_MESSAGE_NACK;
 	reciever_ID=m_start_tag[2];
 	transmitter_ID=m_start_tag[1];
 	
@@ -1319,8 +1531,10 @@ static int ParseMessage(char *m_msg, int transmitter)
 		return 4;
 	
 	SetID(atoi(m_msg_ID));
-	if (!(GetID()>=0 && GetID() < 100))
-		return 1;
+	if((strlen(m_msg_ID)<2)&&(strlen(m_function)<2))//preverimo ce smo dobil empty str
+		return 5;
+	else if (!(GetID()>=0 && GetID() < 100))				//ce ni empty str preverimo ce je ID pravilen
+		return _ANS_MESSAGE_NACK;
 	if(!(strcmp(m_function,_MESSAGE_ACK)))
 		return _ANS_MESSAGE_ACK_RECIEVED;
 	else if(!(strcmp(m_function,_MESSAGE_NACK)))
@@ -1337,9 +1551,9 @@ static int ParseMessage(char *m_msg, int transmitter)
 	crc = atoi((char*)m_is_crc);
 	crcVal = atoi((char*)m_crc_value);
 	if (!CheckCRC(crc, crcVal, m_msg))
-		return 1;
+		return _ANS_MESSAGE_NACK;
 	
-	return 0;
+	return _ANS_MESSAGE_ACK;
 }
 
 static void SetID(int id)
@@ -1480,7 +1694,7 @@ static void increaseWritePtr(void)
 void TIM2_IRQHandler(void)  
 {
 	HAL_TIM_Base_Stop_IT(&htim2);
-	set_event(SINCHRONUS_TRANSMITT, SinchronusTransmittFunc);
+	restart_timer(SINCHRONUS_TRANSMITT, 1,SinchronusTransmittFunc);
 }
 
 //ko je procesor na vrsti za posiljanje posilja dokler ne izprazni izhodnega bufferja
@@ -1488,11 +1702,17 @@ static void SinchronusTransmittFunc(void)
 {
 	if(write_out_count != read_out_count)//izvede se ce buffer ni prazen
 	{
-		CDC_Transmit_FS((uint8_t *)Transmit_out_buff[read_out_count].msg_ptr, Transmit_out_buff[read_out_count].size);
-		if((read_out_count+1)==TRANSMIT_OUT_BUFF_SIZE)read_out_count=0;//gre na zacetek ker je ciklicen buffer
+		SerialSend((uint8_t *)Transmit_out_buff[read_out_count].msg_ptr, Transmit_out_buff[read_out_count].size,Transmit_out_buff[read_out_count].dirrection);
+		//--------povecanje read pointerja ciklicnega bufferja------------
+		free(Transmit_out_buff[read_out_count].msg_ptr);								//sprostitev alociranega spomina
+		Transmit_out_buff[read_out_count].msg_ptr=NULL;
+		Transmit_out_buff[read_out_count].size=0;
+		Transmit_out_buff[read_out_count].dirrection = _EMPTY_DIR;
+		if((read_out_count+1)==TRANSMIT_OUT_BUFF_SIZE)read_out_count=0;	//gre na zacetek ker je ciklicen buffer
 		else read_out_count++;
+		//----------------------------------------------------------------
 		if(write_out_count != read_out_count)
-			set_event(SINCHRONUS_TRANSMITT, SinchronusTransmittFunc);
+			restart_timer(SINCHRONUS_TRANSMITT,2, SinchronusTransmittFunc);
 	}
 	//ce v izhodnemu bufferju ni nic posljemo prazen string
 	else
@@ -1501,33 +1721,77 @@ static void SinchronusTransmittFunc(void)
 //oddajanje praznega stringa
 static void transmittEmptyStr(void)
 {
-	char tmp_msg[20]=">";
-	uint32_t dir;
-	strcat(tmp_msg,(char*)_ID_TFA);
-	strcat(tmp_msg,&transmitter_ID);
-	strcat(tmp_msg,"::::::0:000:");
-	strcat(tmp_msg,(char*)13);
-	strcat(tmp_msg,(char*)10);
-	strcat(tmp_msg,"\0");
-	SerialSend((uint8_t *)tmp_msg, 19,_EMPTY_DIR);	//zadnji podatek "dir" je namenjen identifikaciji posiljanja praznega stringa dir spremenljivko v tem primeru v funkciji SerialSend(..) nastavimo po svoje
+	char tmp_msg[18];
+//	uint32_t dir;
+	snprintf(tmp_msg,18,">%c%c::::::0:000:%c%c",_ID_TFA,transmitter_ID,'\r','\n');
+//	strcat(tmp_msg,(char*)_ID_TFA);
+//	strcat(tmp_msg,&transmitter_ID);
+//	strcat(tmp_msg,"::::::0:000:");
+//	strcat(tmp_msg,(char*)13);
+//	strcat(tmp_msg,(char*)10);
+//	strcat(tmp_msg,"\0");
+	SerialSend((uint8_t *)tmp_msg, 18,_EMPTY_DIR);	//zadnji podatek "dir" je namenjen identifikaciji posiljanja praznega stringa dir spremenljivko v tem primeru v funkciji SerialSend(..) nastavimo po svoje
+}
+static void SynchronusSendInit(void)
+{
+	unsigned int i;
+	read_out_count=0;
+	write_out_count=0;
+	synchronus_error_count=0;
+	for(i=0;i<TRANSMIT_OUT_BUFF_SIZE;i++)
+	{
+		Transmit_out_buff[i].msg_ptr = NULL;
+		Transmit_out_buff[i].dirrection = _EMPTY_DIR;
+		Transmit_out_buff[i].size = 0;
+	}
 }
 static void SerialSend(uint8_t * msg_ptr,uint16_t msg_size, uint32_t dir)
 {
+	uint8_t result;
 	//smer ce posiljamo prazen string je dir spremenljivka brezpredmetna, zato ji znova dolocimo vrednost
 	if(dir == _EMPTY_DIR)
 	{
 		//v mojem primeru se za smer posiljanja praznega stringa odlocim glede na posiljatelja zadnjega prejetega sporocila
-		if(transmitter_ID==_ID_NONE || transmitter_ID==_ID_MT || transmitter_ID==_ID_DEBUG)
+		if(transmitter_ID==_ID_NONE || transmitter_ID==_ID_DEBUG || transmitter_ID == _ID_PAT || transmitter_ID == _ID_SIMULATION)
 			dir = _UART_DIR_USB;
-		else
+		else	//velja za MT
 			dir = _UART_DIR_485;
 	}
-	if(dir == _UART_DIR_MT || dir == _UART_DIR_DEBUG)
-		CDC_Transmit_FS(msg_ptr, msg_size);
+	if(dir == _UART_DIR_MT || dir == _UART_DIR_DEBUG || dir==_UART_DIR_USB)
+	{
+//		for(int i=0; i <= (msg_size/10);i++)
+//		{
+			do
+			{
+				result = CDC_Transmit_FS(msg_ptr, msg_size);//dokler ni enako 0
+				//result = CDC_Transmit_FS(msg_ptr+(i*10), 10);//dokler ni enako 0
+				indikator1=result;
+			}while(result!= USBD_OK);
+//		}
+	}
+	
+	
 //	else if(dir == neki_tvojga || ...)
 //		;
 //	else if
 //		...
+}
+void SynchronusProcess(void)
+{
+	if(serialComErrorTimeout >= SERIAL_COM_ERROR_TIMEOUT)
+	{
+		if(synchronus_error_count>=SYNCHRONUS_ERROR_CNT)
+		{
+			serialComErrorDetected = true;
+		}
+		else
+		{
+			transmittEmptyStr();
+		}			
+		synchronus_error_count++;
+		serialComErrorTimeout=0;
+	}
+	restart_timer(SYNCHRONUS_PROCESS,5,SynchronusProcess);
 }
 //Inicializacija timerja za sinhrono posiljanje
 //Ce zelis definirati drug timer ali uporabljas drug procesor potem napisi svojo inicializacijo, ki ima enako ime kot ta
@@ -1541,25 +1805,39 @@ __weak void SendTimerInit(void)
   htim2.Instance = TIM2;
   htim2.Init.Prescaler = 71;
   htim2.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim2.Init.Period = 50000;
+  htim2.Init.Period = SYNCHRONUS_SEND_WAIT*1000;
   htim2.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim2.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim2) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
+	HAL_Delay(100);
 
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
-  {
-    _Error_Handler(__FILE__, __LINE__);
-  }
+//  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+//  if (HAL_TIM_ConfigClockSource(&htim2, &sClockSourceConfig) != HAL_OK)
+//  {
+//    _Error_Handler(__FILE__, __LINE__);
+//  }
 
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
   sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
   if (HAL_TIMEx_MasterConfigSynchronization(&htim2, &sMasterConfig) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
+	HAL_Delay(100);
+}
+__weak void SendTimerDeInit(void)
+{
+	if (HAL_TIM_Base_DeInit(&htim2) != HAL_OK)
+  {
+    _Error_Handler(__FILE__, __LINE__);
+  }
+}
 
+static void resetSendTimer(void)
+{
+	htim2.Instance -> CNT=0;				//postavi counter na 0
+	HAL_TIM_Base_Start_IT(&htim2);	//ponovno zazene interrupt
 }

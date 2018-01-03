@@ -30,7 +30,7 @@
 #define SEND_WARNING_MSG											18
 #define LED_BLINKING_TASK											19
 #define TRANSMIT_COMMAND_HANDLE								20
-#define INIT_CORD											21
+#define INIT_CORD															21
 #define STOP_CORD															22
 #define CORD_MEAS_CORRECT_WIRING							23
 #define SEND_TFA_MAINS_STATUS									24
@@ -48,5 +48,9 @@
 #define STOP_MACH															36
 #define MACH_URES															37
 #define SINCHRONUS_TRANSMITT									38
-
+#define SYNCHRONUS_PROCESS										39
+#define DEINIT_CORD														40
+#define START_SET_NORMAL											41
+#define DEINIT_MACH														42
+#define MACH_URES_STOP												43
 #endif // __TASKS_H

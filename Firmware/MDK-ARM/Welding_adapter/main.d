@@ -63,3 +63,4 @@ welding_adapter\main.o: ../Inc/rel_driver.h
 welding_adapter\main.o: ../Inc/do_task.h
 welding_adapter\main.o: ../Inc/serial_com.h
 welding_adapter\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+welding_adapter\main.o: ../Inc/com_meas_tasks.h

@@ -162,6 +162,21 @@
 #define test1_tog HAL_GPIO_TogglePin(TEST_PAD1_GPIO_Port, TEST_PAD1_Pin)
 //++++++++++++++++++++++++++++++++++++++++++++++++
 
+
+//CONTACTORS
+//++++++++++++++++++++++++++++++++++++++++++++++++
+#define SET_L1_CONTACTOR	set_REL(4)
+#define SET_L2_CONTACTOR	set_REL(3)
+#define SET_L3_CONTACTOR	set_REL(2)
+#define SET_N_CONTACTOR		set_REL(6)
+#define SET_PE_CONTACTOR	rst_REL(5)	//set_REL(5)
+#define RST_L1_CONTACTOR	rst_REL(4)
+#define RST_L2_CONTACTOR	rst_REL(3)
+#define RST_L3_CONTACTOR	rst_REL(2)
+#define RST_N_CONTACTOR		rst_REL(6)
+#define RST_PE_CONTACTOR	set_REL(5)	//rst_REL(5)
+//++++++++++++++++++++++++++++++++++++++++++++++++
+
 //USB
 //++++++++++++++++++++++++++++++++++++++++++++++++
 #define USB_PU_ON 	HAL_GPIO_WritePin(USB_PU_GPIO_Port, USB_PU_Pin, GPIO_PIN_RESET)
@@ -446,13 +461,16 @@ enum GLOBAL_MASKS
 };
 enum CONNECTION_MASKS
 {
-	__CON_TO_MT310			=0x00000001,
-	__CON_TO_TERMINAL		=0x00000002,
-	__CON_TO_PAT				=0x00000004,
-	__CONNECTION_ESTABLISHED =0x00000008,
-	__CHECK_TO_MT310			=0x00000010,
-	__CHECK_TO_TERMINAL		=0x00000020,
-	__CHECK_TO_PAT				=0x00000040,
+	__CON_TO_MT310						=0x00000001,		//naprava, ki je povezana na TFA lahko tudi simulator
+	__CON_TO_TERMINAL					=0x00000002,
+	__CON_TO_PAT							=0x00000004,		//naprava, ki je povezana na TFA lahko tudi simulator
+	__CONNECTION_ESTABLISHED 	=0x00000008,
+	__CHECK_TO_MT310					=0x00000010,
+	__CHECK_TO_TERMINAL				=0x00000020,
+	__CHECK_TO_PAT						=0x00000040,
+	__ESTABLISHED_TO_SIM_USB	=0x00000080,
+	__ESTABLISHED_TO_MT310		=0x00000100,
+	__ESTABLISHED_TO_PAT_USB	=0x00000200,
 };
 enum MEAS_TASK_MASKS
 {
@@ -500,7 +518,7 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define	__POWER__				"POWER"
 #define	__RELAY__				"RELAY"
 #define	__TEST__				"TEST"
-#define	__CONNECTION__	"COMMUNICATION"
+#define	__CONNECTION__	"COMMUN"
 #define __WARNING__			_MESSAGE_WAR
 #define	__CORD__				"CORD"
 #define __STATUS__			"STATUS"
@@ -611,25 +629,36 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 
 //++++++++++CONNECTION+++++++++++++++
 //--additionalcode
-#define __CONNECTION_REQUEST__	"CONNECT_REQUEST"
+#define __CONNECTION_REQUEST__			"CONNECT_REQUEST"
 #define __CONNECTION_ESTABLISHED__	"CONNECTION_ESTABLED"
-#define __CHECK_CONNECTION__		"CONNECTION_CHECK"
+#define __CHECK_CONNECTION__				"CONNECTION_CHECK"
+#define __CONNECTION_DENIED__				"CONNECTION_DENIED"
 //--add
-#define __MT_310__	"MT-310"
-#define __MT_310__	"MT-310"
-#define __CON_OK_		"OK"
-#define __CON_NOK_		"NOK"
+#define __MT_310__			"MT-310"
+#define __PAT__					"PAT"
+#define __SIMUMATION__	"SIM"
+#define __CON_OK_				"OK"
+#define __CON_NOK_			"NOK"
+#define __ALREADY_CONNECTED__				"ALREADY_CONNECTED"
+#define __DIFF_DEVICE_CONNECTED__		"DIFF_DEVICE_CONNECTED"
 
 
 //+++++++++++++++CORD+++++++++++++++++
 //--additionalcode
 #define __INIT_CORD__	"INIT"
+#define __DEINIT_CORD__		"DEINIT"
+#define __DEINITIATED__		"DEINITIATED"
 #define __START_CORRECT_WIRING__	"START_C_W"
 #define __CORD_CW__					"CW"
 #define __CORD_CW_STARTED__	"CW_STARTED"
+#define __CORD_CW_RESULT__	"CW_RESULT"
 #define __STOP_C__						"STOP"
 #define __INIT_C__					"INIT"
+#define __SET__							"SET"
+#define __SET_COMPLETED__		"SET_COMPLETED"		
+#define __CABLE_TYPE__			"CABLE_TYPE"
 #define __CORD_INITIATED__			"INITIATED"
+#define __CORD_INIT_FAILED__		"INIT_FAILED"
 #define __START_RPE_LOW__			"RPE_L_START"
 #define __RPE_LOW_STARTED__		"RPE_L_STARTED"
 #define __START_RPE_HIGH__		"RPE_H_START"
@@ -716,11 +745,11 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 //--PHASES TO PE
 #define __START_PHASES_TO_PE__		"START_ALL-PE"
 #define __PHASES_TO_PE_STARTED__	"ALL-PE_STARTED"
-#define __RISO_PHASES_TO_PE__			"RISO_ALL-PE"
+#define __RISO_PHASES_TO_PE__			"RISO_ALL-PE_RESULT"
 //--ONE PHASE TO PE
 #define __START_ONE_PHASE_TO_PE__	"START_ONE-PE"
 #define __ONE_PHASE_TO_PE_STARTED__	"ONE-PE_STARTED"
-#define __RISO_ONE_PHASE_TO_PE__	"RISO_ONE-PE"
+#define __RISO_ONE_PHASE_TO_PE__	"RISO_ONE-PE_RESULT"
 #define	__L1_PE_FAIL__						"L1-PE_F"
 #define	__L2_PE_FAIL__						"L2-PE_F"
 #define	__L3_PE_FAIL__						"L3-PE_F"
@@ -728,7 +757,7 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 //--PHASE TO PHASE
 #define __START_PHASE_TO_PHASE__	"START_PH_PH"
 #define __PHASE_TO_PHASE_STARTED__	"PH_PH_STARTED"
-#define __RISO_PHASE_TO_PHASE__		"RISO_PH-PH"
+#define __RISO_PHASE_TO_PHASE__		"RISO_PH-PH_RESULT"
 #define __L1_N_FAIL__						"L1-N_F"
 #define __L2_N_FAIL__						"L2-N_F"
 #define __L3_N_FAIL__						"L3-N_F"
@@ -771,15 +800,32 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define __MAINS_STAT__			"MAINS_STAT"
 
 //+++++++++++++++MACH+++++++++++++++++
-#define __MACHINES__				"MACH"
-#define __INIT_MACHINES__		"INIT"
-#define __MECH_RPE_START__	"START_RPE"
+#define __MACHINES__					"MACH"
+#define __INIT_MACHINES__			"INIT"
+#define __MACH_INIT_FAILED__	"INIT_FAILED"
+#define __DEINIT_MACHINES__		"DEINIT"
+#define __MECH_RPE_START__		"START_RPE"
 #define __MECH_RPE_STARTED__	"RPE_STARTED"
 #define __MECH_RPE_STOP__			"STOP_RPE"
 #define __MECH_RPE_STOPPED__	"RPE_STOPPED"
-#define __STOP_MACH__				"STOP"
-#define __MACH_INITIATED__			"INITIATED"
-
+#define __MACH_URES_START__		"START_URES"
+#define __MACH_URES_STARTED__ "URES_STARTED"
+#define __MACH_URES_OPEN__		"URES_OPEN"
+#define __MACH_URES_OPENED__	"URES_OPENED"
+#define __STOP_MACH__					"STOP"
+#define __MACH_INITIATED__		"INITIATED"
+#define __MACH_TEST__					"TEST"
+#define __MACH_URES_FINSHED__	"URES_FINISHED"
+#define __MACH_URES_STOPPED__	"URES_STOPPED"
+#define __MACH_L1_PE__				"L1-PE"
+#define __MACH_L2_PE__				"L2-PE"
+#define __MACH_L3_PE__				"L3-PE"
+#define __MACH_L1_N__					"L1-N"
+#define __MACH_L2_N__					"L2-N"
+#define __MACH_L3_N__					"L3-N"
+#define __MACH_L1_L2__				"L1-L2"
+#define __MACH_L2_L3__				"L2-L3"
+#define __MACH_L1_L3__				"L1-L3"
 //++++++++++++++++++++++++++++++++++++++++++++++++
 
 #endif

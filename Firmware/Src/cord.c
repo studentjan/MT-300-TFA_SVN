@@ -10,11 +10,13 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include "com_meas_tasks.h"
 
 //--------------spremenljivke--------------------
 extern uint32_t global_control;
 extern uint32_t connection_control;
 extern uint32_t init_test_counter;
+extern uint32_t meas_task_control;
 uint32_t cord_task_control=0;
 static float cord_rpe_resistance;
 static float cord_riso_resistance;
@@ -55,10 +57,12 @@ float cord_continuity_PE_PE_res=0;
 
 void set_phase_num(int phase_num)
 {
+	device = get_connected_device();
 	if(phase_num == 1)
 		CORD_PHASE_NUM_SETTING = _1_PHASE;
 	else
 		CORD_PHASE_NUM_SETTING = _3_PHASE;
+	SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__SET_COMPLETED__,"","",device.device_dir);
 }
 void init_cord(void)
 {
@@ -68,6 +72,7 @@ void init_cord(void)
 		init_test_counter=0;
 		cord_RISO_count=0;
 		cord_continuity_count=0;
+		global_control |= __ON_TEST_IN_PROG;
 		set_event(POWER_ON_TEST,power_on_test);
 		start_cord_count++;
 		set_timer(INIT_CORD,5,init_cord);
@@ -75,15 +80,20 @@ void init_cord(void)
 	}
 	else if(start_cord_count == 1)
 	{
-		if(global_control & __INIT_TEST_PASS)
+		if(!(global_control & __ON_TEST_IN_PROG))
 		{
-			start_cord_count++;
-			set_event(INIT_CORD,init_cord);
-		}
-		else if(global_control & __INIT_TEST_FAIL)	//ce pride do napake skocimo tle not
-		{
-			set_event(SEND_TFA_MAINS_STATUS,send_mains_status);
-			start_cord_count = 0;
+			if(global_control & __INIT_TEST_PASS)
+			{
+				start_cord_count++;
+				set_event(INIT_CORD,init_cord);
+			}
+			else //ce pride do napake skocimo tle not
+			{
+				set_event(SEND_TFA_MAINS_STATUS,send_mains_status);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__CORD_INIT_FAILED__,"","",device.device_dir);
+				start_cord_count = 0;
+			}
+			setNormal();
 		}
 		else 
 			restart_timer(INIT_CORD,5,init_cord);
@@ -95,11 +105,25 @@ void init_cord(void)
 		cord_correct_wiring_init();
 		set_event(SEND_TFA_MAINS_STATUS,send_mains_status);
 		cord_task_control |= __CORD_INITIATED;
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__CORD_INITIATED__,"",device.device_dir);
+		SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__CORD_INITIATED__,"","",device.device_dir);
 		//ce ne dobimo inita in hocemo direktno zagnat correct wiring se najprej izvede init nato pa gre na correct wiring
 		if((CORD_AUTO_CONTINUE_MEAS==_ON)||(!(cord_task_control & __CORD_INIT_RECIEVED)))
 			restart_timer(CORD_MEAS_CORRECT_WIRING,2,cord_meas_correct_wiring);
 	}
+}
+void deinitCord(void)
+{
+	cord_RISO_count=0;
+	cord_continuity_count=0;
+	start_cord_count=0;
+	cord_task_control=0;
+	insolation_status=0;
+	connection_status2=0;
+	connection_status=0;
+	connection_reg=0;
+	setNormal();
+	meas_task_control &= ~__CORD_MEAS_IN_PROG;
+	SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__DEINITIATED__,"","",device.device_dir);
 }
 void cord_meas_correct_wiring(void)
 {
@@ -113,8 +137,8 @@ void cord_meas_correct_wiring(void)
 			//posljemo ukaz za start
 			if(cord_task_control & __CORD_INITIATED)
 			{
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__CORD_CW_STARTED__,"",device.device_dir);
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__START_RPE_LOW__,"",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__CORD_CW_STARTED__,"","",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__START_RPE_LOW__,"","",device.device_dir);
 				cord_correct_wiring_init();
 				cord_cw_count++;
 			}
@@ -128,7 +152,7 @@ void cord_meas_correct_wiring(void)
 			{
 				set_REL(10);
 				set_REL(33);
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L1_L1",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L1_L1",device.device_dir);
 				cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				cord_cw_count++;
 			}
@@ -151,7 +175,7 @@ void cord_meas_correct_wiring(void)
 				rst_REL(33);
 				set_REL(30);
 				cord_cw_count++;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L1_PE",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L1_PE",device.device_dir);
 				cord_task_control |= __CORD_RPE_RES_REQUESTED;
 			}
 			break;
@@ -219,7 +243,7 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count == 4)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L1_N",device.device_dir);
+					if(cord_cw_count == 4)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L1_N",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -376,8 +400,8 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count==5)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L1_L3",device.device_dir);
-					else if(cord_cw_count==14)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"N_N",device.device_dir);
+					if(cord_cw_count==5)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L1_L3",device.device_dir);
+					else if(cord_cw_count==14)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","N_N",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -452,7 +476,7 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count == 6)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L1_L2",device.device_dir);
+					if(cord_cw_count == 6)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L1_L2",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -580,7 +604,7 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count==7)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L2_L2",device.device_dir);
+					if(cord_cw_count==7)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L2_L2",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -690,8 +714,8 @@ void cord_meas_correct_wiring(void)
 				
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count == 8)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L2_PE",device.device_dir);
-					else if(cord_cw_count == 47)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L2_L1",device.device_dir);
+					if(cord_cw_count == 8)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L2_PE",device.device_dir);
+					else if(cord_cw_count == 47)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L2_L1",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -766,7 +790,7 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count == 9)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L2_N",device.device_dir);
+					if(cord_cw_count == 9)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L2_N",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -841,7 +865,7 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count==10)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L2_L3",device.device_dir);
+					if(cord_cw_count==10)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L2_L3",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -1004,7 +1028,7 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count == 11)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L3_L3",device.device_dir);
+					if(cord_cw_count == 11)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L3_L3",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -1223,10 +1247,10 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count == 12)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L3_PE",device.device_dir);
-					else if(cord_cw_count == 48)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L3_L2",device.device_dir);
-					else if(cord_cw_count == 49)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L3_L1",device.device_dir);
-					else if(cord_cw_count == 50)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L3_L1",device.device_dir);
+					if(cord_cw_count == 12)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L3_PE",device.device_dir);
+					else if(cord_cw_count == 48)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L3_L2",device.device_dir);
+					else if(cord_cw_count == 49)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L3_L1",device.device_dir);
+					else if(cord_cw_count == 50)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L3_L1",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -1324,7 +1348,7 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count ==13)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L3_N",device.device_dir);
+					if(cord_cw_count ==13)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L3_N",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -1546,7 +1570,7 @@ void cord_meas_correct_wiring(void)
 //				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count == 14) SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"N_N",device.device_dir);
+					if(cord_cw_count == 14) SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","N_N",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -1754,10 +1778,10 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count ==15)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"N_PE",device.device_dir);
-					else if(cord_cw_count ==52)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"N_L1",device.device_dir);
-					else if(cord_cw_count ==53)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"N_L2",device.device_dir);
-					else if(cord_cw_count ==54)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"N_L3",device.device_dir);
+					if(cord_cw_count ==15)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","N_PE",device.device_dir);
+					else if(cord_cw_count ==52)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","N_L1",device.device_dir);
+					else if(cord_cw_count ==53)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","N_L2",device.device_dir);
+					else if(cord_cw_count ==54)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","N_L3",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -1983,7 +2007,7 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count == 16) SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"PE_PE",device.device_dir);
+					if(cord_cw_count == 16) SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","PE_PE",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -2248,10 +2272,10 @@ void cord_meas_correct_wiring(void)
 				{
 					if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 					{
-						if(cord_cw_count == 55)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"PE_L1",device.device_dir);
-						else if(cord_cw_count == 56)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"PE_L2",device.device_dir);
-						else if(cord_cw_count == 57)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"PE_L3",device.device_dir);
-						else if(cord_cw_count == 58)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"PE_N",device.device_dir);
+						if(cord_cw_count == 55)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","PE_L1",device.device_dir);
+						else if(cord_cw_count == 56)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","PE_L2",device.device_dir);
+						else if(cord_cw_count == 57)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","PE_L3",device.device_dir);
+						else if(cord_cw_count == 58)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","PE_N",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -2293,7 +2317,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -2334,7 +2358,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -2375,7 +2399,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -2420,7 +2444,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -2465,7 +2489,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -2506,7 +2530,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -2547,7 +2571,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -2588,7 +2612,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -2633,7 +2657,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -2678,7 +2702,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -2723,7 +2747,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -2768,7 +2792,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -2813,7 +2837,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -2858,7 +2882,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -2900,7 +2924,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -2945,7 +2969,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -2990,7 +3014,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -3035,7 +3059,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -3077,7 +3101,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -3121,7 +3145,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -3165,7 +3189,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -3209,7 +3233,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -3251,7 +3275,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -3295,7 +3319,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -3339,7 +3363,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -3383,7 +3407,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -3424,7 +3448,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -3468,7 +3492,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -3512,7 +3536,7 @@ void cord_meas_correct_wiring(void)
 				{
 					if(MULTI_FAULT_CONTINUE)
 					{
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -3554,7 +3578,7 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"",device.device_dir);
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -3630,7 +3654,7 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count == 8)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L2_PE",device.device_dir);
+					if(cord_cw_count == 8)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L2_PE",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -3705,7 +3729,7 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count==12)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L3_PE",device.device_dir);
+					if(cord_cw_count==12)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L3_PE",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -3779,7 +3803,7 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count == 12)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L3_PE",device.device_dir);
+					if(cord_cw_count == 12)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L3_PE",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -3853,7 +3877,7 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L3_L2",device.device_dir);
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L3_L2",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -3927,7 +3951,7 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L3_PE",device.device_dir);
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L3_PE",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -4043,9 +4067,9 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count ==15)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"N_PE",device.device_dir);
-					else if(cord_cw_count ==53)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"N_L2",device.device_dir);
-					else if(cord_cw_count ==54)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"N_L3",device.device_dir);
+					if(cord_cw_count ==15)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","N_PE",device.device_dir);
+					else if(cord_cw_count ==53)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","N_L2",device.device_dir);
+					else if(cord_cw_count ==54)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","N_L3",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -4139,8 +4163,8 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count == 54)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"N_L3",device.device_dir);
-					else if(cord_cw_count == 15)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"N_PE",device.device_dir);
+					if(cord_cw_count == 54)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","N_L3",device.device_dir);
+					else if(cord_cw_count == 15)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","N_PE",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -4214,7 +4238,7 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count == 15)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"N_PE",device.device_dir);
+					if(cord_cw_count == 15)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","N_PE",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -4443,9 +4467,9 @@ void cord_meas_correct_wiring(void)
 				{
 					if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 					{
-						if(cord_cw_count == 56)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"PE_L2",device.device_dir);
-						else if(cord_cw_count == 57)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"PE_L3",device.device_dir);
-						else if(cord_cw_count == 58)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"PE_N",device.device_dir);
+						if(cord_cw_count == 56)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","PE_L2",device.device_dir);
+						else if(cord_cw_count == 57)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","PE_L3",device.device_dir);
+						else if(cord_cw_count == 58)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","PE_N",device.device_dir);
 						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 					}
 				}
@@ -4561,8 +4585,8 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count == 57)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"PE_L3",device.device_dir);
-					else if(cord_cw_count == 58)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"PE_N",device.device_dir);
+					if(cord_cw_count == 57)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","PE_L3",device.device_dir);
+					else if(cord_cw_count == 58)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","PE_N",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 
@@ -4658,7 +4682,7 @@ void cord_meas_correct_wiring(void)
 				}
 				if(((connection_status2 & MULTI_FAULT)&&MULTI_FAULT_CONTINUE)|| !(connection_status2 & MULTI_FAULT))
 				{
-					if(cord_cw_count == 58)SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"PE_N",device.device_dir);
+					if(cord_cw_count == 58)SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","PE_N",device.device_dir);
 					cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				}
 			}
@@ -4734,7 +4758,7 @@ void cord_meas_correct_wiring(void)
 //				{
 //					if(MULTI_FAULT_CONTINUE)
 //					{
-//						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"PE_N",device.device_dir);
+//						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","PE_N",device.device_dir);
 //						cord_task_control |= __CORD_RPE_RES_REQUESTED;
 //					}
 //				}
@@ -4943,6 +4967,7 @@ void cord_meas_correct_wiring(void)
 //					connection_status |= PE_OK;
 //			}
 			cord_cw_count = 99;
+			SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__STOP_RPE__,"","",device.device_dir);
 			break;
 		}
 		case 99:
@@ -4959,7 +4984,6 @@ void cord_meas_correct_wiring(void)
 	}
 	if(cord_cw_count==99)
 	{
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__STOP_RPE__,"",device.device_dir);
 		if(!(cord_task_control & __CORD_RPE_L_STARTED))
 		{	
 			tramsmitt_corect_wiring_state(device.device_dir, device.device_ID);
@@ -4985,7 +5009,7 @@ void cord_meas_correct_wiring(void)
 	{
 		cord_task_control &= (~__CORD_CORRECT_WIRING_IN_PROGRESS);
 		tramsmitt_corect_wiring_state(device.device_dir, device.device_ID);
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__STOP_RPE__,"",device.device_dir);
+		SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__STOP_RPE__,"","",device.device_dir);
 //		set_event(STOP_CORD,stop_cord);
 	}
 	else if(cord_cw_count != 0)	//ce je nic in pride sem noter potem pomeni da smo zagnali corect wiring brez da bi inicializirali cord, zato ga najprej inicializiramo in potem pridemo nazaj
@@ -4997,9 +5021,9 @@ void cord_RISO_phasesToPE(void)
 	{
 		case 0:
 			cord_RISO_init();
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__PHASES_TO_PE_STARTED__,"",device.device_dir);
+			SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__PHASES_TO_PE_STARTED__,"","",device.device_dir);
 			cord_task_control |=__CORD_RISO_PHASES_TO_PE_IN_PROGRESS;
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__START_RISO__,"",device.device_dir);
+			SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__START_RISO__,"","",device.device_dir);
 			cord_RISO_count++;
 			break;
 		case 1:
@@ -5020,7 +5044,7 @@ void cord_RISO_phasesToPE(void)
 					CON_PE_B;
 				}
 				cord_task_control |= __CORD_RISO_RES_REQUESTED;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"PHASES_PE",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","PHASES_PE",device.device_dir);
 				cord_RISO_count++;
 			}
 			break;
@@ -5028,7 +5052,7 @@ void cord_RISO_phasesToPE(void)
 			if(!(cord_task_control&__CORD_RISO_RES_REQUESTED))
 			{
 				
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__STOP_RISO__,"",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__STOP_RISO__,"","",device.device_dir);
 				cord_RISO_count++;
 			}
 		break;
@@ -5061,21 +5085,18 @@ void cord_RISO_phasesToPE(void)
 // v naslednjo funkcijo pridemo samo ce je prej ze pomerjena upornost proti PE in je bila ta premajhna
 void cord_RISO_onePhaseToPE(void)
 {
-	if((cord_RISO_count<3)&&(!(cord_task_control & __CORD_RISO_PHASES_TO_PE_IN_PROGRESS))&&(!(cord_task_control & __CORD_RISO_STARTED)))
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__START_RISO__,"",device.device_dir);
-	else if((cord_RISO_count>=3)&&(!(cord_task_control & __CORD_RISO_ONE_PHASE_TO_PE_IN_PROGRESS))&&((cord_task_control & __CORD_RISO_PHASES_TO_PE_MEASURED))&&(!(cord_task_control & __CORD_RISO_STARTED)))
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__START_RISO__,"",device.device_dir);
-	if(cord_task_control & __CORD_RISO_STARTED)
+	switch (cord_RISO_count)
 	{
-		switch (cord_RISO_count)
-		{
-			case 0:
-				cord_RISO_init();
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__PHASES_TO_PE_STARTED__,"",device.device_dir);
-				cord_task_control |=__CORD_RISO_PHASES_TO_PE_IN_PROGRESS;
-				cord_RISO_count++;
-				break;
-			case 1:
+		case 0:
+			cord_RISO_init();
+			SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__PHASES_TO_PE_STARTED__,"","",device.device_dir);
+			cord_task_control |=__CORD_RISO_PHASES_TO_PE_IN_PROGRESS;
+			cord_RISO_count++;
+			SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__START_RISO__,"","",device.device_dir);
+			break;
+		case 1:
+			if(cord_task_control & __CORD_RISO_STARTED)
+			{
 				if(CORD_PHASE_NUM_SETTING == _1_PHASE)
 				{
 					CON_L1_A;
@@ -5091,33 +5112,37 @@ void cord_RISO_onePhaseToPE(void)
 					CON_PE_B;
 				}
 				cord_task_control |= __CORD_RISO_RES_REQUESTED;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"PHASES_PE",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","PHASES_PE",device.device_dir);
 				cord_RISO_count++;
-				break;
-			case 2://L1,L2,L3,N proti PE ali L1,N proti PE za enofazin podalsek
-				if(!(cord_task_control&__CORD_RISO_RES_REQUESTED))
+			}
+		break;
+		case 2://L1,L2,L3,N proti PE ali L1,N proti PE za enofazin podalsek
+			if(!(cord_task_control&__CORD_RISO_RES_REQUESTED))
+			{
+				if(cord_check_RISO_resistance())
 				{
-					if(cord_check_RISO_resistance())
-					{
-						cord_transmittPhasesToPE(true);
-					}
-					else
-					{
-						cord_transmittPhasesToPE(false);
-					}
-					cord_RISO_count++;
-					cord_task_control &=(~__CORD_RISO_PHASES_TO_PE_IN_PROGRESS);
-					cord_task_control |= __CORD_RISO_PHASES_TO_PE_MEASURED;
+					cord_transmittPhasesToPE(true);
 				}
-			break;
-			case 3:
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__ONE_PHASE_TO_PE_STARTED__,"",device.device_dir);
-				cord_task_control |= __CORD_RISO_ONE_PHASE_TO_PE_IN_PROGRESS;
-				//cord_task_control |= __CORD_RISO_RES_REQUESTED;
+				else
+				{
+					cord_transmittPhasesToPE(false);
+				}
 				cord_RISO_count++;
-				//SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__START_RISO__,"",device.device_dir);
-				break;
-			case 4:	
+				cord_task_control &=(~__CORD_RISO_PHASES_TO_PE_IN_PROGRESS);
+				cord_task_control |= __CORD_RISO_PHASES_TO_PE_MEASURED;
+			}
+		break;
+		case 3:
+			SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__ONE_PHASE_TO_PE_STARTED__,"","",device.device_dir);
+			cord_task_control |= __CORD_RISO_ONE_PHASE_TO_PE_IN_PROGRESS;
+			SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__START_RISO__,"","",device.device_dir);
+			//cord_task_control |= __CORD_RISO_RES_REQUESTED;
+			cord_RISO_count++;
+			//SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__START_RISO__,"","",device.device_dir);
+			break;
+		case 4:	
+			if(cord_task_control & __CORD_RISO_STARTED)
+			{
 				if(CORD_PHASE_NUM_SETTING == _1_PHASE)
 				{
 					DIS_PE_A;
@@ -5132,7 +5157,7 @@ void cord_RISO_onePhaseToPE(void)
 					CON_PE_B;
 					cord_RISO_count=7;
 					cord_task_control |= __CORD_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"N_PE",device.device_dir);
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","N_PE",device.device_dir);
 				}
 				else
 				{
@@ -5148,135 +5173,134 @@ void cord_RISO_onePhaseToPE(void)
 					CON_PE_B;
 					cord_RISO_count++;
 					cord_task_control |= __CORD_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L2-L3-N_PE",device.device_dir);
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L2-L3-N_PE",device.device_dir);
 				}
-
-				break;
-			case 5:	//L2,L3,N proti PE
-				if(!(cord_task_control&__CORD_RISO_RES_REQUESTED))
+			}
+			break;
+		case 5:	//L2,L3,N proti PE
+			if(!(cord_task_control&__CORD_RISO_RES_REQUESTED))
+			{
+				if(cord_check_RISO_resistance())
+				{
+					cord_RISO_count=11;
+					insolation_status |= L1_PE_FAIL;
+					DIS_PE_B;
+					DIS_N_A;
+					CON_L1_A;
+					CON_N_B;
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__STOP_RISO__,"","",device.device_dir);
+				}
+				else
+				{
+					DIS_L2_A;
+					cord_RISO_count++;
+					cord_task_control |= __CORD_RISO_RES_REQUESTED;
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L3-N_PE",device.device_dir);
+				}
+				
+			}
+			break;
+		case 6:	//L3,N proti PE
+			if(!(cord_task_control&__CORD_RISO_RES_REQUESTED))
+			{
+				if(cord_check_RISO_resistance())
+				{
+					cord_RISO_count=10;
+					insolation_status |= L2_PE_FAIL;
+					DIS_L3_A;
+					DIS_N_A;
+					CON_L1_A;
+					cord_task_control |= __CORD_RISO_RES_REQUESTED;
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L1_PE",device.device_dir);
+				}
+				else
+				{
+					DIS_L3_A;
+					cord_RISO_count++;
+					cord_task_control |= __CORD_RISO_RES_REQUESTED;
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","N_PE",device.device_dir);
+				}
+				
+			}
+			break;
+		case 7:	//N proti PE
+			if(!(cord_task_control&__CORD_RISO_RES_REQUESTED))
+			{
+				if(CORD_PHASE_NUM_SETTING == _1_PHASE)
 				{
 					if(cord_check_RISO_resistance())
 					{
 						cord_RISO_count=11;
 						insolation_status |= L1_PE_FAIL;
-						DIS_PE_B;
-						DIS_N_A;
-						CON_L1_A;
-						CON_N_B;
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__STOP_RISO__,"",device.device_dir);
 					}
 					else
 					{
-						DIS_L2_A;
-						cord_RISO_count++;
-						cord_task_control |= __CORD_RISO_RES_REQUESTED;
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L3-N_PE",device.device_dir);
+						insolation_status |= N_PE_FAIL;
+						cord_RISO_count=11;
 					}
-					
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__STOP_RISO__,"","",device.device_dir);
+					DIS_N_A;
+					DIS_PE_B;
+					CON_L1_A;
+					CON_N_B;
 				}
-				break;
-			case 6:	//L3,N proti PE
-				if(!(cord_task_control&__CORD_RISO_RES_REQUESTED))
+				else
 				{
 					if(cord_check_RISO_resistance())
 					{
-						cord_RISO_count=10;
-						insolation_status |= L2_PE_FAIL;
-						DIS_L3_A;
+						cord_RISO_count=9;
+						insolation_status |= L3_PE_FAIL;
 						DIS_N_A;
-						CON_L1_A;
+						CON_L2_A;
 						cord_task_control |= __CORD_RISO_RES_REQUESTED;
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L1_PE",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L2_PE",device.device_dir);
 					}
 					else
 					{
-						DIS_L3_A;
+						insolation_status |= N_PE_FAIL;
+						DIS_N_A;
+						CON_L3_A;
 						cord_RISO_count++;
 						cord_task_control |= __CORD_RISO_RES_REQUESTED;
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"N_PE",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L3_PE",device.device_dir);
 					}
-					
 				}
-				break;
-			case 7:	//N proti PE
-				if(!(cord_task_control&__CORD_RISO_RES_REQUESTED))
-				{
-					if(CORD_PHASE_NUM_SETTING == _1_PHASE)
-					{
-						if(cord_check_RISO_resistance())
-						{
-							cord_RISO_count=11;
-							insolation_status |= L1_PE_FAIL;
-						}
-						else
-						{
-							insolation_status |= N_PE_FAIL;
-							cord_RISO_count=11;
-						}
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__STOP_RISO__,"",device.device_dir);
-						DIS_N_A;
-						DIS_PE_B;
-						CON_L1_A;
-						CON_N_B;
-					}
-					else
-					{
-						if(cord_check_RISO_resistance())
-						{
-							cord_RISO_count=9;
-							insolation_status |= L3_PE_FAIL;
-							DIS_N_A;
-							CON_L2_A;
-							cord_task_control |= __CORD_RISO_RES_REQUESTED;
-							SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L2_PE",device.device_dir);
-						}
-						else
-						{
-							insolation_status |= N_PE_FAIL;
-							DIS_N_A;
-							CON_L3_A;
-							cord_RISO_count++;
-							cord_task_control |= __CORD_RISO_RES_REQUESTED;
-							SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L3_PE",device.device_dir);
-						}
-					}
-					
-				}
-				break;
-			case 8:	//L3 proti PE
-			if(!(cord_task_control&__CORD_RISO_RES_REQUESTED))
-			{
-				if(!(cord_check_RISO_resistance()))
-					insolation_status |= L3_PE_FAIL;
-				cord_RISO_count++;
-				DIS_L3_A;
-				CON_L2_A;
-				cord_task_control |= __CORD_RISO_RES_REQUESTED;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L2_PE",device.device_dir);
+				
 			}
 			break;
-			case 9:	//L2 proti PE
-			if(!(cord_task_control&__CORD_RISO_RES_REQUESTED))
-			{
-				if(!(cord_check_RISO_resistance()))
-					insolation_status |= L2_PE_FAIL;
-				cord_RISO_count++;
-				DIS_L2_A;
-				CON_L1_A;
-				cord_task_control |= __CORD_RISO_RES_REQUESTED;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L1_PE",device.device_dir);
-			}
-			break;
-			case 10:	//L1 proti PE
-			if(!(cord_task_control&__CORD_RISO_RES_REQUESTED))
-			{
-				if(!(cord_check_RISO_resistance()))
-					insolation_status |= L1_PE_FAIL;
-				cord_RISO_count++;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__STOP_RISO__,"",device.device_dir);
-			}
-			break;
+		case 8:	//L3 proti PE
+		if(!(cord_task_control&__CORD_RISO_RES_REQUESTED))
+		{
+			if(!(cord_check_RISO_resistance()))
+				insolation_status |= L3_PE_FAIL;
+			cord_RISO_count++;
+			DIS_L3_A;
+			CON_L2_A;
+			cord_task_control |= __CORD_RISO_RES_REQUESTED;
+			SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L2_PE",device.device_dir);
 		}
+		break;
+		case 9:	//L2 proti PE
+		if(!(cord_task_control&__CORD_RISO_RES_REQUESTED))
+		{
+			if(!(cord_check_RISO_resistance()))
+				insolation_status |= L2_PE_FAIL;
+			cord_RISO_count++;
+			DIS_L2_A;
+			CON_L1_A;
+			cord_task_control |= __CORD_RISO_RES_REQUESTED;
+			SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L1_PE",device.device_dir);
+		}
+		break;
+		case 10:	//L1 proti PE
+		if(!(cord_task_control&__CORD_RISO_RES_REQUESTED))
+		{
+			if(!(cord_check_RISO_resistance()))
+				insolation_status |= L1_PE_FAIL;
+			cord_RISO_count++;
+			SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__STOP_RISO__,"","",device.device_dir);
+		}
+		break;
 	}
 	if(cord_RISO_count <= 10)
 		restart_timer(CORD_RISO_ONE_PHASE_TO_PE,5,cord_RISO_onePhaseToPE);
@@ -5305,8 +5329,8 @@ void cord_RISO_phaseToPhase(void)
 	{
 		if(cord_RISO_count<=11) cord_RISO_count=10;	//damo count za ena nazaj zato da lahko se enkrat posljemo get resistance
 		cord_task_control |= __CORD_RISO_PHASE_TO_PHASE_IN_PROGRESS;
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__PHASE_TO_PHASE_STARTED__,"",device.device_dir);
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__START_RISO__,"",device.device_dir);
+		SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__PHASE_TO_PHASE_STARTED__,"","",device.device_dir);
+		SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__START_RISO__,"","",device.device_dir);
 	}
 	if(cord_task_control & __CORD_RISO_STARTED)
 	{
@@ -5326,7 +5350,7 @@ void cord_RISO_phaseToPhase(void)
 					DIS_N_A;
 					DIS_PE_A;
 					cord_task_control |= __CORD_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L1_N",device.device_dir);
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L1_N",device.device_dir);
 				}
 				else
 				{
@@ -5341,7 +5365,7 @@ void cord_RISO_phaseToPhase(void)
 					DIS_N_A;
 					DIS_PE_A;
 					cord_task_control |= __CORD_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L1-L2-L3_N",device.device_dir);
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L1-L2-L3_N",device.device_dir);
 				}
 				cord_RISO_count++;
 			break;
@@ -5355,7 +5379,7 @@ void cord_RISO_phaseToPhase(void)
 						DIS_L1_A;
 						DIS_N_B;
 						cord_RISO_count=20;
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__STOP_RISO__,"",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__STOP_RISO__,"","",device.device_dir);
 					}
 					else
 					{
@@ -5366,14 +5390,14 @@ void cord_RISO_phaseToPhase(void)
 							DIS_N_B;
 							CON_L3_B;
 							cord_task_control |= __CORD_RISO_RES_REQUESTED;
-							SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L1-L2_L3",device.device_dir);
+							SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L1-L2_L3",device.device_dir);
 						}
 						else
 						{
 							DIS_L1_A;
 							cord_RISO_count++;
 							cord_task_control |= __CORD_RISO_RES_REQUESTED;
-							SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L2-L3_N",device.device_dir);
+							SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L2-L3_N",device.device_dir);
 						}
 
 					}
@@ -5391,14 +5415,14 @@ void cord_RISO_phaseToPhase(void)
 						CON_L3_B;
 						CON_L1_A;
 						cord_task_control |= __CORD_RISO_RES_REQUESTED;
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L1-L2_L3",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L1-L2_L3",device.device_dir);
 					}
 					else
 					{
 						DIS_L2_A;
 						cord_RISO_count++;
 						cord_task_control |= __CORD_RISO_RES_REQUESTED;
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L3_N",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L3_N",device.device_dir);
 					}
 				}
 				break;
@@ -5412,7 +5436,7 @@ void cord_RISO_phaseToPhase(void)
 						DIS_L3_A;
 						CON_L1_A;
 						cord_task_control |= __CORD_RISO_RES_REQUESTED;
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L1_N",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L1_N",device.device_dir);
 					}
 					else
 					{
@@ -5420,7 +5444,7 @@ void cord_RISO_phaseToPhase(void)
 						DIS_L1_A;
 						cord_RISO_count++;
 						cord_task_control |= __CORD_RISO_RES_REQUESTED;
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L2_N",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L2_N",device.device_dir);
 					}
 				}
 				break;
@@ -5433,7 +5457,7 @@ void cord_RISO_phaseToPhase(void)
 					DIS_L2_A;
 					CON_L1_A;
 					cord_task_control |= __CORD_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L1_N",device.device_dir);
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L1_N",device.device_dir);
 				}
 				break;
 				case 15:	//L1 proti N
@@ -5446,7 +5470,7 @@ void cord_RISO_phaseToPhase(void)
 					CON_L2_A;
 					CON_L3_B;
 					cord_task_control |= __CORD_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L1-L2_L3",device.device_dir);
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L1-L2_L3",device.device_dir);
 				}
 				break;
 				case 16:	//L1,L2 proti L3
@@ -5459,14 +5483,14 @@ void cord_RISO_phaseToPhase(void)
 						DIS_L3_B;
 						CON_L2_B;
 						cord_task_control |= __CORD_RISO_RES_REQUESTED;
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L1_L2",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L1_L2",device.device_dir);
 					}
 					else
 					{
 						DIS_L1_A;
 						cord_RISO_count++;
 						cord_task_control |= __CORD_RISO_RES_REQUESTED;
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L2_L3",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L2_L3",device.device_dir);
 					}
 				}
 				break;
@@ -5482,7 +5506,7 @@ void cord_RISO_phaseToPhase(void)
 						CON_L1_A;
 						CON_L2_B;
 						cord_task_control |= __CORD_RISO_RES_REQUESTED;
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L1_L2",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L1_L2",device.device_dir);
 					}
 					else
 					{
@@ -5491,7 +5515,7 @@ void cord_RISO_phaseToPhase(void)
 						CON_L1_A;
 						cord_RISO_count++;
 						cord_task_control |= __CORD_RISO_RES_REQUESTED;
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L1_L3",device.device_dir);
+						SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L1_L3",device.device_dir);
 					}		
 				}
 				break;
@@ -5504,7 +5528,7 @@ void cord_RISO_phaseToPhase(void)
 					DIS_L3_B;
 					CON_L2_B;
 					cord_task_control |= __CORD_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RISO_RES__,"L1_L2",device.device_dir);
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RISO_RES__,"","L1_L2",device.device_dir);
 				}
 				break;
 				case 19:	//L1 proti L2
@@ -5515,7 +5539,7 @@ void cord_RISO_phaseToPhase(void)
 					cord_RISO_count++;
 					DIS_L2_B;
 					DIS_L1_A;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__STOP_RISO__,"",device.device_dir);
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__STOP_RISO__,"","",device.device_dir);
 				}
 				break;
 				default: break;
@@ -5539,11 +5563,11 @@ void cord_RISO_phaseToPhase(void)
 void cord_transmittPhaseToPhase(void)
 {
 	char temp_str[MAX_ADDITIONAL_COMMANDS_LENGTH];
-	sprintf(temp_str,__RISO_PHASE_TO_PHASE__);
+	//sprintf(temp_str,__RISO_PHASE_TO_PHASE__);
 	if(insolation_status & CORD_PHASE_TO_PHASE_MASK)
 	{
-		strcat(temp_str,"|");
-		strcat(temp_str,__FAIL__);
+		//strcat(temp_str,"|");
+		sprintf(temp_str,__FAIL__);
 		if(insolation_status & L1_N_FAIL)
 		{
 			strcat(temp_str,",");
@@ -5577,36 +5601,31 @@ void cord_transmittPhaseToPhase(void)
 	}
 	else
 	{
-		strcat(temp_str,"|");
-		strcat(temp_str,__PASS__);
+		//strcat(temp_str,"|");
+		sprintf(temp_str,__PASS__);
 	}
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,temp_str,"",device.device_dir);
+	SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__RISO_PHASE_TO_PHASE__,temp_str,"",device.device_dir);
 }
 
 void cord_transmittPhasesToPE(bool pass)
 {
 	char temp_str[MAX_ADDITIONAL_COMMANDS_LENGTH];
-	sprintf(temp_str,__RISO_PHASES_TO_PE__);
 	if(pass)
 	{
-		strcat(temp_str,"|");
-		strcat(temp_str,__PASS__);
+		sprintf(temp_str,__PASS__);
 	}
 	else
 	{
-		strcat(temp_str,"|");
-		strcat(temp_str,__FAIL__);
+		sprintf(temp_str,__FAIL__);
 	}
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,temp_str,"",device.device_dir);
+	SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__RISO_PHASES_TO_PE__,temp_str,"",device.device_dir);
 }
 void cord_transmittOnePhaseToPE(void)
 {
 	char temp_str[MAX_ADDITIONAL_COMMANDS_LENGTH];
-	sprintf(temp_str,__RISO_ONE_PHASE_TO_PE__);
 	if(insolation_status & CORD_ONE_PHASE_TO_PE_MASK)
 	{
-		strcat(temp_str,"|");
-		strcat(temp_str,__FAIL__);
+		sprintf(temp_str,__FAIL__);
 		if(insolation_status & L1_PE_FAIL)
 		{
 			strcat(temp_str,",");
@@ -5630,10 +5649,9 @@ void cord_transmittOnePhaseToPE(void)
 	}
 	else
 	{
-		strcat(temp_str,"|");
-		strcat(temp_str,__PASS__);
+		sprintf(temp_str,__PASS__);
 	}
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,temp_str,"",device.device_dir);
+	SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__RISO_ONE_PHASE_TO_PE__,temp_str,"",device.device_dir);
 }
 void cord_continuity_test(void)
 {
@@ -5642,17 +5660,17 @@ void cord_continuity_test(void)
 		case 0:
 			cord_continuity_init();
 			cord_continuity_count++;
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__CONTINUITY_STARTED__,"",device.device_dir);
+			SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__CONTINUITY_STARTED__,"","",device.device_dir);
 			cord_task_control |= __CORD_CONTINUITY_IN_PROGRESS;
 			CON_L1_A;
 			CON_L1_B;
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__START_RPE_HIGH__,"",device.device_dir);
+			SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__START_RPE_HIGH__,"","",device.device_dir);
 			break;
 		case 1:
 			if(cord_task_control & __CORD_RPE_H_STARTED)
 			{
 				cord_task_control |= __CORD_RPE_RES_REQUESTED;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L1_L1",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L1_L1",device.device_dir);
 				cord_continuity_count++;
 			}
 			break;
@@ -5660,7 +5678,7 @@ void cord_continuity_test(void)
 			if(!(cord_task_control & __CORD_RPE_RES_REQUESTED))
 			{
 				cord_continuity_L1_L1_res = cord_rpe_resistance;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__STOP_RPE__,"",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__STOP_RPE__,"","",device.device_dir);
 				cord_continuity_count++;
 			}
 			break;
@@ -5671,7 +5689,7 @@ void cord_continuity_test(void)
 				DIS_L1_B;
 				CON_L2_A;
 				CON_L2_B;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__START_RPE_HIGH__,"",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__START_RPE_HIGH__,"","",device.device_dir);
 				cord_continuity_count++;
 			}
 			break;
@@ -5681,12 +5699,12 @@ void cord_continuity_test(void)
 				cord_task_control |= __CORD_RPE_RES_REQUESTED;
 				if(CORD_PHASE_NUM_SETTING == _1_PHASE)
 				{
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"N_N",device.device_dir);
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","N_N",device.device_dir);
 					cord_continuity_count=11;
 				}
 				else
 				{
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L2_L2",device.device_dir);
+					SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L2_L2",device.device_dir);
 					cord_continuity_count++;
 				}
 				
@@ -5696,7 +5714,7 @@ void cord_continuity_test(void)
 			if(!(cord_task_control & __CORD_RPE_RES_REQUESTED))
 			{
 				cord_continuity_L2_L2_res = cord_rpe_resistance;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__STOP_RPE__,"",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__STOP_RPE__,"","",device.device_dir);
 				cord_continuity_count++;
 			}
 			break;
@@ -5707,7 +5725,7 @@ void cord_continuity_test(void)
 				DIS_L2_B;
 				CON_L3_A;
 				CON_L3_B;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__START_RPE_HIGH__,"",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__START_RPE_HIGH__,"","",device.device_dir);
 				cord_continuity_count++;
 			}
 			break;
@@ -5715,7 +5733,7 @@ void cord_continuity_test(void)
 			if(cord_task_control & __CORD_RPE_H_STARTED)
 			{
 				cord_task_control |= __CORD_RPE_RES_REQUESTED;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"L3_L3",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","L3_L3",device.device_dir);
 				cord_continuity_count++;
 			}
 			break;
@@ -5723,7 +5741,7 @@ void cord_continuity_test(void)
 			if(!(cord_task_control & __CORD_RPE_RES_REQUESTED))
 			{
 				cord_continuity_L3_L3_res = cord_rpe_resistance;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__STOP_RPE__,"",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__STOP_RPE__,"","",device.device_dir);
 				cord_continuity_count++;
 			}
 			break;
@@ -5734,7 +5752,7 @@ void cord_continuity_test(void)
 				DIS_L3_B;
 				CON_N_A;
 				CON_N_B;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__START_RPE_HIGH__,"",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__START_RPE_HIGH__,"","",device.device_dir);
 				cord_continuity_count++;
 			}
 			break;
@@ -5742,7 +5760,7 @@ void cord_continuity_test(void)
 			if(cord_task_control & __CORD_RPE_H_STARTED)
 			{
 				cord_task_control |= __CORD_RPE_RES_REQUESTED;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"N_N",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","N_N",device.device_dir);
 				cord_continuity_count++;
 			}
 			break;
@@ -5750,7 +5768,7 @@ void cord_continuity_test(void)
 			if(!(cord_task_control & __CORD_RPE_RES_REQUESTED))
 			{
 				cord_continuity_N_N_res = cord_rpe_resistance;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__STOP_RPE__,"",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__STOP_RPE__,"","",device.device_dir);
 				cord_continuity_count++;
 			}
 			break;
@@ -5761,7 +5779,7 @@ void cord_continuity_test(void)
 				DIS_N_B;
 				CON_PE_A;
 				CON_PE_B;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__START_RPE_HIGH__,"",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__START_RPE_HIGH__,"","",device.device_dir);
 				cord_continuity_count++;
 			}
 			break;
@@ -5769,7 +5787,7 @@ void cord_continuity_test(void)
 			if(cord_task_control & __CORD_RPE_H_STARTED)
 			{
 				cord_task_control |= __CORD_RPE_RES_REQUESTED;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__GET_RPE_RES__,"PE_PE",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__GET_RPE_RES__,"","PE_PE",device.device_dir);
 				cord_continuity_count++;
 			}
 			break;
@@ -5777,7 +5795,7 @@ void cord_continuity_test(void)
 			if(!(cord_task_control & __CORD_RPE_RES_REQUESTED))
 			{
 				cord_continuity_PE_PE_res = cord_rpe_resistance;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__STOP_RPE__,"",device.device_dir);
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__STOP_RPE__,"","",device.device_dir);
 				cord_continuity_count++;
 			}
 			break;
@@ -5816,46 +5834,51 @@ void cord_continuity_test(void)
 void cord_transmittContiunuity(bool pass)
 {
 	char temp_str[MAX_ADDITIONAL_COMMANDS_LENGTH];
-	sprintf(temp_str,__CORD_CONTINUITY__);
 	if(pass)
 	{
-		strcat(temp_str,"|");
-		strcat(temp_str,__PASS__);
+		sprintf(temp_str,__PASS__);
 	}
 	else
 	{
-		strcat(temp_str,"|");
-		strcat(temp_str,__FAIL__);
+		sprintf(temp_str,__FAIL__);
 	}
 	if(CORD_PHASE_NUM_SETTING == _1_PHASE)
 		snprintf(&temp_str[strlen(temp_str)],(MAX_ADDITIONAL_COMMANDS_LENGTH-strlen(temp_str)),",%s|%.3f,%s|%.3f,%s|%.3f",__CORD_L1__,cord_continuity_L1_L1_res,__CORD_N__,cord_continuity_N_N_res,__CORD_PE__,cord_continuity_PE_PE_res);
 	else
 		snprintf(&temp_str[strlen(temp_str)],(MAX_ADDITIONAL_COMMANDS_LENGTH-strlen(temp_str)),",%s|%.3f,%s|%.3f,%s|%.3f,%s|%.3f,%s|%.3f",__CORD_L1__,cord_continuity_L1_L1_res,__CORD_L2__,cord_continuity_L2_L2_res,__CORD_L3__,cord_continuity_L3_L3_res,__CORD_N__,cord_continuity_N_N_res,__CORD_PE__,cord_continuity_PE_PE_res);
 	
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,temp_str,"",device.device_dir);
+	SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__CORD_CONTINUITY__,temp_str,"",device.device_dir);
 }
 
 void stop_cord(void)
 {
-	cord_task_control &= (~__CORD_MEAS_IN_PROG);
-	rst_REL(6);
-	rst_REL(2);
-	rst_REL(3);
-	rst_REL(4);
-	rst_REL(5);
-	rst_REL(10);
-	rst_REL(11);
-	rst_REL(12);
-	rst_REL(13);
-	rst_REL(9);
-	rst_REL(27);
-	rst_REL(28);
-	rst_REL(30);
-	rst_REL(33);
-	rst_REL(34);
-	rst_REL(35);
-	rst_REL(36);
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__MT_300__,__CORD__,__STOPED_C__,"",device.device_dir);
+	//cord_task_control &= (~__CORD_MEAS_IN_PROG);
+	cord_global_init_set();
+	cord_task_control |= __CORD_INITIATED;
+//	//SET_PE_CONTACTOR;
+//	RST_L1_CONTACTOR;
+//	RST_L2_CONTACTOR;
+//	RST_L3_CONTACTOR;
+//	RST_N_CONTACTOR;
+//	rst_REL(10);
+//	rst_REL(11);
+//	rst_REL(12);
+//	rst_REL(13);
+//	//rst_REL(9);
+//	rst_REL(27);
+//	rst_REL(28);
+//	rst_REL(30);
+//	rst_REL(33);
+//	rst_REL(34);
+//	rst_REL(35);
+//	rst_REL(36);
+	cord_RISO_count=0;
+	cord_cw_count=0;
+	cord_RISO_count=0;
+	cord_continuity_count=0;
+	start_cord_count=0;
+	cord_err_count=0;
+	SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__STOPED_C__,"","",device.device_dir);
 }
 //void stop_cord_and_transmitt(uint32_t dir, char device_ID)
 //{
@@ -5869,13 +5892,14 @@ void cord_global_init_set(void)
 	connection_status=0;
 	connection_status2 =0;
 	insolation_status=0;
-	cord_task_control &= (~__CORD_INITIATED);
+	cord_task_control &= (~CORD_MEAS_MASKS);
+	cord_task_control |= __CORD_INITIATED;
 	if(connection_control & __CON_TO_MT310)
 	{
-		rst_REL(2);
-		rst_REL(3);
-		rst_REL(4);
-		rst_REL(5);
+		RST_L1_CONTACTOR;
+		RST_L2_CONTACTOR;
+		RST_L3_CONTACTOR;
+		RST_N_CONTACTOR;
 		rst_REL(8);
 		rst_REL(30);
 		rst_REL(10);
@@ -5886,7 +5910,7 @@ void cord_global_init_set(void)
 		rst_REL(34);
 		rst_REL(35);
 		rst_REL(36);
-		set_REL(6);
+		RST_PE_CONTACTOR;//SET_PE_CONTACTOR;
 		set_REL(9);
 		set_REL(27);
 		set_REL(28);
@@ -5901,10 +5925,10 @@ void cord_correct_wiring_init(void)
 	cord_task_control &= ~(__CORD_RPE_RES_REQUESTED|__CORD_CORECT_WIRING_MEASURED);
 	if(connection_control & __CON_TO_MT310)
 	{
-		rst_REL(2);
-		rst_REL(3);
-		rst_REL(4);
-		rst_REL(5);
+		RST_L1_CONTACTOR;
+		RST_L2_CONTACTOR;
+		RST_L3_CONTACTOR;
+		RST_N_CONTACTOR;
 		rst_REL(8);
 		rst_REL(30);
 		rst_REL(10);
@@ -5915,7 +5939,7 @@ void cord_correct_wiring_init(void)
 		rst_REL(34);
 		rst_REL(35);
 		rst_REL(36);
-		set_REL(6);
+		RST_PE_CONTACTOR;//SET_PE_CONTACTOR;
 		set_REL(9);
 		set_REL(27);
 		set_REL(28);
@@ -5928,10 +5952,10 @@ void cord_RISO_init(void)
 	cord_task_control &= (~CORD_RISO_MASKS);
 	if(connection_control & __CON_TO_MT310)
 	{
-		rst_REL(2);
-		rst_REL(3);
-		rst_REL(4);
-		rst_REL(5);
+		RST_L1_CONTACTOR;
+		RST_L2_CONTACTOR;
+		RST_L3_CONTACTOR;
+		RST_N_CONTACTOR;
 		rst_REL(8);
 		rst_REL(10);
 		rst_REL(11);
@@ -5942,7 +5966,7 @@ void cord_RISO_init(void)
 		rst_REL(34);
 		rst_REL(35);
 		rst_REL(36);
-		set_REL(6);
+		RST_PE_CONTACTOR;//SET_PE_CONTACTOR;
 		set_REL(9);
 		set_REL(27);
 		set_REL(28);
@@ -5959,10 +5983,10 @@ void cord_continuity_init(void)
   cord_continuity_PE_PE_res=0;
 	if(connection_control & __CON_TO_MT310)
 	{
-		rst_REL(2);
-		rst_REL(3);
-		rst_REL(4);
-		rst_REL(5);
+		RST_L1_CONTACTOR;
+		RST_L2_CONTACTOR;
+		RST_L3_CONTACTOR;
+		RST_N_CONTACTOR;
 		rst_REL(8);
 		rst_REL(10);
 		rst_REL(11);
@@ -5973,7 +5997,7 @@ void cord_continuity_init(void)
 		rst_REL(34);
 		rst_REL(35);
 		rst_REL(36);
-		set_REL(6);
+		RST_PE_CONTACTOR;//SET_PE_CONTACTOR;
 		set_REL(9);
 		set_REL(27);
 		set_REL(28);
@@ -6007,7 +6031,7 @@ void tramsmitt_corect_wiring_state(uint32_t dir, char device_ID)
 {
 	uint32_t msg_count=0;
 	char temp_str[MAX_ADDITIONAL_COMMANDS_LENGTH];
-	sprintf(temp_str,__CORD_CW__);
+	sprintf(temp_str,__FAIL__);//na zacetku napisemo fail in kasneje prepisemo ce je pass
 	strcat(temp_str,",");
 		//+++++++++++++++++VRNEMO REZULTAT ZA ENOFAZNI KABEL+++++++++++++++++++++
 	#if AUTO_DETECT_P_NUM == true
@@ -6338,11 +6362,19 @@ void tramsmitt_corect_wiring_state(uint32_t dir, char device_ID)
 								default:
 									if(connection_status & STATUS_OK_1P_MASK)
 									{
-										strcat(temp_str,__PASS__);	//ce ni nic od prej nastetega potem je to pass
+										temp_str[0]='P';
+										temp_str[1]='A';
+										temp_str[2]='S';
+										temp_str[3]='S';
+										//strcat(temp_str,__PASS__);	//ce ni nic od prej nastetega potem je to pass
 									}
 									else
 									{
-										strcat(temp_str,__FAIL__);
+										temp_str[0]='F';
+										temp_str[1]='A';
+										temp_str[2]='I';
+										temp_str[3]='L';
+										//strcat(temp_str,__FAIL__);
 									}
 									break;
 							}
@@ -6352,9 +6384,9 @@ void tramsmitt_corect_wiring_state(uint32_t dir, char device_ID)
 			}
 		}
 		if(AUTO_DETECT_P_NUM&&(!(manual_set_phase_num)))
-			SendComMessage(_ON,_ID_TFA,device_ID,__MT_300__,__CORD__,temp_str,__1_PHASE__,dir);
+			SendComMessage(_ON,_ID_TFA,device_ID,__CORD__,__CORD_CW_RESULT__,temp_str,__1_PHASE__,dir);
 		else
-			SendComMessage(_ON,_ID_TFA,device_ID,__MT_300__,__CORD__,temp_str,"",dir);
+			SendComMessage(_ON,_ID_TFA,device_ID,__CORD__,__CORD_CW_RESULT__,temp_str,"",dir);
 	}
 	//+++++++++++++++++VRNEMO REZULTAT ZA TROFAZNI KABEL+++++++++++++++++++++
 	else
@@ -7141,7 +7173,11 @@ void tramsmitt_corect_wiring_state(uint32_t dir, char device_ID)
 									strcat(temp_str,__PE_OPEN__);
 									break;
 								default:
-									strcat(temp_str,__PASS__);	//ce ni nic od prej nastetega potem je to pass
+									temp_str[0]='P';
+									temp_str[1]='A';
+									temp_str[2]='S';
+									temp_str[3]='S';
+									//strcat(temp_str,__PASS__);	//ce ni nic od prej nastetega potem je to pass
 									break;
 							}
 							break;
@@ -7150,9 +7186,9 @@ void tramsmitt_corect_wiring_state(uint32_t dir, char device_ID)
 			}
 		}
 		if(AUTO_DETECT_P_NUM)
-			SendComMessage(_ON,_ID_TFA,device_ID,__MT_300__,__CORD__,temp_str,__3_PHASE__,dir);
+			SendComMessage(_ON,_ID_TFA,device_ID,__CORD__,__CORD_CW_RESULT__,temp_str,__3_PHASE__,dir);
 		else
-			SendComMessage(_ON,_ID_TFA,device_ID,__MT_300__,__CORD__,temp_str,"",dir);
+			SendComMessage(_ON,_ID_TFA,device_ID,__CORD__,__CORD_CW_RESULT__,temp_str,"",dir);
 	}
 }
 void cord_get_and_transmitt_result(void)

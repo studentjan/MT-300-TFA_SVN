@@ -12,3 +12,4 @@ welding_adapter\cord.o: ../Inc/serial_com.h
 welding_adapter\cord.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 welding_adapter\cord.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 welding_adapter\cord.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+welding_adapter\cord.o: ../Inc/com_meas_tasks.h

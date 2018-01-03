@@ -12,7 +12,7 @@
 #define __MACH_RPE
 #define MACH_AUTO_CONTINUE_MEAS		_OFF
 #define MACH_RISO_LIMIT	 					1.0f	//n*Mohm
-#define URES_PERIODS_TO_WAIT			1
+#define URES_PERIODS_TO_WAIT			10
 
 void set_RISO_mach_resistance(char* value);
 bool mach_check_RISO_resistance(void);
@@ -22,7 +22,11 @@ void set_phase_num_mach(int phase_num);
 
 void MachinesRPEStart(void);
 void MachinesRPEStop(void);
+void mach_URES(void);
+void mach_URES_Stop(void);
+void disconnectURESContactors(void);
 void init_mach(void);
+void deinitMachines(void);
 void stop_mach(void);
 
 //---------------------------zastavice za mach_task_control------------------------------
@@ -47,8 +51,10 @@ void stop_mach(void);
 #define	__MACH_URES_L1_L3_MEASURED							0x00040000
 #define	__MACH_URES_L2_L3_MEASURED							0x00080000
 #define __MACH_URES_DISCONNECT_PS								0x00100000
+#define __MACH_TEST_RECIEVED										0x00200000
+#define __MACH_TIMER_INIT												0x00400000
 
-
+#define MACH_MEAS_MASKS				0x001FFCFF
 #define MACH_RISO_MASKS				0x000000FC
 #define MACH_URES_MASKS				0x000FFC00
 //++++++++++++++++++++++++++++++zastavice za mach_insolation_status+++++++++++++++++++++++++++++++
@@ -70,8 +76,9 @@ void stop_mach(void);
 #define __L1_L2		7
 #define __L1_L3		8
 #define __L2_L3		9
+#define __TIMER_INIT	10	//uporabljamo samo ob inicializaciji timerja
 
-#define URES_TIME_TO_DIS_L1			100;//se treba doloct
+#define URES_TIME_TO_DIS_L1			85;//se treba doloct
 #define URES_TIME_TO_DIS_L2			100;//se treba doloct
 #define URES_TIME_TO_DIS_L3			100;//se treba doloct
 #define URES_TIME_TO_DIS_L1_L2	100;//se treba doloct

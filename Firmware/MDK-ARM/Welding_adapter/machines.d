@@ -11,3 +11,4 @@ welding_adapter\machines.o: ../Inc/os.h
 welding_adapter\machines.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 welding_adapter\machines.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 welding_adapter\machines.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+welding_adapter\machines.o: ../Inc/com_meas_tasks.h

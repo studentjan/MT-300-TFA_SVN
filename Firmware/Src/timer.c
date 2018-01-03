@@ -8,6 +8,7 @@
  #include "timer.h"
  #include "stm32f3xx_hal.h"
  #include "defines.h"
+ #include "machines.h"
  //#include "includes.h"
 
 //pozor, inicializacija za TIMER 2 je v serial_com.c
@@ -21,6 +22,9 @@ extern uint32_t compute_control2;
 extern SDADC_HandleTypeDef hsdadc2;
 extern SDADC_HandleTypeDef hsdadc1;
 extern SDADC_HandleTypeDef hsdadc3;
+extern uint32_t mach_task_control;
+extern uint32_t current_URES_measurement;
+
 
 /* TIM3 init function */
 void MX_TIM3_Init(void)
@@ -218,6 +222,15 @@ void TIMER7_IRQHandler(void)
 				HAL_SDADC_Start_IT(&hsdadc2);
 				meas_control &= (~__SDADC2_START_MASK);
 			}
+			meas_control &= (~__START_TIMER_ON);
+		}
+		else if(mach_task_control &__MACH_URES_DISCONNECT_PS)
+		{
+			test3_off;
+			disconnectURESContactors();
+			if(current_URES_measurement == __TIMER_INIT)
+				mach_task_control |= __MACH_TIMER_INIT;
+			mach_task_control &= ~__MACH_URES_DISCONNECT_PS;
 			meas_control &= (~__START_TIMER_ON);
 		}
 		if(compute_control & __ULN1_THD_START) 

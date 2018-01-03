@@ -59,6 +59,7 @@
 #include "rel_driver.h"
 #include "do_task.h"
 #include "serial_com.h"
+#include "com_meas_tasks.h"
 
 
 /* USER CODE BEGIN Includes */
@@ -94,12 +95,14 @@ extern uint32_t init_test_counter;
 uint32_t global_control=0;
 uint32_t connection_control=0;
 
+
 static void MX_NVIC_Init(void);
+static void start_set_normal(void);
 	
 int main(void)
 {
   /* MCU Configuration----------------------------------------------------------*/
-
+	memset((int*)0x20006BA0,'l',0x500);		//za indikacijo high water marka na stacku
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
 
@@ -125,9 +128,11 @@ int main(void)
 	MX_TIM6_Init();
 	MX_USART3_UART_Init();
   MX_USB_DEVICE_Init();
-	MX_NVIC_Init();
 	led_blink_time = _LED_BLINK_TIME_OK;
 	USBConnected_Handler();
+	HAL_Delay(100);
+	MX_NVIC_Init();
+	HAL_Delay(100);
 	init_REL();
 
 	init_OS();
@@ -142,13 +147,22 @@ int main(void)
 	set_timer(TEST_LED,10,Led_flash_task);
 	init_test_counter=0;
 	set_event(POWER_ON_TEST,power_on_test);
-	set_timer(SEND_TFA_MAINS_STATUS,2,send_mains_status);
+	global_control |= __ON_TEST_IN_PROG;
+	set_timer(START_SET_NORMAL,5,start_set_normal);
   run_OS();
 	while (1)
   {
-
-
   }
+}
+static void start_set_normal(void)
+{
+	if(global_control & __ON_TEST_IN_PROG)
+		set_timer(START_SET_NORMAL,5,start_set_normal);
+	else
+	{
+		setNormal();
+		set_event(SEND_TFA_MAINS_STATUS,send_mains_status);
+	}
 }
 
 /* USER CODE BEGIN 4 */

@@ -64,13 +64,13 @@ void MX_USB_DEVICE_Init(void)
 {
   /* Init Device Library,Add Supported Class and Start the library*/
   USBD_Init(&hUsbDeviceFS, &FS_Desc, DEVICE_FS);
-
+	HAL_Delay(100);
   USBD_RegisterClass(&hUsbDeviceFS, &USBD_CDC);
-
+	HAL_Delay(100);
   USBD_CDC_RegisterInterface(&hUsbDeviceFS, &USBD_Interface_fops_FS);
-
+	HAL_Delay(100);
   USBD_Start(&hUsbDeviceFS);
-
+	HAL_Delay(100);
 }
 /**
   * @}

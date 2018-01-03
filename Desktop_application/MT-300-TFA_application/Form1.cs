@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -22,13 +23,17 @@ namespace MT_300_TFA_application
         public serial_com Serial_class;// = new serial_com();
         public Relay_form Relay_object;// = new Relay_form();
         public Cord_form cord_object;
+        public Machines_form Machines_object;
+        private Queue<char[]> receiveQueue = new Queue<char[]>();
+        private int prev_i = 0;
         //public serial_com Serial_class = new serial_com();
         //public Relay_form RelayForm;
         //Thread nit1;
         public bool double_buffer = false;
         public string[] RxString= new String[20];
+        public char[] RxCharArray = new char[300];
         public int recieved_num;
-
+        public int j = 0;
         byte[] buffer = new byte[500];
         byte[] buffer2 = new byte[250];
         byte[] buffer3 = new byte[250];
@@ -76,11 +81,19 @@ namespace MT_300_TFA_application
                     serialPort1.Open();
                     AdapterButtonStatus = true;
                     port_connect.Text = "DISCONNECT";
-                    Serial_class.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[4], serial_com.CONNECTION_CODE_NAMES[0], serial_com.CONNECTION_ADD_NAMES[0]);
+                    Serial_class.synchroTimer.Start();
+                        //na zacetku enkrat zazenemo timer zato, da posljemo zacetno komando.
+                    Serial_class.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                        Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.COMMAND_TYPE_NAMES[4],
+                        serial_com.CONNECTION_CODE_NAMES[0], serial_com.CONNECTION_ADD_NAMES[0], "");
                 }
                 catch (System.UnauthorizedAccessException)
                 {
                     MessageBox.Show("COM port in use", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                catch (System.IO.IOException)
+                {
+                    MessageBox.Show("Device is not responding!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
             }
@@ -132,30 +145,48 @@ namespace MT_300_TFA_application
             //RxLine = System.Text.Encoding.ASCII.GetString(buffer2);
             int byte_num = serialPort1.BytesToRead;
             int byte_used=0;
+            char temp_char;
+            char temp_char_prev= '0';
             //RxLine = serialPort1.ReadLine();
             double_buffer = false;
             int i;
-            for (i=0; byte_num> byte_used; i++)
+            int i2 = 0;
+            int temp_prev_i=0;
+            int char_offset=0;
+            //for (i=0; byte_num> byte_used; i++)
+            //{
+            //    RxString[i]= (serialPort1.ReadLine()).Replace("\r", "\r\n");    //read line odstrani \n zato ga spet dodamo
+            //    byte_used += RxString[i].Length;
+            //    //krneki = serialPort1.BytesToRead;
+            //    //RxLine2 = serialPort1.ReadLine();
+            //    //double_buffer = true;
+            //}
+            for (i = 0; i < byte_num; i++)
             {
-                RxString[i]= (serialPort1.ReadLine()).Replace("\r", "\r\n");    //read line odstrani \n zato ga spet dodamo
-                byte_used += RxString[i].Length;
-                //krneki = serialPort1.BytesToRead;
-                //RxLine2 = serialPort1.ReadLine();
-                //double_buffer = true;
+                temp_char = Convert.ToChar(serialPort1.ReadChar());//pretvorimo v ascii
+                //if (temp_char == '>') char_offset = i-i2;      //ko naleti na prvi start znak zacne pisati na novo
+                if (temp_char == '\0')
+                    char_offset++;
+                else
+                {
+                    RxCharArray[((prev_i + i) - i2) - char_offset] = temp_char;
+                    temp_prev_i++;
+                }
+                if (temp_char_prev == '\r' && temp_char == '\n')
+                {
+                    RxCharArray[i + 1] = '\0';
+                    receiveQueue.Enqueue(RxCharArray);//damo prejsno komando v cakalno vrsto
+                    i2 = i+1;               //ko zacnemo vpisovati v nov array moramo zaceti na zacetku, zato shranimo offset
+                    temp_prev_i = 0;             //ce zapustimo zanko in se nismo dobili \n potem zelimo naslednjic nadaljevati od tam od kjer smo nazadnje koncali
+                    char_offset = 0;
+                }
+                temp_char_prev = temp_char;
             }
-            recieved_num = i;
+            prev_i = temp_prev_i;
+               // recieved_num = i;
             this.Invoke(new EventHandler(TaskManager));
         }
 
-        private void rel_2_on_button_Click(object sender, EventArgs e)
-        {
-            Serial_class.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[1], serial_com.RELAY_CODE_NAMES[3], "");
-        }
-
-        private void rel_2_off_button_Click(object sender, EventArgs e)
-        {
-            Serial_class.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[1], serial_com.RELAY_CODE_NAMES[4], "");
-        }
         private void TaskManager(object sender, EventArgs e)
         {
             //Dim Newline As String
@@ -183,12 +214,25 @@ namespace MT_300_TFA_application
             //    terminal_textbox.AppendText(new_RyLine2);
             //}
 
-            int i;
-            for(i=0; i<recieved_num;i++)
+            //int i;
+            while (receiveQueue.Count != 0)
             {
-                Serial_class.add_command_to_queue(RxString[i], RxString[i].Length, serial_com.COMM_DIR_PORT1);
-                terminal_textbox.AppendText(RxString[i]);
+                string temp_str3;
+                
+                char[] temp_str = new char[300];
+                temp_str= receiveQueue.Dequeue();
+
+                string temp_str2 = new string(temp_str);//temp_str.Substring(0,(temp_str.Length));
+                temp_str3 = temp_str2.TrimStart('\0');
+                string[] temp_str4 = temp_str3.Split('\0');
+                Serial_class.add_command_to_queue(temp_str4[0], temp_str4[0].Length, serial_com.COMM_DIR_PORT1);
+                terminal_textbox.AppendText(temp_str4[0]);
             }
+            //for(i=0; i<recieved_num;i++)
+            //{
+            //    Serial_class.add_command_to_queue(RxString[i], RxString[i].Length, serial_com.COMM_DIR_PORT1);
+            //    terminal_textbox.AppendText(RxString[i]);
+            //}
             //if (double_buffer == false)
             //{
             //    terminal_textbox.AppendText(RxLine);
@@ -226,20 +270,32 @@ namespace MT_300_TFA_application
 
         private void test_com_protocol_button_Click(object sender, EventArgs e)
         {
-            Serial_class.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[3], serial_com.TEST_CODE_NAMES[0], "");
+            Serial_class.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.COMMAND_TYPE_NAMES[3], serial_com.TEST_CODE_NAMES[0], "","");
         }
 
         private void cord_button_Click(object sender, EventArgs e)
         {
             //Serial_class.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[2], "");
-            Cord_form cordForm = new Cord_form(Serial_class);
+            Cord_form cordForm = new Cord_form(Serial_class,this);
             cordForm.Show();
+            machines_button.Enabled = false;
+            rescan_button.Enabled = false;
+            test_com_protocol_button.Enabled = false;
+            test_relays_button.Enabled = false;
+            port_connect.Enabled = false;
+            cord_button.Enabled = false;
         }
 
         private void test_relays_button_Click(object sender, EventArgs e)
         {
             Relay_form RelayForm = new Relay_form(this, Serial_class);
             RelayForm.Show();
+            machines_button.Enabled = false;
+            rescan_button.Enabled = false;
+            test_com_protocol_button.Enabled = false;
+            test_relays_button.Enabled = false;
+            port_connect.Enabled = false;
+            cord_button.Enabled = false;
         }
 
         private void clear_send_button_Click(object sender, EventArgs e)
@@ -255,6 +311,18 @@ namespace MT_300_TFA_application
         private void rescan_button_Click(object sender, EventArgs e)
         {
             getAvailiblePorts();
+        }
+
+        private void machines_button_Click(object sender, EventArgs e)
+        {
+            Machines_form MachinesObject = new Machines_form(Serial_class,this);
+            MachinesObject.Show();
+            machines_button.Enabled = false;
+            rescan_button.Enabled = false;
+            test_com_protocol_button.Enabled = false;
+            test_relays_button.Enabled = false;
+            port_connect.Enabled = false;
+            cord_button.Enabled = false;
         }
         //private void Sendtextboxmaneger()
         //{

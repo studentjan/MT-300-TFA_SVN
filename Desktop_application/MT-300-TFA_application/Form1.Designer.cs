@@ -43,6 +43,7 @@
             this.clear_send_button = new System.Windows.Forms.Button();
             this.clear_receive_button = new System.Windows.Forms.Button();
             this.rescan_button = new System.Windows.Forms.Button();
+            this.machines_button = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // port_connect
@@ -109,7 +110,7 @@
             // 
             // test_com_protocol_button
             // 
-            this.test_com_protocol_button.Location = new System.Drawing.Point(781, 12);
+            this.test_com_protocol_button.Location = new System.Drawing.Point(767, 12);
             this.test_com_protocol_button.Name = "test_com_protocol_button";
             this.test_com_protocol_button.Size = new System.Drawing.Size(118, 23);
             this.test_com_protocol_button.TabIndex = 19;
@@ -119,9 +120,9 @@
             // 
             // cord_button
             // 
-            this.cord_button.Location = new System.Drawing.Point(539, 12);
+            this.cord_button.Location = new System.Drawing.Point(532, 12);
             this.cord_button.Name = "cord_button";
-            this.cord_button.Size = new System.Drawing.Size(75, 23);
+            this.cord_button.Size = new System.Drawing.Size(105, 23);
             this.cord_button.TabIndex = 20;
             this.cord_button.Text = "CORD TEST";
             this.cord_button.UseVisualStyleBackColor = true;
@@ -167,11 +168,22 @@
             this.rescan_button.UseVisualStyleBackColor = true;
             this.rescan_button.Click += new System.EventHandler(this.rescan_button_Click);
             // 
+            // machines_button
+            // 
+            this.machines_button.Location = new System.Drawing.Point(451, 12);
+            this.machines_button.Name = "machines_button";
+            this.machines_button.Size = new System.Drawing.Size(75, 23);
+            this.machines_button.TabIndex = 25;
+            this.machines_button.Text = "MACHINES";
+            this.machines_button.UseVisualStyleBackColor = true;
+            this.machines_button.Click += new System.EventHandler(this.machines_button_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(940, 428);
+            this.Controls.Add(this.machines_button);
             this.Controls.Add(this.rescan_button);
             this.Controls.Add(this.clear_receive_button);
             this.Controls.Add(this.clear_send_button);
@@ -195,7 +207,7 @@
 
         #endregion
 
-        private System.Windows.Forms.Button port_connect;
+        public System.Windows.Forms.Button port_connect;
         private System.Windows.Forms.ComboBox avalible_ports_combobox;
         public System.IO.Ports.SerialPort serialPort1;
         public System.Windows.Forms.Button AdapterCOM_status;
@@ -203,12 +215,13 @@
         private System.Windows.Forms.TextBox terminal_textbox_send;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Button test_com_protocol_button;
-        private System.Windows.Forms.Button cord_button;
-        private System.Windows.Forms.Button test_relays_button;
+        public System.Windows.Forms.Button test_com_protocol_button;
+        public System.Windows.Forms.Button cord_button;
+        public System.Windows.Forms.Button test_relays_button;
         private System.Windows.Forms.Button clear_send_button;
         private System.Windows.Forms.Button clear_receive_button;
-        private System.Windows.Forms.Button rescan_button;
+        public System.Windows.Forms.Button rescan_button;
+        public System.Windows.Forms.Button machines_button;
     }
 }
 

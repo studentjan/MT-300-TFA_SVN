@@ -21,6 +21,7 @@ void set_RISO_cord_resistance(char* value);
 void set_phase_num(int phase_num);
 //taski
 void init_cord(void);
+void deinitCord(void);
 void stop_cord(void);
 void cord_RISO_onePhaseToPE(void);
 void cord_meas_correct_wiring(void);
@@ -240,7 +241,8 @@ void cord_continuity_test(void);
 
 
 #define CORD_MEAS_IN_PROG_MASK			0x00007C00				
-#define CORD_RISO_MASKS							0x00003CEC
+#define CORD_RISO_MASKS							0x000038E4
+#define CORD_MEAS_MASKS							0x0003FCFE
 
 
 

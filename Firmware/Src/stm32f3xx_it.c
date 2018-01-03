@@ -63,6 +63,7 @@ extern USBD_HandleTypeDef hUsbDeviceFS;
 extern uint32_t il_thd_channel;
 extern uint32_t mach_task_control;
 extern uint32_t current_URES_measurement;
+extern uint32_t serialComErrorTimeout;
 uint32_t stevec3;
 uint32_t global;
 uint32_t global2;
@@ -198,6 +199,7 @@ void SysTick_Handler(void)
   /* USER CODE END SysTick_IRQn 0 */
   HAL_IncTick();
   HAL_SYSTICK_IRQHandler();
+	serialComErrorTimeout++;
 	TimerTick++;//spremenljivka, ki je potrebna za delovanje timerjev na OS
   /* USER CODE BEGIN SysTick_IRQn 1 */
 
@@ -409,21 +411,37 @@ void EXTI9_5_IRQHandler(void)
 		if(count2>=URES_PERIODS_TO_WAIT)
 		{
 			if((current_URES_measurement==__L1_PE)||(current_URES_measurement==__L1_N))
-				htim7.Instance -> ARR=URES_TIME_TO_DIS_L1;
+			{
+				htim7.Instance -> ARR = URES_TIME_TO_DIS_L1;
+			}
 			else if((current_URES_measurement==__L2_PE)||(current_URES_measurement==__L2_N))
+			{
 				htim7.Instance -> ARR=URES_TIME_TO_DIS_L2;
+			}
 			else if((current_URES_measurement==__L3_PE)||(current_URES_measurement==__L3_N))
+			{
 				htim7.Instance -> ARR=URES_TIME_TO_DIS_L3;
+			}
 			else if(current_URES_measurement==__L1_L2)
+			{
 				htim7.Instance -> ARR=URES_TIME_TO_DIS_L1_L2;
+			}
 			else if(current_URES_measurement==__L1_L3)
+			{
 				htim7.Instance -> ARR=URES_TIME_TO_DIS_L1_L3;
+			}
 			else if(current_URES_measurement==__L2_L3)
+			{
 				htim7.Instance -> ARR=URES_TIME_TO_DIS_L2_L3;
+			}
+			else if(current_URES_measurement==__TIMER_INIT)
+				htim7.Instance -> ARR=50;//uporablja se za inicializacijo
+			
 			htim7.Instance -> CNT=0;
 			HAL_TIM_Base_Start_IT(&htim7);
 			meas_control |= __START_TIMER_ON;
 			count2=0;
+			test3_on;
 		}
 		else count2++;
 	}		

@@ -266,6 +266,10 @@ static int8_t CDC_Control_FS  (uint8_t cmd, uint8_t* pbuf, uint16_t length)
   */
 static int8_t CDC_Receive_FS (uint8_t* Buf, uint32_t *Len)
 {
+	if (hUsbDeviceFS.dev_state != USBD_STATE_CONFIGURED)
+	{
+		return USBD_FAIL;
+	}
   /* USER CODE BEGIN 6 */
 	USB_Receive_FS(Buf,*Len);
   USBD_CDC_SetRxBuffer(&hUsbDeviceFS, &Buf[0]);
@@ -288,6 +292,7 @@ static int8_t CDC_Receive_FS (uint8_t* Buf, uint32_t *Len)
 uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
 {
   uint8_t result = USBD_OK;
+	
   /* USER CODE BEGIN 7 */ 
   USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
   if (hcdc->TxState != 0){

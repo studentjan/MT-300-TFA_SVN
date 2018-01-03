@@ -55,3 +55,4 @@ K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Desk
 K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT_300_TFA_application.Properties.Resources.resources
 K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT_300_TFA_application.Relay_form.resources
 K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT-300-TFA_application.csproj.GenerateResource.Cache
+K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT_300_TFA_application.Machines_form.resources

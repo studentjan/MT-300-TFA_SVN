@@ -87,8 +87,11 @@ void USBConnected_Handler(void)
 	}
 	else 
 	{
-		//povezava ni vec vzpostavljena
-		disconnect_function(__CON_TO_MT310);
+		//povezava ni vec vzpostavljena (lahko je vzpostavljena samo z simulacijo, sepravi racunalnikom in PATOM preko USB-ja
+		if(connection_control & __ESTABLISHED_TO_SIM_USB)
+			disconnect_function(__ESTABLISHED_TO_SIM_USB);
+		else if(connection_control & __ESTABLISHED_TO_PAT_USB)
+			disconnect_function(__ESTABLISHED_TO_PAT_USB);
 		usb_connected = _NO;
 		USB_PU_OFF; //VKLOPI PU na USB liniji (na racunalniku mi z usb B konektorjem brez tega ni delal)
 	}
@@ -99,7 +102,7 @@ void Welcome_msg(void)
 	uint8_t	str_out[] = "JES SM TRIFAZNI ADAPTER";
 	CDC_Transmit_FS(str_out, ((sizeof str_out)));
 }
-void Transmit_results_task(void)
+void Transmit_results_task(void)	//--se ne uporablja
 {	
 	char str[30];
 	char str_out[50];
@@ -233,13 +236,13 @@ void send_warning_MSG(void)
 		if(transmitter_ID==_ID_MT) direction=_UART_DIR_485;
 		else if(transmitter_ID==_ID_PAT) direction=_UART_DIR_USB;
 		else if(transmitter_ID==_ID_DEBUG) direction=_UART_DIR_USB;
-		if(global_control & __PE_DISCONNECTED) SendComMessage(_ON,_ID_TFA,0,__MT_300__,__WARNING__,"PE DISCONNECTED"," ",direction);
-		else if(global_control & __N_DISCONECTED) SendComMessage(_ON,_ID_TFA,0,__MT_300__,__WARNING__,"N DISCONNECTED"," ",direction);
-		else if(global_control & __WRONG_CONNECTION) SendComMessage(_ON,_ID_TFA,0,__MT_300__,__WARNING__,"WRONG CONNECTION"," ",direction);
+		if(global_control & __PE_DISCONNECTED) SendComMessage(_ON,_ID_TFA,0,__WARNING__,"PE DISCONNECTED","","",direction);
+		else if(global_control & __N_DISCONECTED) SendComMessage(_ON,_ID_TFA,0,__WARNING__,"N DISCONNECTED","","",direction);
+		else if(global_control & __WRONG_CONNECTION) SendComMessage(_ON,_ID_TFA,0,__WARNING__,"WRONG CONNECTION","","",direction);
 	}
 }
 
-//v intervalu preverjamo vzpostavljeno komunikacijo tako, da nam naprava vraca
+//v intervalu preverjamo vzpostavljeno komunikacijo tako, da nam naprava vraca --se ne uporablja
 void check_connection(void)
 {
 	if(connection_control & __CON_TO_MT310)
@@ -269,13 +272,26 @@ void check_connection(void)
 
 void disconnect_function(uint32_t temp_connection_control)
 {
-	if(temp_connection_control & __CON_TO_MT310)
-		connection_control &= (~__CON_TO_MT310);//zaenkrat je mt310 simuliran v racunalniku, zato je povezava preko USB, kasneje bo RS 485
-	else if(temp_connection_control & __CON_TO_TERMINAL)
-		connection_control &= (~__CON_TO_TERMINAL);
-	else if(temp_connection_control & __CON_TO_PAT)
-		connection_control &= (~__CON_TO_PAT);
+	if(temp_connection_control & __ESTABLISHED_TO_SIM_USB)
+	{	
+		if(temp_connection_control & __CON_TO_MT310)
+			connection_control &= (~__CON_TO_MT310);//zaenkrat je mt310 simuliran v racunalniku, zato je povezava preko USB, kasneje bo RS 485
+		else if(temp_connection_control & __CON_TO_PAT)
+			connection_control &= (~__CON_TO_PAT);
+		connection_control &= (~__ESTABLISHED_TO_SIM_USB);
+	}
+	else if(temp_connection_control & __ESTABLISHED_TO_PAT_USB)
+	{	
+		if(temp_connection_control & __CON_TO_MT310)
+			connection_control &= (~__CON_TO_MT310);//zaenkrat je mt310 simuliran v racunalniku, zato je povezava preko USB, kasneje bo RS 485
+		else if(temp_connection_control & __CON_TO_PAT)
+			connection_control &= (~__CON_TO_PAT);
+		connection_control &= (~__ESTABLISHED_TO_PAT_USB);
+	}
+	if(!(connection_control & (__ESTABLISHED_TO_PAT_USB|__ESTABLISHED_TO_MT310|__ESTABLISHED_TO_SIM_USB)))//preverimo se ce je vzpostavljena kaksna druga povezava cene zapremo komunikacijo
+	{
+		connection_control &= (~__CONNECTION_ESTABLISHED);
+		serial_com_deinit();
+	}
 	
-	if(!(connection_control & (__CON_TO_MT310|__CON_TO_TERMINAL|__CON_TO_PAT)))//preverimo se ce je vzpostavljena kaksna druga povezava cene zapremo komunikacijo
-			connection_control &= (~__CONNECTION_ESTABLISHED);
 }
