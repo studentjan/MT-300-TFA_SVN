@@ -41,3 +41,5 @@ welding_adapter\timer.o: ../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart_
 welding_adapter\timer.o: ../Inc/defines.h
 welding_adapter\timer.o: ../Inc/machines.h
 welding_adapter\timer.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+welding_adapter\timer.o: ../Inc/do_task.h
+welding_adapter\timer.o: ../Inc/rel_driver.h

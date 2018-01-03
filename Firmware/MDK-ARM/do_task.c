@@ -26,6 +26,7 @@ extern uint32_t current_THD_sampling;
 extern uint32_t last_THD_MEASURED;
 uint32_t init_test_counter=0;
 uint32_t meas_task_control=0;
+uint32_t synchro_interrupt_control=0;
 #if THD_COMPUTATION_METHOD
 extern float32_t THD_buffer1[CORELATION_THD_BUFFER_SIZE];
 float THD_correlation_buffer[CORELATION_THD_BUFFER_SIZE];
@@ -58,17 +59,35 @@ void disable_interrupt(void)
 		interrupt_control &= (~__EXTI_9_5);
 	}
 }
-void enable_sinchro_interrupt(void)
+void enable_sinchro_interrupt(uint32_t task)
 {
-	HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);	//vklopi interrupt na sinhronizacijo
-		__DSB();
-		__ISB();
+	if((synchro_interrupt_control & SYNCHRO_INTERRUPT_MASK)==0)
+	{
+		HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);	//vklopi interrupt na sinhronizacijo
+			__DSB();
+			__ISB();
+	}
+	if(task == __URES_SYNCHRO)
+		synchro_interrupt_control |= __URES_SYNCHRO;
+	else if(task == __URES_SYNCHRO)
+		synchro_interrupt_control |= __VOLTAGE_MEAS_SYNCHRO;
+	else if(task == __CONTACTOR_SYNCHRO_ON)
+		synchro_interrupt_control |= __CONTACTOR_SYNCHRO_ON;
 }
-void disable_sinchro_interrupt(void)
+void disable_sinchro_interrupt(uint32_t task)
 {
-	HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);	//vklopi interrupt na sinhronizacijo
-		__DSB();
-		__ISB();
+	if(task == __URES_SYNCHRO)
+		synchro_interrupt_control &= ~__URES_SYNCHRO;
+	else if(task == __URES_SYNCHRO)
+		synchro_interrupt_control &= ~__VOLTAGE_MEAS_SYNCHRO;
+	else if(task == __CONTACTOR_SYNCHRO_ON)
+		synchro_interrupt_control &= ~__CONTACTOR_SYNCHRO_ON;
+	if((synchro_interrupt_control & SYNCHRO_INTERRUPT_MASK)==0)
+	{
+		HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);	//vklopi interrupt na sinhronizacijo
+			__DSB();
+			__ISB();
+	}
 }
 void start_measure(void)
 {
@@ -105,9 +124,7 @@ void start_measure(void)
 		meas_control |= __THD_MEASURING;
 		#endif
 		current_THD_sampling = __IL1_THD_SAMPLING;
-		HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);	//vklopi interrupt na sinhronizacijo
-		__DSB();
-		__ISB();
+		enable_sinchro_interrupt(__VOLTAGE_MEAS_SYNCHRO);	//vklopi interrupt na sinhronizacijo
 		//zarnkrat tole - pol bo treba vretn zbrisat
 		set_timer(TRANSMIT_RESULTS,30,Transmit_results_task);
 	}
@@ -135,9 +152,7 @@ void start_measure_no_THD(void)
 		input_START_measure();
 		meas_control |= __MEAS_IN_PROGRESS;	//mora biti za start measure
 		set_timer(MEASURING_TASK_NO_THD, 20,measuring_task_no_THD);
-		HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);	//vklopi interrupt na sinhronizacijo
-		__DSB();
-		__ISB();
+		enable_sinchro_interrupt(__VOLTAGE_MEAS_SYNCHRO);	//vklopi interrupt na sinhronizacijo
 		//zarnkrat tole - pol bo treba vretn zbrisat
 		set_timer(TRANSMIT_RESULTS,30,Transmit_results_task);
 	}
@@ -188,9 +203,7 @@ void stop_measure(void)
 		meas_control = 0;
 		input_STOP_measure();
 	#endif
-	HAL_NVIC_DisableIRQ(EXTI9_5_IRQn);
-	__DSB();
-	__ISB();
+	disable_sinchro_interrupt(__VOLTAGE_MEAS_SYNCHRO);
 	free_timer(TRANSMIT_RESULTS);
 }
 static void measuring_task_no_THD(void)
@@ -772,5 +785,31 @@ struct connected_device get_connected_device(void)
 	return temp_connected;
 }
 
+void synchroSetContactor(uint32_t contactor_name)
+{
+	if(contactor_name == __SET_L1_CONTACTOR)
+	{
+		enable_sinchro_interrupt(__CONTACTOR_SYNCHRO_ON);
+		synchro_interrupt_control |= __SET_L1_CONTACTOR;
+		global_control |= __TURN_ON_CONTACTOR;
+	}
+	else if(contactor_name == __SET_L2_CONTACTOR)
+	{
+		enable_sinchro_interrupt(__CONTACTOR_SYNCHRO_ON);
+		synchro_interrupt_control |= __SET_L2_CONTACTOR;
+		global_control |= __TURN_ON_CONTACTOR;
+	}
+	else if(contactor_name == __SET_L3_CONTACTOR)
+	{
+		enable_sinchro_interrupt(__CONTACTOR_SYNCHRO_ON);
+		synchro_interrupt_control |= __SET_L3_CONTACTOR;
+		global_control |= __TURN_ON_CONTACTOR;
+	}
+	//za N in PE zaenkrat ne kompliciramo in jih vklopimo takoj ob klicu funkcije
+	else if(contactor_name == __SET_N_CONTACTOR)
+		SET_N_CONTACTOR;
+	else if(contactor_name == __SET_PE_CONTACTOR)
+		SET_PE_CONTACTOR;
+}
 
 

@@ -9,6 +9,8 @@
  #include "stm32f3xx_hal.h"
  #include "defines.h"
  #include "machines.h"
+ #include "do_task.h"
+ #include "rel_driver.h"
  //#include "includes.h"
 
 //pozor, inicializacija za TIMER 2 je v serial_com.c
@@ -24,7 +26,8 @@ extern SDADC_HandleTypeDef hsdadc1;
 extern SDADC_HandleTypeDef hsdadc3;
 extern uint32_t mach_task_control;
 extern uint32_t current_URES_measurement;
-
+extern uint32_t global_control;
+extern uint32_t synchro_interrupt_control;
 
 /* TIM3 init function */
 void MX_TIM3_Init(void)
@@ -116,7 +119,9 @@ void MX_TIM3_Init(void)
 //  }
 
 }
-//timer za delay counter prozi interrupt na 
+//timer za delay counter prozi interrupt
+//koliko cez koliko casa bo sprozil interrupt po klicu starta je odvisno od ARR registra
+//nastavitev prozi interupt cez n*100us!!!!!!!!!
 void MX_TIM7_Init(void)
 {
 
@@ -127,7 +132,7 @@ void MX_TIM7_Init(void)
   htim7.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim7.Init.Period = 187;
   htim7.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_ENABLE;
+  htim7.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_Base_Init(&htim7) != HAL_OK)
   {
     _Error_Handler(__FILE__, __LINE__);
@@ -226,12 +231,62 @@ void TIMER7_IRQHandler(void)
 		}
 		else if(mach_task_control &__MACH_URES_DISCONNECT_PS)
 		{
-			test3_off;
 			disconnectURESContactors();
 			if(current_URES_measurement == __TIMER_INIT)
 				mach_task_control |= __MACH_TIMER_INIT;
 			mach_task_control &= ~__MACH_URES_DISCONNECT_PS;
 			meas_control &= (~__START_TIMER_ON);
+		}
+		//ko pridemo v naslednjo funkcijo najprej postavimo prvi kontaktor v vrsti L1, L2, L3
+		//ce je zahteva po vkolpu ostalih relejev vklopimo se te tako, da odstejemo cas, ki je bil potreben za vklop prvega od casa, ki je potreben za vklop naslednjega
+		else if(global_control & __TURN_ON_CONTACTOR)
+		{
+			if(synchro_interrupt_control & __SET_L1_CONTACTOR)
+			{
+				SET_L1_CONTACTOR;
+				synchro_interrupt_control &= ~__SET_L1_CONTACTOR;
+				test1_off;
+				if(synchro_interrupt_control & __SET_L2_CONTACTOR)
+				{
+					htim7.Instance ->SR =0;
+					htim7.Instance -> ARR=L2_CONTACTOR_TIME_TO_ON-L1_CONTACTOR_TIME_TO_ON;
+					htim7.Instance -> CNT=0;
+					HAL_TIM_Base_Start_IT(&htim7);
+					
+				}
+				else if(synchro_interrupt_control & __SET_L3_CONTACTOR)
+				{
+					htim7.Instance ->SR =0;
+					htim7.Instance -> ARR=L3_CONTACTOR_TIME_TO_ON-L1_CONTACTOR_TIME_TO_ON;
+					htim7.Instance -> CNT=0;
+					HAL_TIM_Base_Start_IT(&htim7);
+				}
+			}
+			else if(synchro_interrupt_control & __SET_L2_CONTACTOR)
+			{
+				test2_off;
+				SET_L2_CONTACTOR;
+				synchro_interrupt_control &= ~__SET_L2_CONTACTOR;
+				if(synchro_interrupt_control & __SET_L3_CONTACTOR)
+				{
+					htim7.Instance ->SR =0;
+					htim7.Instance -> ARR=L3_CONTACTOR_TIME_TO_ON-L2_CONTACTOR_TIME_TO_ON;
+					htim7.Instance -> CNT=0;
+					HAL_TIM_Base_Start_IT(&htim7);
+				}
+			}
+			else if(synchro_interrupt_control & __SET_L3_CONTACTOR)
+			{
+				test3_off;
+				SET_L3_CONTACTOR;
+				synchro_interrupt_control &= ~__SET_L3_CONTACTOR;
+			}
+			if(!(synchro_interrupt_control & (__SET_L1_CONTACTOR|__SET_L2_CONTACTOR|__SET_L3_CONTACTOR)))
+			{
+				meas_control &= ~__START_TIMER_ON;
+				global_control &= ~__TURN_ON_CONTACTOR;
+				disable_sinchro_interrupt(__CONTACTOR_SYNCHRO_ON);
+			}
 		}
 		if(compute_control & __ULN1_THD_START) 
 		{

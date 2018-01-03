@@ -158,6 +158,11 @@
           <WinNumber>1</WinNumber>
           <ItemText>htim7.Instance</ItemText>
         </Ww>
+        <Ww>
+          <count>2</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>global_control</ItemText>
+        </Ww>
       </WatchWindow1>
       <MemoryWindow1>
         <Mm>

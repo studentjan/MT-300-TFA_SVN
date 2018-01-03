@@ -85,26 +85,6 @@ void init_mach(void)
 		else 
 			restart_timer(INIT_MACH,5,init_mach);
 	}
-	//nima smisla--mislu sm da je problem s timerjem. V principu timer vrednost ARR registra nalozi vsvoj notranji counter sele ob prekoracitvi timerja
-//	else if(start_mach_count == 2)	//na zacetku enkrat zazenemo timer, da zagotovimo dobro delovanje
-//	{
-//		current_URES_measurement=__TIMER_INIT;
-//		enable_sinchro_interrupt();
-//		mach_task_control |= __MACH_URES_DISCONNECT_PS;
-//		start_mach_count++;
-//		set_event(INIT_MACH,init_mach);
-//	}
-//	else if(start_mach_count == 3)
-//	{
-//		if(mach_task_control & __MACH_TIMER_INIT)
-//		{
-//			disable_sinchro_interrupt();
-//			start_mach_count++;
-//			set_event(INIT_MACH,init_mach);
-//		}
-//		else
-//			restart_timer(INIT_MACH,5,init_mach);
-//	}
 	else if(start_mach_count == 2 )
 	{
 		start_mach_count=0;
@@ -125,7 +105,7 @@ void deinitMachines(void)
 	mach_RISO_count=0;
 	mach_URES_count=0;
 	setNormal();
-	disable_sinchro_interrupt();
+	disable_sinchro_interrupt(__URES_SYNCHRO);
 	meas_task_control &= ~__MACH_MEAS_IN_PROG;
 	SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__DEINITIATED__,"","",device.device_dir);
 }
@@ -592,13 +572,13 @@ void mach_URES_init(void)
 {
 	mach_URES_count=0;
 	mach_task_control &= (~MACH_URES_MASKS);
-	enable_sinchro_interrupt();
+	enable_sinchro_interrupt(__URES_SYNCHRO);
 	if(connection_control & __CON_TO_MT310)
 	{
-		SET_L1_CONTACTOR;
-		SET_L2_CONTACTOR;
-		SET_L3_CONTACTOR;
-		SET_N_CONTACTOR;
+//		SET_L1_CONTACTOR;
+//		SET_L2_CONTACTOR;
+//		SET_L3_CONTACTOR;
+//		SET_N_CONTACTOR;
 		rst_REL(8);
 		rst_REL(10);
 		rst_REL(11);
@@ -759,8 +739,8 @@ void mach_URES(void)
 			connectURESContactors();
 			if(mach_task_control & __MACH_TEST_RECIEVED)
 			{
-				mach_task_control |= __MACH_URES_DISCONNECT_PS; 
-				set_timer(MACH_URES_STOP,200,mach_URES_Stop);
+				//mach_task_control |= __MACH_URES_DISCONNECT_PS; 
+				set_timer(MACH_URES_STOP,100,mach_URES_Stop);
 			}
 			break;
 		default:
@@ -778,7 +758,7 @@ void mach_URES(void)
 void stop_mach(void)
 {
 	MachinesInit();
-	disable_sinchro_interrupt();
+	disable_sinchro_interrupt(__URES_SYNCHRO);
 	//meas_task_control &= (~__MACH_MEAS_IN_PROG);
 //	SET_PE_CONTACTOR;//RST_PE_CONTACTOR;
 //	RST_L1_CONTACTOR;
@@ -801,10 +781,15 @@ void stop_mach(void)
 }
 static void connectURESContactors(void)
 {
-	SET_L1_CONTACTOR;
-	SET_L2_CONTACTOR;
-	SET_L3_CONTACTOR;
-	SET_N_CONTACTOR;
+	synchroSetContactor(__SET_L1_CONTACTOR);
+	synchroSetContactor(__SET_L2_CONTACTOR);
+	synchroSetContactor(__SET_L3_CONTACTOR);
+	synchroSetContactor(__SET_N_CONTACTOR);
+	
+//	SET_L1_CONTACTOR;
+//	SET_L2_CONTACTOR;
+//	SET_L3_CONTACTOR;
+//	SET_N_CONTACTOR;
 }
 void disconnectURESContactors(void)
 {
@@ -830,7 +815,7 @@ void mach_URES_Stop(void)
 	rst_REL(15);
 	rst_REL(10);
 	mach_URES_count=0;
-	disable_sinchro_interrupt();
+	disable_sinchro_interrupt(__URES_SYNCHRO);
 	mach_task_control &= ~__MACH_TEST_RECIEVED;
 	mach_task_control &= ~__MACH_URES_DISCONNECT_PS;
 	mach_task_control &= ~__MACH_URES_IN_PROGRESS;

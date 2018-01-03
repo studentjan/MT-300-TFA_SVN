@@ -64,6 +64,7 @@ extern uint32_t il_thd_channel;
 extern uint32_t mach_task_control;
 extern uint32_t current_URES_measurement;
 extern uint32_t serialComErrorTimeout;
+extern uint32_t synchro_interrupt_control;
 uint32_t stevec3;
 uint32_t global;
 uint32_t global2;
@@ -289,8 +290,9 @@ void TIM7_IRQHandler(void)
 //	global = htim7.Instance -> CNT;
 //	global2 = htim7.Instance -> ARR;
 	HAL_TIM_IRQHandler(&htim7);
-	TIMER7_IRQHandler();	
 	HAL_TIM_Base_Stop_IT(&htim7);//tole more bit obvezno za hendlerjem
+	TIMER7_IRQHandler();	
+	//HAL_TIM_Base_Stop_IT(&htim7);//tole more bit obvezno za hendlerjem
 }
 
 void EXTI15_10_IRQHandler(void)
@@ -311,6 +313,7 @@ void EXTI9_5_IRQHandler(void)
 	static float perm_temp3=0;
 	static uint32_t count=0;
 	static uint32_t count2=0;
+	test4_tog;
 	if(((meas_control & __SDADC2_START_MASK) || (meas_control & __SDADC1_START_MASK) || (meas_control & __SDADC3_START_MASK))&&(!(meas_control & __START_TIMER_ON)))
 	{
 			//zakasnitev z timerjem 7
@@ -325,6 +328,7 @@ void EXTI9_5_IRQHandler(void)
 					else if(il_thd_channel==IL3_CHANNEL)htim7.Instance -> ARR=SDADC_ON_IL3THD_DELAY;	
 				}
 				else {htim7.Instance -> ARR=SDADC_ON_DELAY;}
+				htim7.Instance ->SR =0;
 				htim7.Instance -> CNT=0;
 				HAL_TIM_Base_Start_IT(&htim7);
 				stevec3 = htim7.Instance -> CNT;
@@ -338,6 +342,7 @@ void EXTI9_5_IRQHandler(void)
 	{
 		if(count2>=1)
 		{
+			htim7.Instance ->SR =0;
 			htim7.Instance -> ARR=SDADC_ON_IL1THD_DELAY;
 			htim7.Instance -> CNT=0;
 			HAL_TIM_Base_Start_IT(&htim7);
@@ -350,6 +355,7 @@ void EXTI9_5_IRQHandler(void)
 	{
 		if(count2>=1)
 		{
+			htim7.Instance ->SR =0;
 			htim7.Instance -> ARR=SDADC_ON_IL1THD_DELAY;
 			htim7.Instance -> CNT=0;
 			HAL_TIM_Base_Start_IT(&htim7);
@@ -362,6 +368,7 @@ void EXTI9_5_IRQHandler(void)
 	{
 		if(count2>=1)
 		{
+			htim7.Instance ->SR =0;
 			htim7.Instance -> ARR=SDADC_ON_IL2THD_DELAY;
 			htim7.Instance -> CNT=0;
 			HAL_TIM_Base_Start_IT(&htim7);
@@ -374,6 +381,7 @@ void EXTI9_5_IRQHandler(void)
 	{
 		if(count2>=1)
 		{
+			htim7.Instance ->SR =0;
 			htim7.Instance -> ARR=SDADC_ON_IL2THD_DELAY;
 			htim7.Instance -> CNT=0;
 			HAL_TIM_Base_Start_IT(&htim7);
@@ -386,6 +394,7 @@ void EXTI9_5_IRQHandler(void)
 	{
 		if(count2>=1)
 		{
+			htim7.Instance ->SR =0;
 			htim7.Instance -> ARR=SDADC_ON_IL3THD_DELAY;
 			htim7.Instance -> CNT=0;
 			HAL_TIM_Base_Start_IT(&htim7);
@@ -398,6 +407,7 @@ void EXTI9_5_IRQHandler(void)
 	{
 		if(count2>=1)
 		{
+			htim7.Instance ->SR =0;
 			htim7.Instance -> ARR=SDADC_ON_IL3THD_DELAY;
 			htim7.Instance -> CNT=0;
 			HAL_TIM_Base_Start_IT(&htim7);
@@ -410,9 +420,18 @@ void EXTI9_5_IRQHandler(void)
 	{
 		if(count2>=URES_PERIODS_TO_WAIT)
 		{
+			htim7.Instance ->SR =0;
 			if((current_URES_measurement==__L1_PE)||(current_URES_measurement==__L1_N))
 			{
-				htim7.Instance -> ARR = URES_TIME_TO_DIS_L1;
+				//pogledamo ce je enofazni sistem z L-jem na N vodniku - ce je dodamo pol periode k zakasnitvi
+				if((global_control & __1P_CONNECTION)&&(global_control & __L_ON_N))
+				{
+					htim7.Instance -> ARR = URES_TIME_TO_DIS_L1-URES_TIME_L_ON_N_ADD;
+				}
+				else
+				{
+					htim7.Instance -> ARR = URES_TIME_TO_DIS_L1;
+				}
 			}
 			else if((current_URES_measurement==__L2_PE)||(current_URES_measurement==__L2_N))
 			{
@@ -436,14 +455,32 @@ void EXTI9_5_IRQHandler(void)
 			}
 			else if(current_URES_measurement==__TIMER_INIT)
 				htim7.Instance -> ARR=50;//uporablja se za inicializacijo
-			
 			htim7.Instance -> CNT=0;
 			HAL_TIM_Base_Start_IT(&htim7);
 			meas_control |= __START_TIMER_ON;
 			count2=0;
-			test3_on;
 		}
 		else count2++;
+	}
+	else if((global_control & __TURN_ON_CONTACTOR)&&(!(meas_control & __START_TIMER_ON)))
+	{
+		htim7.Instance ->SR =0;
+		if(synchro_interrupt_control & __SET_L1_CONTACTOR)
+			htim7.Instance -> ARR=L1_CONTACTOR_TIME_TO_ON;//uporablja se za inicializacijo
+		else if(synchro_interrupt_control & __SET_L2_CONTACTOR)
+			htim7.Instance -> ARR=L2_CONTACTOR_TIME_TO_ON;//uporablja se za inicializacijo
+		else if(synchro_interrupt_control & __SET_L3_CONTACTOR)
+			htim7.Instance -> ARR=L3_CONTACTOR_TIME_TO_ON;//uporablja se za inicializacijo
+		else if(synchro_interrupt_control & __SET_N_CONTACTOR)
+			htim7.Instance -> ARR=50;//uporablja se za inicializacijo
+		else if(synchro_interrupt_control & __SET_PE_CONTACTOR)
+			htim7.Instance -> ARR=50;//uporablja se za inicializacijo
+		htim7.Instance -> CNT=0;
+		test1_on;
+		test2_on;
+		test3_on;
+		HAL_TIM_Base_Start_IT(&htim7);
+		meas_control |= __START_TIMER_ON;
 	}		
 	if((global_control & __ON_TEST_IN_PROG)&&(meas_control & __MEAS_IN_PROGRESS)&&(!(global_control & __INPUT_PHASES_DET)))
 	{

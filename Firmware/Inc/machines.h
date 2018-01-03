@@ -78,12 +78,17 @@ void stop_mach(void);
 #define __L2_L3		9
 #define __TIMER_INIT	10	//uporabljamo samo ob inicializaciji timerja
 
-#define URES_TIME_TO_DIS_L1			85;//se treba doloct
-#define URES_TIME_TO_DIS_L2			100;//se treba doloct
-#define URES_TIME_TO_DIS_L3			100;//se treba doloct
-#define URES_TIME_TO_DIS_L1_L2	100;//se treba doloct
-#define URES_TIME_TO_DIS_L1_L3	100;//se treba doloct
-#define URES_TIME_TO_DIS_L2_L3	100;//se treba doloct
+
+//cas odklopa kontaktorja je odvisen od trenutne napetosti na kontaktorju in je od cca 17
+//rezultati pomerjeni v matlabu file three_phase_sim.slx
+#define URES_TIME_TO_DIS_L1			135		//n*100us
+#define URES_TIME_TO_DIS_L2			246	//n*100us
+#define URES_TIME_TO_DIS_L3			71	//n*100us
+#define URES_TIME_TO_DIS_L1_L2	145	
+#define URES_TIME_TO_DIS_L1_L3	100		
+#define URES_TIME_TO_DIS_L2_L3	226	
+#define URES_TIME_L_ON_N_ADD		100//-100;	//dodatek ce je enofazni sistem z fazo na n vodniku (pol periode)
+
 
 #define CON_L1_A	set_REL(10)
 #define DIS_L1_A	rst_REL(10)

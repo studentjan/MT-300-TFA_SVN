@@ -1066,7 +1066,6 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 	{
 		case ULN1_CHANNEL: 
 		{
-			test2_on;
 			SDADC1_sample = ConvertionResult*uln1_temp;
 			#if	THD_COMPUTATION_METHOD == CORELATION
 			if(meas_control & __THD_MEASURING)
@@ -1310,7 +1309,7 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 				if((!(meas_control & __ULN1_MEASURED))||(meas_control & __NO_THD_MEAS)||(THD_COMPUTATION_METHOD==FFT))
 				{
 					//koda za detektiranje faznega zaporedja napetosti
-					if(SDADC1_CH1s.sample_count==0) test1_on;
+					//if(SDADC1_CH1s.sample_count==0) test1_on;
 					if((SDADC1_CH1s.sample_count<(PHASE_AVARAGE_CNT*(uint32_t)(ULN_MEAS_FS*0.02f)))&&(compute_control2 & __GET_PHASES)&&(!(compute_control2 & __PHASE1_MEASURED)))//samo 1. periodo gledamo za maksimum
 					{
 						if(SDADC1_CH1s.sempl > SDADC1_CH1s.max_float)
@@ -1333,7 +1332,6 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 					else if((compute_control2 & __GET_PHASES)&&(!(compute_control2 & __PHASE1_MEASURED)))
 					{
 						compute_control2 |= __PHASE1_MEASURED;
-						test1_off;
 						SDADC1_CH1s.aux_count=0;
 						SDADC1_CH1s.peak_sum_count=0;
 						SDADC1_CH1s.max_float=SDADC1_CH1s.max_float_sum/PHASE_AVARAGE_CNT;
@@ -1351,7 +1349,6 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 						meas_control |= __ULN1_MEASURED;
 					}
 					else SDADC1_CH1s.sample_count++;
-					test2_off;
 				}
 				break;
 			}

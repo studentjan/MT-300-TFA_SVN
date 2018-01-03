@@ -1006,7 +1006,6 @@ static void command_analyze(uint8_t dir)
 					current_URES_measurement = __L1_L3;
 				set_event(MACH_URES,mach_URES);
 			}
-			
 		}
 		else if(!strcmp(m_command,__MACH_URES_FINSHED__))
 		{
