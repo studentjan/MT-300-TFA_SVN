@@ -25,6 +25,11 @@ extern uint32_t global_control;
  UART_HandleTypeDef huart3;
  uint32_t meas_control = 0;
 extern uint32_t connection_control;
+extern USBD_HandleTypeDef hUsbDeviceFS;
+
+bool dtr_pin = false;
+
+
 
  /* USART3 init function */
 void MX_USART3_UART_Init(void)
@@ -44,7 +49,6 @@ void MX_USART3_UART_Init(void)
   {
     _Error_Handler(__FILE__, __LINE__);
   }
-
 }
 
 /* SPI1 init function */
@@ -82,17 +86,21 @@ void USBConnected_Handler(void)
 	if(HAL_GPIO_ReadPin(USB_VBUS_GPIO_Port, USB_VBUS_Pin))
 	{
 		usb_connected=_YES;
+		connection_control |= __USB_IN_SOCKET;
 		USB_PU_ON; //VKLOPI PU na USB liniji (na racunalniku mi z usb B konektorjem brez tega ni delal)
-		serial_com_init();
+		//serial_com_init();
+		set_timer(USB_CHECK_TASK,5,usbCheckTask);
 	}
 	else 
 	{
 		//povezava ni vec vzpostavljena (lahko je vzpostavljena samo z simulacijo, sepravi racunalnikom in PATOM preko USB-ja
-		if(connection_control & __ESTABLISHED_TO_SIM_USB)
-			disconnect_function(__ESTABLISHED_TO_SIM_USB);
-		else if(connection_control & __ESTABLISHED_TO_PAT_USB)
-			disconnect_function(__ESTABLISHED_TO_PAT_USB);
+//		if(connection_control & __ESTABLISHED_TO_SIM_USB)
+//			disconnect_function(__ESTABLISHED_TO_SIM_USB);
+//		else if(connection_control & __ESTABLISHED_TO_PAT_USB)
+//			disconnect_function(__ESTABLISHED_TO_PAT_USB);
 		usb_connected = _NO;
+		connection_control &= ~__USB_IN_SOCKET;
+		checkUSBconnected();
 		USB_PU_OFF; //VKLOPI PU na USB liniji (na racunalniku mi z usb B konektorjem brez tega ni delal)
 	}
 		//set_timer(WELCOME_MSG,30,Welcome_msg);
@@ -294,4 +302,36 @@ void disconnect_function(uint32_t temp_connection_control)
 		serial_com_deinit();
 	}
 	
+}
+void checkUSBconnected(void)
+{
+	if((hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED) && (dtr_pin==true))
+	{   
+		if(!(connection_control & __CONNECTION_ESTABLISHED))
+		{  
+			if((connection_control & __USB_IN_SOCKET) && (!(connection_control & __SERIAL_INITIATED)))
+			{
+				serial_com_init();
+			}
+		}
+	}
+	else if(dtr_pin == false)
+	{
+		if(connection_control & __CONNECTION_ESTABLISHED)
+		{  
+			if(connection_control & __SERIAL_INITIATED)
+			{
+				if(connection_control & __ESTABLISHED_TO_SIM_USB)
+					disconnect_function(__ESTABLISHED_TO_SIM_USB);
+				else if(connection_control & __ESTABLISHED_TO_PAT_USB)
+					disconnect_function(__ESTABLISHED_TO_PAT_USB);
+			}
+		}
+	}
+}
+void usbCheckTask(void)
+{
+	checkUSBconnected();
+	if(connection_control &__USB_IN_SOCKET)
+		restart_timer(USB_CHECK_TASK,USB_CHECK_INTERVAL,usbCheckTask);
 }

@@ -35,5 +35,6 @@ char set_event(unsigned int e_ID,void (*e_fp)(void));
 char set_timer(unsigned int t_ID,unsigned int t_cnt,void (* t_fp)(void));
 char restart_timer(unsigned int t_ID,unsigned int t_cnt,void (* t_fp)(void));
 char free_timer(unsigned int t_ID);
+char end_task(unsigned int t_ID);
 
 #endif // __OS_H

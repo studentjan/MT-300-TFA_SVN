@@ -245,7 +245,6 @@ void TIMER7_IRQHandler(void)
 			{
 				SET_L1_CONTACTOR;
 				synchro_interrupt_control &= ~__SET_L1_CONTACTOR;
-				test1_off;
 				if(synchro_interrupt_control & __SET_L2_CONTACTOR)
 				{
 					htim7.Instance ->SR =0;
@@ -264,7 +263,6 @@ void TIMER7_IRQHandler(void)
 			}
 			else if(synchro_interrupt_control & __SET_L2_CONTACTOR)
 			{
-				test2_off;
 				SET_L2_CONTACTOR;
 				synchro_interrupt_control &= ~__SET_L2_CONTACTOR;
 				if(synchro_interrupt_control & __SET_L3_CONTACTOR)
@@ -277,7 +275,6 @@ void TIMER7_IRQHandler(void)
 			}
 			else if(synchro_interrupt_control & __SET_L3_CONTACTOR)
 			{
-				test3_off;
 				SET_L3_CONTACTOR;
 				synchro_interrupt_control &= ~__SET_L3_CONTACTOR;
 			}

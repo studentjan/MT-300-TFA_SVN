@@ -49,6 +49,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_cdc_if.h"
 #include "usb.h"
+#include <stdbool.h>
 /* USER CODE BEGIN INCLUDE */
 /* USER CODE END INCLUDE */
 
@@ -129,6 +130,7 @@ static int8_t CDC_Init_FS     (void);
 static int8_t CDC_DeInit_FS   (void);
 static int8_t CDC_Control_FS  (uint8_t cmd, uint8_t* pbuf, uint16_t length);
 static int8_t CDC_Receive_FS  (uint8_t* pbuf, uint32_t *Len);
+extern bool dtr_pin;
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_DECLARATION */
 /* USER CODE END PRIVATE_FUNCTIONS_DECLARATION */
@@ -175,6 +177,14 @@ static int8_t CDC_DeInit_FS(void)
   /* USER CODE END 4 */ 
 }
 
+USBD_CDC_LineCodingTypeDef linecoding =
+  {
+    115200, /* baud rate*/
+    0x00,   /* stop bits-1*/
+    0x00,   /* parity - none*/
+    0x08    /* nb. of bits 8*/
+  };
+
 /**
   * @brief  CDC_Control_FS
   *         Manage the CDC class requests
@@ -189,7 +199,7 @@ static int8_t CDC_Control_FS  (uint8_t cmd, uint8_t* pbuf, uint16_t length)
   switch (cmd)
   {
   case CDC_SEND_ENCAPSULATED_COMMAND:
- 
+		
     break;
 
   case CDC_GET_ENCAPSULATED_RESPONSE:
@@ -226,15 +236,25 @@ static int8_t CDC_Control_FS  (uint8_t cmd, uint8_t* pbuf, uint16_t length)
   /* 6      | bDataBits  |   1   | Number Data bits (5, 6, 7, 8 or 16).          */
   /*******************************************************************************/
   case CDC_SET_LINE_CODING:   
-	
+		linecoding.bitrate    = (uint32_t)(pbuf[0] | (pbuf[1] << 8) |\
+                            (pbuf[2] << 16) | (pbuf[3] << 24));
+    linecoding.format     = pbuf[4];
+    linecoding.paritytype = pbuf[5];
+    linecoding.datatype   = pbuf[6];
     break;
 
   case CDC_GET_LINE_CODING:     
-
+		pbuf[0] = (uint8_t)(linecoding.bitrate);
+    pbuf[1] = (uint8_t)(linecoding.bitrate >> 8);
+    pbuf[2] = (uint8_t)(linecoding.bitrate >> 16);
+    pbuf[3] = (uint8_t)(linecoding.bitrate >> 24);
+    pbuf[4] = linecoding.format;
+    pbuf[5] = linecoding.paritytype;
+    pbuf[6] = linecoding.datatype;  
     break;
 
   case CDC_SET_CONTROL_LINE_STATE:
-
+		dtr_pin = ~dtr_pin;
     break;
 
   case CDC_SEND_BREAK:
@@ -294,14 +314,66 @@ uint8_t CDC_Transmit_FS(uint8_t* Buf, uint16_t Len)
   uint8_t result = USBD_OK;
 	
   /* USER CODE BEGIN 7 */ 
-  USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
-  if (hcdc->TxState != 0){
-    return USBD_BUSY;
-  }
-  USBD_CDC_SetTxBuffer(&hUsbDeviceFS, Buf, Len);
-  result = USBD_CDC_TransmitPacket(&hUsbDeviceFS);
-  /* USER CODE END 7 */ 
-  return result;
+	
+	//prejsna koda
+//  USBD_CDC_HandleTypeDef *hcdc = (USBD_CDC_HandleTypeDef*)hUsbDeviceFS.pClassData;
+//  if (hcdc->TxState != 0){
+//    return USBD_BUSY;
+//  }
+//  USBD_CDC_SetTxBuffer(&hUsbDeviceFS, Buf, Len);
+//  result = USBD_CDC_TransmitPacket(&hUsbDeviceFS);
+	
+	
+	
+	//nova koda
+	// Check if USB interface is online and VCP connection is open.
+    // prior to send:
+	if ((hUsbDeviceFS.dev_state != USBD_STATE_CONFIGURED)
+					|| (hUsbDeviceFS.ep0_state == USBD_EP0_STATUS_IN))
+	{
+			// The physical connection fails.
+			// Or: The phycical connection is open, but no VCP link up.
+			result = USBD_FAIL;
+	}
+	else
+	{
+
+			USBD_CDC_SetTxBuffer(&hUsbDeviceFS, Buf, Len);
+
+			// Busy wait if USB is busy or exit on success or disconnection happens
+			while(1)
+			{
+
+					//Check if USB went offline while retrying
+					if ((hUsbDeviceFS.dev_state != USBD_STATE_CONFIGURED)
+											|| (hUsbDeviceFS.ep0_state == USBD_EP0_STATUS_IN))
+					{
+							result = USBD_FAIL;
+							break;
+					}
+
+					// Try send
+					result = USBD_CDC_TransmitPacket(&hUsbDeviceFS);
+					if(result == USBD_OK)
+					{
+							break;
+					}
+					else if(result == USBD_BUSY)
+					{
+							// Retry until USB device free.
+					}
+					else
+					{
+							// Any other failure
+							result = USBD_FAIL;
+							break;
+					}
+
+			}
+	}
+	
+	
+	return result;
 }
 
 /* USER CODE BEGIN PRIVATE_FUNCTIONS_IMPLEMENTATION */

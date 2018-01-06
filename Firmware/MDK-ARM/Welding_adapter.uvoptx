@@ -151,17 +151,47 @@
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
-          <ItemText>mach_task_control</ItemText>
+          <ItemText>meas_task_control</ItemText>
         </Ww>
         <Ww>
           <count>1</count>
           <WinNumber>1</WinNumber>
-          <ItemText>htim7.Instance</ItemText>
+          <ItemText>mach_task_control</ItemText>
         </Ww>
         <Ww>
           <count>2</count>
           <WinNumber>1</WinNumber>
-          <ItemText>global_control</ItemText>
+          <ItemText>((RCC_TypeDef *) ((((uint32_t)0x40000000U) + 0x00020000U) + 0x00001000U))</ItemText>
+        </Ww>
+        <Ww>
+          <count>3</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>result</ItemText>
+        </Ww>
+        <Ww>
+          <count>4</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>m_function</ItemText>
+        </Ww>
+        <Ww>
+          <count>5</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>"COMMUN"</ItemText>
+        </Ww>
+        <Ww>
+          <count>6</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>connection_control</ItemText>
+        </Ww>
+        <Ww>
+          <count>7</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>ms100_timer</ItemText>
+        </Ww>
+        <Ww>
+          <count>8</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>m_command</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
@@ -176,7 +206,7 @@
         <Mm>
           <WinNumber>2</WinNumber>
           <SubType>8</SubType>
-          <ItemText>send_buff</ItemText>
+          <ItemText>errMsg</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow2>
@@ -219,7 +249,7 @@
         <aLa>0</aLa>
         <aPa1>0</aPa1>
         <AscS4>0</AscS4>
-        <aSer4>0</aSer4>
+        <aSer4>1</aSer4>
         <StkLoc>0</StkLoc>
         <TrcWin>0</TrcWin>
         <newCpu>0</newCpu>
@@ -238,13 +268,6 @@
       <pszMrulep></pszMrulep>
       <pSingCmdsp></pSingCmdsp>
       <pMultCmdsp></pMultCmdsp>
-      <LogicAnalyzers>
-        <Wi>
-          <IntNumber>0</IntNumber>
-          <FirstString>`reskrneki2</FirstString>
-          <SecondString>FF000000000000000018C9C0000000000018C9C0000000000000000000000000000000007265736B726E656B6932000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000004100000001000000000000000000F03F1D00000000000000000000000000000000000000EE920008</SecondString>
-        </Wi>
-      </LogicAnalyzers>
       <SystemViewers>
         <Entry>
           <Name>System Viewer\TIM2</Name>

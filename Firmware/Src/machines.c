@@ -14,11 +14,13 @@
 #include <stdbool.h>
 #include "do_task.h"
 #include "com_meas_tasks.h"
+#include "stm32f3xx_hal.h"
 
 
 extern uint32_t connection_control;
 extern uint32_t meas_task_control;
 extern uint32_t global_control;
+extern uint32_t synchro_interrupt_control;
 uint32_t mach_task_control;
 uint32_t mach_insolation_status;
 uint32_t current_URES_measurement=0;
@@ -99,6 +101,11 @@ void init_mach(void)
 }
 void deinitMachines(void)
 {
+	end_task(MACH_RPE_START);
+	end_task(INIT_MACH);
+	end_task(MACH_RISO_PHASES_TO_PE);
+	end_task(MACH_RISO_ONE_PHASE_TO_PE);
+	end_task(MACH_URES_STOP);
 	start_mach_count=0;
 	mach_task_control=0;
 	mach_insolation_status=0;
@@ -251,7 +258,7 @@ void mach_RISO_phasesToPE(void)
 		break;
 	}
 	if(mach_RISO_count < 3)
-		restart_timer(CORD_RISO_PHASES_TO_PE,5,mach_RISO_phasesToPE);
+		restart_timer(MACH_RISO_PHASES_TO_PE,5,mach_RISO_phasesToPE);
 	else
 	{
 		if(mach_task_control & __MACH_RISO_STARTED)
@@ -492,12 +499,12 @@ void mach_RISO_onePhaseToPE(void)
 		}
 	}
 	if(mach_RISO_count <= 10)
-		restart_timer(CORD_RISO_ONE_PHASE_TO_PE,5,mach_RISO_onePhaseToPE);
+		restart_timer(MACH_RISO_ONE_PHASE_TO_PE,5,mach_RISO_onePhaseToPE);
 	else
 	{
 		//rezultat poslejmo sele ko nam vrne riso stopped
 		if(mach_task_control & __MACH_RISO_STARTED)
-			restart_timer(CORD_RISO_ONE_PHASE_TO_PE,5,mach_RISO_onePhaseToPE);
+			restart_timer(MACH_RISO_ONE_PHASE_TO_PE,5,mach_RISO_onePhaseToPE);
 		else
 		{
 			mach_transmittOnePhaseToPE();
@@ -609,8 +616,8 @@ void mach_URES(void)
 	switch(mach_URES_count)
 	{
 		case 0:
-			mach_task_control |= __MACH_URES_IN_PROGRESS;
 			mach_URES_init();
+			mach_task_control |= __MACH_URES_IN_PROGRESS;
 			mach_URES_count++;
 			switch(current_URES_measurement)
 			{
@@ -735,30 +742,59 @@ void mach_URES(void)
 			}
 			break;
 		case 1:
-			mach_URES_count++;
 			connectURESContactors();
 			if(mach_task_control & __MACH_TEST_RECIEVED)
 			{
 				//mach_task_control |= __MACH_URES_DISCONNECT_PS; 
 				set_timer(MACH_URES_STOP,100,mach_URES_Stop);
 			}
+			else
+				mach_URES_count++;
+			break;
+		case 2:
+			//ko se vsi kontaktorji vklopijo, se pobrisejo zastavice za set (N in PE se vklopita takoj, brez sinhronizacije)
+			if(!(synchro_interrupt_control & (__SET_L1_CONTACTOR | __SET_L2_CONTACTOR | __SET_L2_CONTACTOR)))
+			{
+				//nastavljanje koncano, posljemo started
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__MACH_URES_STARTED__,"","",device.device_dir);
+				mach_URES_count++;
+			}
 			break;
 		default:
 			break;
 	}
-	if(mach_URES_count < 2)
-		restart_timer(MACH_URES,5,mach_URES);
+	//za test kontaktorjev
+	if(mach_task_control & __MACH_TEST_RECIEVED)
+	{
+		if(mach_URES_count < 2)
+			restart_timer(MACH_URES,5,mach_URES);
+		else
+			mach_URES_count=0;
+	}
+	//glavna
 	else
-		mach_URES_count=0;
-		
-	
+	{
+		if(mach_URES_count < 3)
+			restart_timer(MACH_URES,5,mach_URES);
+		else
+			mach_URES_count=0;
+	}
 }	
 
+void machOPENcontactors(void)
+{
+	mach_task_control |= __MACH_URES_DISCONNECT_PS;
+}
 
 void stop_mach(void)
 {
 	MachinesInit();
 	disable_sinchro_interrupt(__URES_SYNCHRO);
+	end_task(MACH_RPE_START);
+	end_task(INIT_MACH);
+	end_task(MACH_RISO_PHASES_TO_PE);
+	end_task(MACH_RISO_ONE_PHASE_TO_PE);
+	end_task(MACH_URES_STOP);
 	//meas_task_control &= (~__MACH_MEAS_IN_PROG);
 //	SET_PE_CONTACTOR;//RST_PE_CONTACTOR;
 //	RST_L1_CONTACTOR;
@@ -797,6 +833,7 @@ void disconnectURESContactors(void)
 	RST_L2_CONTACTOR;
 	RST_L3_CONTACTOR;
 	RST_N_CONTACTOR;
+	SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__MACH_URES_OPENED__,"","",device.device_dir);
 }
 void mach_URES_Stop(void)
 {

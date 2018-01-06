@@ -50,3 +50,4 @@ welding_adapter\usbd_cdc_if.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/I
 welding_adapter\usbd_cdc_if.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h
 welding_adapter\usbd_cdc_if.o: ../Inc/usb.h
 welding_adapter\usbd_cdc_if.o: ../Inc/usb_device.h
+welding_adapter\usbd_cdc_if.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h

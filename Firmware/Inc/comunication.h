@@ -19,5 +19,9 @@ void Transmit_results_task(void);
 void send_warning_MSG(void);
 void check_connection(void);
 void disconnect_function(uint32_t temp_connection_control);
+void checkUSBconnected(void);
+void usbCheckTask(void);
 
+
+#define USB_CHECK_INTERVAL		10	//n*10ms
 #endif

@@ -53,4 +53,5 @@
 #define START_SET_NORMAL											41
 #define DEINIT_MACH														42
 #define MACH_URES_STOP												43
+#define USB_CHECK_TASK												44
 #endif // __TASKS_H

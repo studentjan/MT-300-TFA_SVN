@@ -33,11 +33,11 @@
 
 //Nastavitve bufferja za oddajanje
 #define SYNCHRONUS_SEND_WAIT			50		//koliko casa pocakamo pred posiljanjem ob prejetem sporocilu [ms]
+#define TRANSMIT_OUT_BUFF_SIZE		10
 
 #if TRANSMIT_COMMAND_CHECK == _ON
 #define TRANSMIT_BUFF_SIZE				100
 #define TRANSMIT_HANDLE_BUFF_SIZE 10
-#define TRANSMIT_OUT_BUFF_SIZE		10
 #define TRANSMIT_SLOT_FREE				0		//mora bit 0
 #define NUM_NACK_EVENTS						3		//kolikokrat ponovi posiljanje ce dobi nack
 #define TRANSMIT_HANDLE_WAIT			30		//n*10ms - koliko casa cakamo na to da dobimo odgovor pred ponovnim posiljanjem

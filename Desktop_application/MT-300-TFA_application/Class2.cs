@@ -93,7 +93,7 @@ namespace MT_300_TFA_application
         private const int MAX_VALID_COMMANDS = 50;
         //                                                  0           1           2           3           4           5           6           7           8           9           10          11          12          13          14          15          16          17          18          19          20          21          22          23          24          25          26          27          28          29          30          31          32          33          34          35          36       
         public static String[] FUNCTION_COMMUNICATON_NAMES = {"MT-300-TFA"};
-
+            //                                                   0          1       2       3           4       5       6       7
         public static String[] COMMAND_TYPE_NAMES =  {        "POWER", "RELAY", "WARNING", "TEST", "COMMUN", "CORD", "STATUS" ,"MACH" };
 
         public static String[] CONNECTION_CODE_NAMES = {"CONNECT_REQUEST", "CONNECTION_ESTABLED", "CONNECTION_CHECK"};
@@ -108,7 +108,8 @@ namespace MT_300_TFA_application
         public static String[] CORD_LEFTOVER_RISO_NAMES = { "L1-L2-L3-N_PE","L2-L3-N_PE","L3-N_PE","N_PE","L3_PE", "L2_PE", "L1_PE","L1-L2-L3_N","L2-L3_N","L3_N","L2_N","L1_N", "L1-L2_L3","L2_L3", "L1_L3","L1_L2"};
         //                                            0           1       2       3       4           5       6       7          8
         public static String[] URES_PARAM_NAMES = { "L1-PE" , "L2-PE", "L3-PE", "L1-N" , "L2-N" , "L3-N" , "L1-L2" , "L2-L3" ,"L1-L3" };
-        public static String[] MACH_COMMAND_NAMES = { "START_URES" , "INIT", "DEINIT"};
+        //                                                  0           1       2           3               4               5            6           7           8                9         10        11          12           13          14               15              16                  17                  18                  19              20           21             22          23              24
+        public static String[] MACH_COMMAND_NAMES = { "START_URES", "INIT", "DEINIT", "URES_STARTED", "URES_STOPPED", "URES_FINISHED", "STOP", "URES_OPEN", "URES_OPENED", "INITIATED", "TEST", "START_RPE", "STOP_RPE", "RPE_STARTED", "RPE_STOPPED", "START_ALL-PE", "START_ONE-PE", "RISO_ALL-PE_RESULT", "RISO_ONE-PE_RESULT", "RISO_START", "RISO_STARTED", "RISO_STOP", "RISO_STOPPED", "RISO_RES_GET", "RISO_RES" };
         public static String[] MACH_ADD_NAMES = { "TEST" };
         public static String[] STATUS_CODE_NAMES = {""};
         public static String[] STATUS_VALUE_NAMES = {""};
@@ -799,12 +800,69 @@ namespace MT_300_TFA_application
                         cord_return_event("", m_command);
                     }
                 }
+                /*******************************************************************************/
+                /**								MACHINES         							  **/
+                /*******************************************************************************/
+                else if (String.Equals(m_function, COMMAND_TYPE_NAMES[7])) //mach
+                {
+                    if (String.Equals(m_command, MACH_COMMAND_NAMES[6])) //STOP
+                    {
+                        mach_return_event(m_leftover, m_command);
+                    }
+                    else if (String.Equals(m_command, MACH_COMMAND_NAMES[9])) //INITIATED
+                    {
+                        mach_return_event(m_leftover, m_command);
+                    }
+                    else if (String.Equals(m_command, MACH_COMMAND_NAMES[3])) //URES STARTED
+                    {
+                        mach_return_event(m_leftover, m_command);
+                    }
+                    else if (String.Equals(m_command, MACH_COMMAND_NAMES[4])) //URES STOPPED
+                    {
+                        mach_return_event(m_leftover, m_command);
+                    }
+                    else if (String.Equals(m_command, MACH_COMMAND_NAMES[8])) //URES OPENED
+                    {
+                        mach_return_event(m_leftover, m_command);
+                    }
+                    else if (String.Equals(m_command, MACH_COMMAND_NAMES[13])) //RPE STARTED
+                    {
+                        mach_return_event(m_leftover, m_command);
+                    }
+                    else if (String.Equals(m_command, MACH_COMMAND_NAMES[14])) //RPE STOPPED
+                    {
+                        mach_return_event(m_leftover, m_command);
+                    }
+                    else if (String.Equals(m_command, MACH_COMMAND_NAMES[17])) //ALL-PE RESULT
+                    {
+                        mach_return_event(m_leftover, m_command);
+                    }
+                    else if (String.Equals(m_command, MACH_COMMAND_NAMES[18])) //ONE-PE RESULT
+                    {
+                        mach_return_event(m_leftover, m_command);
+                    }
+                    else if (String.Equals(m_command, MACH_COMMAND_NAMES[23])) //get RISO resistance
+                    {
+                        mach_return_event(m_leftover, m_command);
+                    }
+                    else
+                    {
+                       mach_return_event("", m_command);
+                    }
+                }
         }
         public delegate void cord_return_result(object sender, string meas_con, string cmd);
         public event cord_return_result cordReturnEventHandler = delegate { };
         public void cord_return_event(string return_string, string cmd)
         {
             this.cordReturnEventHandler(this, return_string,cmd);
+        }
+
+        public delegate void mach_return_result(object sender, string meas_con, string cmd);
+        public event mach_return_result machReturnEventHandler = delegate { };
+        public void mach_return_event(string return_string, string cmd)
+        {
+            this.machReturnEventHandler(this, return_string, cmd);
         }
 
         private void send_message()

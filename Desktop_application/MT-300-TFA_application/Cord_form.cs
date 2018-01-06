@@ -80,7 +80,6 @@ namespace MT_300_TFA_application
                 polarity_test_start_button.Text = "STOP";
                 mainThread = new Thread(cord_sim_functin);
                 mainThread.Start();
-                
                 //zazenemo meritev
             }
             //stop
@@ -118,7 +117,7 @@ namespace MT_300_TFA_application
                 switch (cord_sim_count)
                 {
                     case 0:
-                        _cordInitiated = false;
+                        //_cordInitiated = false;
                         _cordCorrectWitingInProg = false;
                         _cordCorrectWitingMeasured = false;
                         _cordContinuityInProg = false;
@@ -132,16 +131,19 @@ namespace MT_300_TFA_application
                         _cordAllToPEState = false;
                         _cordOneToPEState = false;
                         _cordPhaseToPhaseState = false;
-                        if (String.Equals(getCableTypeComboValue(), "1 PHASE"))
-                            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[2],
-                                serial_com.CORD_LEFTOVER_NAMES[25],"");
-                        else if (String.Equals(getCableTypeComboValue(), "3 PHASE"))
-                            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[2],
-                                serial_com.CORD_LEFTOVER_NAMES[26], "");
+                        if (_cordInitiated == false)
+                        {
+                            if (String.Equals(getCableTypeComboValue(), "1 PHASE"))
+                                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                                    Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                                    serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[2],
+                                    serial_com.CORD_LEFTOVER_NAMES[25], "");
+                            else if (String.Equals(getCableTypeComboValue(), "3 PHASE"))
+                                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                                    Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                                    serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[2],
+                                    serial_com.CORD_LEFTOVER_NAMES[26], "");
+                        }
                         cord_sim_count++;
                         break;
                     case 1:

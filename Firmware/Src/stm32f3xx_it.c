@@ -44,6 +44,7 @@
 #include "usbd_desc.h"
 #include "usbd_ioreq.h"
 #include "machines.h"
+#include "serial_com.h"
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */
@@ -73,7 +74,7 @@ uint32_t global2;
 /******************************************************************************/
 /*            Cortex-M4 Processor Interruption and Exception Handlers         */ 
 /******************************************************************************/
-
+void Hard_Fault_Handler(uint32_t stack[]);
 /**
 * @brief This function handles Non maskable interrupt.
 */
@@ -87,21 +88,83 @@ void NMI_Handler(void)
   /* USER CODE END NonMaskableInt_IRQn 1 */
 }
 
+void printErrorMsg(const char * errMsg)
+{
+	CDC_Transmit_FS((uint8_t *)errMsg, strlen(errMsg));
+//   while(*errMsg != '\0'){
+//      ITM_SendChar(*errMsg);
+//      ++errMsg;
+//   }
+}
+
+void printUsageErrorMsg(uint32_t CFSRValue)
+{
+   printErrorMsg("Usage fault: ");
+		//CDC_Transmit_FS((uint8_t *)"Usage fault: ", 16);
+   CFSRValue >>= 16;                  // right shift to lsb
+   if((CFSRValue & (1 << 9)) != 0) {
+		 //CDC_Transmit_FS((uint8_t *)"Divide by zero\n\r", 16);
+      printErrorMsg("Divide by zero\r\n");
+   }
+}
+
+enum { r0, r1, r2, r3, r12, lr, pc, psr};
+
+void stackDump(uint32_t stack[])
+{
+   static char msg[80];
+   //sprintf(msg, "r0  = 0x%08x\r\n", stack[r0]);  printErrorMsg(msg);
+   //sprintf(msg, "r1  = 0x%08x\r\n", stack[r1]);  printErrorMsg(msg);
+   //sprintf(msg, "r2  = 0x%08x\r\n", stack[r2]);  printErrorMsg(msg);
+   //sprintf(msg, "r3  = 0x%08x\r\n", stack[r3]);  printErrorMsg(msg);
+   //sprintf(msg, "r12 = 0x%08x\r\n", stack[r12]); printErrorMsg(msg);
+   sprintf(msg, "lr  = 0x%08x\r\n", stack[lr]);  printErrorMsg(msg);
+   //sprintf(msg, "pc  = 0x%08x\r\n", stack[pc]);  printErrorMsg(msg);
+   //sprintf(msg, "psr = 0x%08x\r\n", stack[psr]); printErrorMsg(msg);
+	 //sprintf(msg, "sp = 0x%08x\r\n", (uint32_t)(void*)&stack[r0]); printErrorMsg(msg);
+}
+
+
 /**
 * @brief This function handles Hard fault interrupt.
 */
-void HardFault_Handler(void)
+void Hard_Fault_Handler(uint32_t stack[])
 {
   /* USER CODE BEGIN HardFault_IRQn 0 */
-
+	static char msg[80];
+   //printErrorMsg("In Hard Fault Handler\r\n");
+   //sprintf(msg, "SCB->HFSR = 0x%08x\r\n", SCB->HFSR);
+   //printErrorMsg(msg);
+   if ((SCB->HFSR & (1 << 30)) != 0) {
+       //printErrorMsg("Forced Hard Fault\r\n");
+       //sprintf(msg, "SCB->CFSR = 0x%08x\r\n", SCB->CFSR );
+       //printErrorMsg(msg);
+       if((SCB->CFSR & 0xFFFF0000) != 0) {
+         //printUsageErrorMsg(SCB->CFSR);
+      }
+   }
+	 stackDump(stack);
+	 test1_on;
+   __ASM volatile("BKPT #01");
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
   {
+		
   }
   /* USER CODE BEGIN HardFault_IRQn 1 */
 
   /* USER CODE END HardFault_IRQn 1 */
 }
+
+__asm void HardFault_Handler(void) 
+{
+  MRS r0, MSP
+  B __cpp(Hard_Fault_Handler) 
+
+}
+
+
+
 
 /**
 * @brief This function handles Memory management fault.
@@ -109,7 +172,7 @@ void HardFault_Handler(void)
 void MemManage_Handler(void)
 {
   /* USER CODE BEGIN MemoryManagement_IRQn 0 */
-
+	test2_on;
   /* USER CODE END MemoryManagement_IRQn 0 */
   while (1)
   {
@@ -129,6 +192,7 @@ void BusFault_Handler(void)
   /* USER CODE END BusFault_IRQn 0 */
   while (1)
   {
+		test3_on;
   }
   /* USER CODE BEGIN BusFault_IRQn 1 */
 
@@ -145,6 +209,7 @@ void UsageFault_Handler(void)
   /* USER CODE END UsageFault_IRQn 0 */
   while (1)
   {
+		test3_on;
   }
   /* USER CODE BEGIN UsageFault_IRQn 1 */
 
@@ -313,7 +378,6 @@ void EXTI9_5_IRQHandler(void)
 	static float perm_temp3=0;
 	static uint32_t count=0;
 	static uint32_t count2=0;
-	test4_tog;
 	if(((meas_control & __SDADC2_START_MASK) || (meas_control & __SDADC1_START_MASK) || (meas_control & __SDADC3_START_MASK))&&(!(meas_control & __START_TIMER_ON)))
 	{
 			//zakasnitev z timerjem 7
@@ -476,9 +540,6 @@ void EXTI9_5_IRQHandler(void)
 		else if(synchro_interrupt_control & __SET_PE_CONTACTOR)
 			htim7.Instance -> ARR=50;//uporablja se za inicializacijo
 		htim7.Instance -> CNT=0;
-		test1_on;
-		test2_on;
-		test3_on;
 		HAL_TIM_Base_Start_IT(&htim7);
 		meas_control |= __START_TIMER_ON;
 	}		

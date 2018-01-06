@@ -113,6 +113,12 @@ void init_cord(void)
 }
 void deinitCord(void)
 {
+	end_task(CORD_MEAS_CORRECT_WIRING);
+	end_task(INIT_CORD);
+	end_task(CORD_RISO_PHASES_TO_PE);
+	end_task(CORD_RISO_ONE_PHASE_TO_PE);
+	end_task(CORD_RISO_PHASE_TO_PHASE);
+	end_task(CORD_MEAS_CONTINUITY);
 	cord_RISO_count=0;
 	cord_continuity_count=0;
 	start_cord_count=0;
@@ -5872,6 +5878,12 @@ void stop_cord(void)
 //	rst_REL(34);
 //	rst_REL(35);
 //	rst_REL(36);
+	end_task(CORD_MEAS_CORRECT_WIRING);
+	end_task(INIT_CORD);
+	end_task(CORD_RISO_PHASES_TO_PE);
+	end_task(CORD_RISO_ONE_PHASE_TO_PE);
+	end_task(CORD_RISO_PHASE_TO_PHASE);
+	end_task(CORD_MEAS_CONTINUITY);
 	cord_RISO_count=0;
 	cord_cw_count=0;
 	cord_RISO_count=0;

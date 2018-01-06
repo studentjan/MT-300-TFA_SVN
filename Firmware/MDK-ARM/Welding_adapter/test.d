@@ -61,3 +61,6 @@ welding_adapter\test.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd
 welding_adapter\test.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_core.h
 welding_adapter\test.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ioreq.h
 welding_adapter\test.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_ctlreq.h
+welding_adapter\test.o: ../Inc/serial_com.h
+welding_adapter\test.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+welding_adapter\test.o: ../Inc/comunication.h

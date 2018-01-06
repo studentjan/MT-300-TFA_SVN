@@ -60,6 +60,7 @@ extern uint32_t mach_task_control;
 extern int start_cord_count;
 extern uint32_t start_mach_count;
 extern uint32_t current_URES_measurement;
+extern USBD_HandleTypeDef hUsbDeviceFS;
 //-----------GLOBALNE SPREMENLJIVKE----------------------
 uint8_t SERIAL_direction;
 uint32_t synchronus_error_count=0;
@@ -78,6 +79,7 @@ int int_from_str;
 char* float_from_str;
 uint32_t serialComErrorTimeout=0;
 bool serialComErrorDetected=false;
+bool temp_ind=false;
 TIM_HandleTypeDef htim2;
 
 int indikator1;
@@ -93,6 +95,15 @@ typedef enum {
     STR2INT_INCONVERTIBLE
 } str2int_errno;
 
+typedef struct
+{
+	char transmitter, reciever;
+  int msg_ID;
+  char * replay_function;
+  char * replay_cmd;
+  char * replay_additional_code;
+  char * replay_data;
+}MESSAGE_CONSTRUCTOR;
 #if TRANSMIT_COMMAND_CHECK == _ON
 typedef struct 
 {
@@ -106,22 +117,6 @@ typedef struct
  char * msg_ptr;
 } TRANSMIT_BUFFER;
 
-typedef struct
-{
-	uint32_t dirrection;
-	uint32_t size;
-	char * msg_ptr;
-}TRANSMIT_OUT_BUFFER;
-
-typedef struct
-{
-	char transmitter, reciever;
-  int msg_ID;
-  char * replay_function;
-  char * replay_cmd;
-  char * replay_additional_code;
-  char * replay_data;
-}MESSAGE_CONSTRUCTOR;
 
 //---------------------CIKLICEN BUFFER ZA TRANSMIT HANDLE BUFFER------------------------
 //stevca za vpisovanje in branje v ciklicen buffer
@@ -129,13 +124,21 @@ uint32_t write_count=0;
 uint32_t read_count=0;
 uint32_t g;
 TRANSMIT_BUFFER Transmit_handle_buff[TRANSMIT_HANDLE_BUFF_SIZE];
+#endif
 //---------------------CIKLICEN BUFFER ZA TRANSMIT OUT BUFFER------------------------
+typedef struct
+{
+	uint32_t dirrection;
+	uint32_t size;
+	char * msg_ptr;
+}TRANSMIT_OUT_BUFFER;
+
 uint32_t write_out_count=0;
 uint32_t read_out_count=0;
 TRANSMIT_OUT_BUFFER Transmit_out_buff[TRANSMIT_OUT_BUFF_SIZE];
 
 
-#endif
+
 
 //funkcija za razbijanje stringov po delimiterjih - nadomesti delimiter z 0 zato jih moramo nekako dat nazaj
 static char *strtok_single (char * str, char const * delims)
@@ -181,10 +184,7 @@ char additionalCode[2][MAX_ADDITIONAL_COMMANDS][MAX_ADDITIONAL_COMMANDS_LENGTH];
 static void SetID(int id);
 static int GetID(void);
 static void FindAllAdditionalCmdParameters(char *add_param);
-void ConstructProtocolMessage(char * target_string,MESSAGE_CONSTRUCTOR *instance);
-MESSAGE_CONSTRUCTOR CreateCommandInstance(char transmitter, char receiver, char * function, char * command, char * code, char * data);
-void SendConstructedProtocolMessage(char * ProtocolMsg, int Receiver,MESSAGE_CONSTRUCTOR *instance);
-void ConstructProtocolString(char * target_string,MESSAGE_CONSTRUCTOR *instance);
+
 static int ParseMessage(char *m_msg, int transmitter);
 static void command_return(uint8_t ans, uint8_t dir);
 static void serial_send_handler(char * send_buff, uint16_t buffer_size,uint8_t dir);
@@ -196,6 +196,10 @@ static void transmit_command_handle(void);
 static void serial_send_handler(char * send_buff, uint16_t buffer_size,uint8_t dir);
 static void recieved_command_analyze(char *command,uint8_t dir);
 //------------------------------------------------------------------------------------------
+void ConstructProtocolMessage(char * target_string,MESSAGE_CONSTRUCTOR *instance);
+MESSAGE_CONSTRUCTOR CreateCommandInstance(char transmitter, char receiver, char * function, char * command, char * code, char * data);
+void SendConstructedProtocolMessage(char * ProtocolMsg, int Receiver,MESSAGE_CONSTRUCTOR *instance);
+void ConstructProtocolString(char * target_string,MESSAGE_CONSTRUCTOR *instance);
 
 extern uint32_t global_control;
 int delimiterArray[8];
@@ -205,6 +209,7 @@ int delimiterArray[8];
 //&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&/
 //nalozijo se samo ce TRANSMIT_COMMAND_CHECK ==_ON v serial_com.h
 #if TRANSMIT_COMMAND_CHECK == _ON
+
 //++++++++++++++Inicializacija preverjanja poslanih komand++++++++++++++++++++++
 void communication_init(void)
 { 
@@ -503,6 +508,8 @@ static void command_analyze(uint8_t dir)
 /*********************************************************************************/
 	else if(!strcmp(m_function,__RELAY__))
 	{ 
+		RCC->CSR |= 0x01000000;//resetiramo reset zastavice;
+		test4_on;
 		if(!strcmp(m_command,__1_38_ON__))				set_REL(1);
 		else if(!strcmp(m_command,__1_38_OFF__))	rst_REL(1);
 		else if(!strcmp(m_command,__2_ON__))	set_REL(2);
@@ -586,6 +593,8 @@ static void command_analyze(uint8_t dir)
 		else if(!strcmp(m_command,__42_ON__))	set_REL(42);
 		else if(!strcmp(m_command,__42_OFF__))	rst_REL(42);
 		else if(!strcmp(m_command,__RESET_ALL__))	reset_all_REL();
+		HAL_Delay(1);
+		test4_off;
 	}
 /*********************************************************************************/
 /**									TEST										**/
@@ -744,15 +753,18 @@ static void command_analyze(uint8_t dir)
 			//ce je katerakoli meritev v delu se ne izvede
 			if(!(cord_task_control & CORD_MEAS_IN_PROG_MASK))
 			{
-				if(cord_task_control & __CORD_INITIATED)
+				if(!(cord_task_control & __CORD_CORRECT_WIRING_IN_PROGRESS))
 				{
-					set_event(CORD_MEAS_CORRECT_WIRING,cord_meas_correct_wiring);
-				}
-				else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
-				{
-					cord_task_control |= __CORD_MEAS_IN_PROG;
-					start_cord_count = 0;
-					set_event(INIT_CORD,init_cord);
+					if(cord_task_control & __CORD_INITIATED)
+					{
+						set_event(CORD_MEAS_CORRECT_WIRING,cord_meas_correct_wiring);
+					}
+					else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+					{
+						cord_task_control |= __CORD_MEAS_IN_PROG;
+						start_cord_count = 0;
+						set_event(INIT_CORD,init_cord);
+					}
 				}
 			}
 		}
@@ -761,15 +773,18 @@ static void command_analyze(uint8_t dir)
 			//ce je katerakoli meritev v delu se ne izvede
 			if(!(cord_task_control & CORD_MEAS_IN_PROG_MASK))
 			{
-				if(cord_task_control & __CORD_INITIATED)
+				if(!(cord_task_control & __CORD_CONTINUITY_IN_PROGRESS))
 				{
-					set_event(CORD_MEAS_CONTINUITY,cord_continuity_test);
-				}
-				else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
-				{
-					cord_task_control |= __CORD_MEAS_IN_PROG;
-					start_cord_count = 0;
-					set_event(INIT_CORD,init_cord);
+					if(cord_task_control & __CORD_INITIATED)
+					{
+						set_event(CORD_MEAS_CONTINUITY,cord_continuity_test);
+					}
+					else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+					{
+						cord_task_control |= __CORD_MEAS_IN_PROG;
+						start_cord_count = 0;
+						set_event(INIT_CORD,init_cord);
+					}
 				}
 			}
 		}
@@ -778,15 +793,18 @@ static void command_analyze(uint8_t dir)
 			//ce je katerakoli meritev v delu se ne izvede
 			if(!(cord_task_control & CORD_MEAS_IN_PROG_MASK))
 			{
-				if(cord_task_control & __CORD_INITIATED)
+				if(!(cord_task_control & __CORD_RISO_PHASES_TO_PE_IN_PROGRESS))
 				{
-					set_event(CORD_RISO_PHASES_TO_PE,cord_RISO_phasesToPE);
-				}
-				else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
-				{
-					cord_task_control |= __CORD_MEAS_IN_PROG;
-					start_cord_count = 0;
-					set_event(INIT_CORD,init_cord);
+					if(cord_task_control & __CORD_INITIATED)
+					{
+						set_event(CORD_RISO_PHASES_TO_PE,cord_RISO_phasesToPE);
+					}
+					else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+					{
+						cord_task_control |= __CORD_MEAS_IN_PROG;
+						start_cord_count = 0;
+						set_event(INIT_CORD,init_cord);
+					}
 				}
 			}
 		}
@@ -795,15 +813,18 @@ static void command_analyze(uint8_t dir)
 			//ce je katerakoli meritev v delu se ne izvede
 			if(!(cord_task_control & CORD_MEAS_IN_PROG_MASK))
 			{
-				if(cord_task_control & __CORD_INITIATED)
+				if(!(cord_task_control & __CORD_RISO_ONE_PHASE_TO_PE_IN_PROGRESS))
 				{
-					set_event(CORD_RISO_ONE_PHASE_TO_PE,cord_RISO_onePhaseToPE);
-				}
-				else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
-				{
-					cord_task_control |= __CORD_MEAS_IN_PROG;
-					start_cord_count = 0;
-					set_event(INIT_CORD,init_cord);
+					if(cord_task_control & __CORD_INITIATED)
+					{
+						set_event(CORD_RISO_ONE_PHASE_TO_PE,cord_RISO_onePhaseToPE);
+					}
+					else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+					{
+						cord_task_control |= __CORD_MEAS_IN_PROG;
+						start_cord_count = 0;
+						set_event(INIT_CORD,init_cord);
+					}
 				}
 			}
 		}
@@ -812,15 +833,18 @@ static void command_analyze(uint8_t dir)
 			//ce je katerakoli meritev v delu se ne izvede
 			if(!(cord_task_control & CORD_MEAS_IN_PROG_MASK))
 			{
-				if(cord_task_control & __CORD_INITIATED)
+				if(!(cord_task_control & __CORD_RISO_PHASE_TO_PHASE_IN_PROGRESS))
 				{
-					set_event(CORD_RISO_PHASE_TO_PHASE,cord_RISO_phaseToPhase);
-				}
-				else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
-				{
-					cord_task_control |= __CORD_MEAS_IN_PROG;
-					start_cord_count = 0;
-					set_event(INIT_CORD,init_cord);
+					if(cord_task_control & __CORD_INITIATED)
+					{
+						set_event(CORD_RISO_PHASE_TO_PHASE,cord_RISO_phaseToPhase);
+					}
+					else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+					{
+						cord_task_control |= __CORD_MEAS_IN_PROG;
+						start_cord_count = 0;
+						set_event(INIT_CORD,init_cord);
+					}
 				}
 			}
 		}
@@ -920,34 +944,40 @@ static void command_analyze(uint8_t dir)
 		else if(!strcmp(m_command,__START_PHASES_TO_PE__))
 		{
 			//ce je katerakoli meritev v delu se ne izvede
-			if(!(meas_task_control & __MACH_MEAS_IN_PROG))
+			if((meas_task_control & __MACH_MEAS_IN_PROG))
 			{
-				if(mach_task_control & __MACH_INITIATED)
+				if(!(mach_task_control &__MACH_RISO_PHASES_TO_PE_IN_PROGRESS))
 				{
-					set_event(MACH_RISO_PHASES_TO_PE,mach_RISO_phasesToPE);
-				}
-				else if(!(meas_task_control & __MACH_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
-				{
-					meas_task_control |= __MACH_MEAS_IN_PROG;
-					start_cord_count = 0;
-					set_event(INIT_MACH,init_mach);
+					if(mach_task_control & __MACH_INITIATED)
+					{
+						set_event(MACH_RISO_PHASES_TO_PE,mach_RISO_phasesToPE);
+					}
+					else if(!(meas_task_control & __MACH_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+					{
+						meas_task_control |= __MACH_MEAS_IN_PROG;
+						start_cord_count = 0;
+						set_event(INIT_MACH,init_mach);
+					}
 				}
 			}
 		}
 		else if(!strcmp(m_command,__START_ONE_PHASE_TO_PE__))
 		{
 			//ce je katerakoli meritev v delu se ne izvede
-			if(!(meas_task_control & __MACH_MEAS_IN_PROG))
+			if((meas_task_control & __MACH_MEAS_IN_PROG))
 			{
-				if(mach_task_control & __MACH_INITIATED)
+				if(!(mach_task_control &__MACH_RISO_ONE_PHASE_TO_PE_IN_PROGRESS))
 				{
-					set_event(MACH_RISO_ONE_PHASE_TO_PE,mach_RISO_onePhaseToPE);
-				}
-				else if(!(meas_task_control & __MACH_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
-				{
-					meas_task_control |= __MACH_MEAS_IN_PROG;
-					start_mach_count = 0;
-					set_event(INIT_MACH,init_mach);
+					if(mach_task_control & __MACH_INITIATED)
+					{
+						set_event(MACH_RISO_ONE_PHASE_TO_PE,mach_RISO_onePhaseToPE);
+					}
+					else if(!(meas_task_control & __MACH_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+					{
+						meas_task_control |= __MACH_MEAS_IN_PROG;
+						start_mach_count = 0;
+						set_event(INIT_MACH,init_mach);
+					}
 				}
 			}
 		}
@@ -974,7 +1004,7 @@ static void command_analyze(uint8_t dir)
 		}
 		else if(!strcmp(m_command,__MECH_RPE_START__))
 		{
-			if((meas_task_control & __MACH_MEAS_IN_PROG))
+			if((meas_task_control & __MACH_MEAS_IN_PROG)&&(!(mach_task_control & __MACH_RPE_IN_PROGRESS)))
 				set_event(MACH_RPE_START,MachinesRPEStart);
 		}
 		else if(!strcmp(m_command,__MECH_RPE_STOP__))
@@ -1017,12 +1047,34 @@ static void command_analyze(uint8_t dir)
 		}
 		else if(!strcmp(m_command,__MACH_URES_OPEN__))
 		{
-			if((meas_task_control & __MACH_MEAS_IN_PROG))
-				set_event(MACH_URES,mach_URES);
+			if((meas_task_control & __MACH_MEAS_IN_PROG)&&(mach_task_control & __MACH_URES_IN_PROGRESS))
+				machOPENcontactors();
+		}
+		else if(!strcmp(m_command,"TEST"))
+		{
+				test4_on;
+				if(temp_ind==false)
+				{
+					SET_L1_CONTACTOR;
+					SET_L2_CONTACTOR;
+					SET_L3_CONTACTOR;
+					SET_N_CONTACTOR;
+					temp_ind=true;
+				}
+				else
+				{
+					RST_L1_CONTACTOR;
+					RST_L2_CONTACTOR;
+					RST_L3_CONTACTOR;
+					RST_N_CONTACTOR;
+					HAL_Delay(1);
+					temp_ind=false;
+				}
+				test4_off;
 		}
 		//namenjen testu s simulatorjem
 		if(!strcmp(m_value,__MACH_TEST__))
-				mach_task_control |= __MACH_TEST_RECIEVED;
+			mach_task_control |= __MACH_TEST_RECIEVED;
 		else
 			mach_task_control &= ~__MACH_TEST_RECIEVED;
 		
@@ -1062,6 +1114,9 @@ void serial_com_init(void)
 		SynchronusSendInit();
 		set_event(SYNCHRONUS_PROCESS,SynchronusProcess);
 	}
+	
+	//koda uporabnika
+	connection_control |= __SERIAL_INITIATED;
 }
 
 void serial_com_deinit(void)
@@ -1102,6 +1157,9 @@ void serial_com_deinit(void)
 		}
   }
 	#endif
+	
+	//koda uporabnika
+	connection_control &= ~__SERIAL_INITIATED;
 }
 //postavi prejeto komando v cakalno vrsto za analiziranje
 //to funkcijo poklices ko prejmes komando iz vodila.
@@ -1397,6 +1455,7 @@ uint32_t SendComMessage(int send_control,char transmitter, char receiver, char *
 //	-> vrne:	true 	- ce je sporocilo dobilo ACK
 //						false - ce funkcija se ni dobila ACK
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+#if TRANSMIT_COMMAND_CHECK == _ON
 bool CheckIfACK(uint32_t msg_id)
 {
 	uint32_t i;
@@ -1405,6 +1464,7 @@ bool CheckIfACK(uint32_t msg_id)
 			return false;
 	return true;
 }
+#endif
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 MESSAGE_CONSTRUCTOR CreateCommandInstance(char transmitter, char receiver, char * function, char * command, char * code, char * data)
 {
@@ -1744,7 +1804,7 @@ static void SynchronusSendInit(void)
 		Transmit_out_buff[i].size = 0;
 	}
 }
-static void SerialSend(uint8_t * msg_ptr,uint16_t msg_size, uint32_t dir)
+void SerialSend(uint8_t * msg_ptr,uint16_t msg_size, uint32_t dir)
 {
 	uint8_t result;
 	//smer ce posiljamo prazen string je dir spremenljivka brezpredmetna, zato ji znova dolocimo vrednost
@@ -1760,12 +1820,15 @@ static void SerialSend(uint8_t * msg_ptr,uint16_t msg_size, uint32_t dir)
 	{
 //		for(int i=0; i <= (msg_size/10);i++)
 //		{
+		if(hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED)
+		{
 			do
 			{
 				result = CDC_Transmit_FS(msg_ptr, msg_size);//dokler ni enako 0
 				//result = CDC_Transmit_FS(msg_ptr+(i*10), 10);//dokler ni enako 0
 				indikator1=result;
-			}while(result!= USBD_OK);
+			}while(result == USBD_BUSY);
+		}
 //		}
 	}
 	
@@ -1782,6 +1845,7 @@ void SynchronusProcess(void)
 		if(synchronus_error_count>=SYNCHRONUS_ERROR_CNT)
 		{
 			serialComErrorDetected = true;
+			serial_com_deinit();
 		}
 		else
 		{
@@ -1790,7 +1854,8 @@ void SynchronusProcess(void)
 		synchronus_error_count++;
 		serialComErrorTimeout=0;
 	}
-	restart_timer(SYNCHRONUS_PROCESS,5,SynchronusProcess);
+	if(serialComErrorDetected==false)
+		restart_timer(SYNCHRONUS_PROCESS,5,SynchronusProcess);
 }
 //Inicializacija timerja za sinhrono posiljanje
 //Ce zelis definirati drug timer ali uporabljas drug procesor potem napisi svojo inicializacijo, ki ima enako ime kot ta

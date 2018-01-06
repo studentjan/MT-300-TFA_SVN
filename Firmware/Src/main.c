@@ -60,6 +60,7 @@
 #include "do_task.h"
 #include "serial_com.h"
 #include "com_meas_tasks.h"
+#include "stm32f3xx_it.h"
 
 
 /* USER CODE BEGIN Includes */
@@ -105,9 +106,7 @@ int main(void)
 	memset((int*)0x20006BA0,'l',0x500);		//za indikacijo high water marka na stacku
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
-
   /* USER CODE BEGIN Init */
-
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -129,13 +128,14 @@ int main(void)
 	MX_USART3_UART_Init();
   MX_USB_DEVICE_Init();
 	led_blink_time = _LED_BLINK_TIME_OK;
+	init_OS();
 	USBConnected_Handler();
 	HAL_Delay(100);
 	MX_NVIC_Init();
 	HAL_Delay(100);
 	init_REL();
 
-	init_OS();
+	
 	test1_off;
 	test2_off;
 	test3_off;

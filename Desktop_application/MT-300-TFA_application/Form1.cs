@@ -78,6 +78,7 @@ namespace MT_300_TFA_application
                     serialPort1.StopBits = StopBits.One;
                     serialPort1.Handshake = Handshake.None;
                     serialPort1.ReceivedBytesThreshold = 18;
+                    serialPort1.DtrEnable = true;
                     serialPort1.Open();
                     AdapterButtonStatus = true;
                     port_connect.Text = "DISCONNECT";
@@ -100,7 +101,12 @@ namespace MT_300_TFA_application
             else
             {
                 AdapterButtonStatus = false;
-                serialPort1.Close();
+                if (serialPort1.IsOpen)
+                {
+                    serialPort1.Close();
+                }
+                serialPort1.DtrEnable = false;
+                //serialPort1.Dispose();
                 port_connect.Text = "CONNECT";
                 AdapterCOM_status.BackColor = Color.Red;
             }

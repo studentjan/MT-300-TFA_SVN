@@ -24,6 +24,7 @@ void MachinesRPEStart(void);
 void MachinesRPEStop(void);
 void mach_URES(void);
 void mach_URES_Stop(void);
+void machOPENcontactors(void);
 void disconnectURESContactors(void);
 void init_mach(void);
 void deinitMachines(void);

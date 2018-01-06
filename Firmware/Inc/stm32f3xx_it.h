@@ -58,6 +58,7 @@ void SDADC1_IRQHandler(void);
 void SDADC2_IRQHandler(void);
 void SDADC3_IRQHandler(void);
 void USB_LP_IRQHandler(void);
+void printErrorMsg(const char * errMsg);
 
 #ifdef __cplusplus
 }

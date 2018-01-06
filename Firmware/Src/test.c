@@ -11,13 +11,16 @@
 #include "sdadc.h"
 #include "usbd_cdc_if.h"
 #include <stdint.h>
-	
+#include "serial_com.h"
+#include "comunication.h"
+
 	uint32_t glob_test1;
 	uint32_t glob_test2;
 	uint32_t glob_test3;
 	uint32_t glob_test4;
 	uint32_t glob_test5;
 	uint32_t led_blink_time;
+
 
 void test_task(void)
 {
@@ -34,7 +37,6 @@ void Led_flash_task(void)
 	 {LED_TEST_on;led_state=1;}
  else
   {LED_TEST_off;led_state=0;} 		
-		
 } 
 
 
