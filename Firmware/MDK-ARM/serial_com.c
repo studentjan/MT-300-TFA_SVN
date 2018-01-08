@@ -50,17 +50,25 @@
 #include "stm32f3xx_it.h"
 #include "stm32f3xx_hal.h"
 #include "stm32f3xx.h"
+#include "com_meas_tasks.h"
+#include "welding.h"
 
 //-----------ZUNANJE SPREMENLJIVKE-----------------------
 extern uint8_t event_status; 
 extern uint32_t connection_control;
-extern uint32_t cord_task_control;
 extern uint32_t meas_task_control;
-extern uint32_t mach_task_control;
-extern int start_cord_count;
-extern uint32_t start_mach_count;
 extern uint32_t current_URES_measurement;
 extern USBD_HandleTypeDef hUsbDeviceFS;
+extern uint32_t start_mach_count;
+extern uint32_t mach_RISO_count;
+extern uint32_t mach_task_control;
+extern int start_cord_count;
+extern uint32_t cord_RISO_count;
+extern uint32_t cord_task_control;
+extern uint32_t start_weld_count;
+extern uint32_t weld_RISO_count;
+extern uint32_t weld_task_control;
+
 //-----------GLOBALNE SPREMENLJIVKE----------------------
 uint8_t SERIAL_direction;
 uint32_t synchronus_error_count=0;
@@ -797,10 +805,12 @@ static void command_analyze(uint8_t dir)
 				{
 					if(cord_task_control & __CORD_INITIATED)
 					{
+						cord_RISO_count=0;	//da zacne od zacetka
 						set_event(CORD_RISO_PHASES_TO_PE,cord_RISO_phasesToPE);
 					}
 					else if(!(cord_task_control & __CORD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
 					{
+						cord_RISO_count=0;
 						cord_task_control |= __CORD_MEAS_IN_PROG;
 						start_cord_count = 0;
 						set_event(INIT_CORD,init_cord);
@@ -950,12 +960,14 @@ static void command_analyze(uint8_t dir)
 				{
 					if(mach_task_control & __MACH_INITIATED)
 					{
+						mach_RISO_count = 0;			//nastavimo na 0, ker moramo ponovno izmeriti vse faze proti PE
 						set_event(MACH_RISO_PHASES_TO_PE,mach_RISO_phasesToPE);
 					}
 					else if(!(meas_task_control & __MACH_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
 					{
 						meas_task_control |= __MACH_MEAS_IN_PROG;
 						start_cord_count = 0;
+						mach_RISO_count = 0;			//nastavimo na 0, ker moramo ponovno izmeriti vse faze proti PE
 						set_event(INIT_MACH,init_mach);
 					}
 				}
@@ -1077,6 +1089,233 @@ static void command_analyze(uint8_t dir)
 			mach_task_control |= __MACH_TEST_RECIEVED;
 		else
 			mach_task_control &= ~__MACH_TEST_RECIEVED;
+		
+	}
+/*********************************************************************************/
+/**																	WELDING																			**/
+/*********************************************************************************/
+	else if(!strcmp(m_function,__WELDING__))
+	{ 
+		if(!strcmp(m_command,__INIT_WELDING__))
+		{
+			if(!(meas_task_control & __WELD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+			{
+				meas_task_control |= __WELD_MEAS_IN_PROG;
+				if(!strcmp(m_value,__1_PHASE__))
+					set_phase_num_weld(1);
+				else
+					set_phase_num_weld(3);
+				start_weld_count = 0;
+				set_event(INIT_WELD,init_weld);
+				weld_task_control |= __WELD_INIT_RECIEVED;
+			}
+		}
+		else if(!strcmp(m_command,__DEINIT_WELDING__))
+		{
+			if(weld_task_control & __WELD_INITIATED)
+			{
+				start_weld_count = 0;
+				set_event(DEINIT_WELD,deinitWelding);
+			}
+		}
+		else if(!strcmp(m_command,__SET__))
+		{
+			if(!strcmp(&additionalCode[0][0][0],__CABLE_TYPE__))
+			{
+				if(!strcmp(&additionalCode[1][0][0],__1_PHASE__))
+				{
+					set_phase_num_weld(1);
+				}
+				else if(!strcmp(&additionalCode[1][0][0],__3_PHASE__))
+				{
+					set_phase_num_weld(3);
+				}
+			}
+		}
+		else if(!strcmp(m_command,__START_PHASES_TO_PE__))
+		{
+			//ce je katerakoli meritev v delu se ne izvede
+			if((meas_task_control & __WELD_MEAS_IN_PROG))
+			{
+				if(!(weld_task_control &__WELD_RISO_PHASES_TO_PE_IN_PROGRESS))
+				{
+					if(weld_task_control & __WELD_INITIATED)
+					{
+						weld_RISO_count = 0;			//nastavimo na 0, ker moramo ponovno izmeriti vse faze proti PE
+						set_event(WELD_RISO_PHASES_TO_PE,weld_RISO_phasesToPE);
+					}
+					else if(!(meas_task_control & __WELD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+					{
+						meas_task_control |= __WELD_MEAS_IN_PROG;
+						start_cord_count = 0;
+						weld_RISO_count = 0;			//nastavimo na 0, ker moramo ponovno izmeriti vse faze proti PE
+						set_event(INIT_WELD,init_weld);
+					}
+				}
+			}
+		}
+		else if(!strcmp(m_command,__START_ONE_PHASE_TO_PE__))
+		{
+			//ce je katerakoli meritev v delu se ne izvede
+			if((meas_task_control & __WELD_MEAS_IN_PROG))
+			{
+				if(!(weld_task_control &__WELD_RISO_ONE_PHASE_TO_PE_IN_PROGRESS))
+				{
+					if(weld_task_control & __WELD_INITIATED)
+					{
+						set_event(WELD_RISO_ONE_PHASE_TO_PE,weld_RISO_onePhaseToPE);
+					}
+					else if(!(meas_task_control & __WELD_MEAS_IN_PROG))	//ce je meritev ze v teku se ne zgodi nic
+					{
+						meas_task_control |= __WELD_MEAS_IN_PROG;
+						start_weld_count = 0;
+						set_event(INIT_WELD,init_weld);
+					}
+				}
+			}
+		}
+		else if(!strcmp(m_command,__STOP_WELD__))
+		{
+			if(meas_task_control & __WELD_MEAS_IN_PROG)	//se izvede samo ce je meritev v teku
+				set_event(STOP_WELD,stop_weld);
+		}
+		else if(!strcmp(m_command,__RISO_RESISTANCE__))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG) && (weld_task_control & __WELD_RISO_RES_REQUESTED))	//se izvede samo ce je meritev v teku
+				set_RISO_weld_resistance(&additionalCode[1][0][0]);
+		}
+		else if(!strcmp(m_command,__RISO_STARTED__))
+		{
+			if(meas_task_control & __WELD_MEAS_IN_PROG)
+				weld_task_control |= __WELD_RISO_STARTED;
+		}
+
+		else if(!strcmp(m_command,__RISO_STOPPED__))
+		{
+			if(meas_task_control & __WELD_MEAS_IN_PROG)
+				weld_task_control &= (~__WELD_RISO_STARTED);
+		}
+		else if(!strcmp(m_command,__WELD_RPE_START__))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&(!(weld_task_control & __WELD_RPE_IN_PROGRESS)))
+				set_event(WELD_RPE_START,WeldingRPEStart);
+		}
+		else if(!strcmp(m_command,__WELD_RPE_STOP__))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&(weld_task_control & __WELD_RPE_IN_PROGRESS))
+				set_event(WELD_RPE_STOP,WeldingRPEStop);
+		}
+		else if(!strcmp(m_command,__MAINS_TO_WELD_START__))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&(!(weld_task_control & __WELD_RISO_MAINS_WELD_IN_PROGRESS)))
+			{
+				if(!strcmp(&additionalCode[0][0][0],__CONTINIOUS__))
+					weld_task_control |= __WELD_RISO_CONTINIOUS_MEAS;
+				else
+					weld_task_control &= ~__WELD_RISO_CONTINIOUS_MEAS;
+				set_event(WELD_RISO_MAINS_TO_WELD,weld_RISO_MainsToWeld);
+			}
+		}
+		else if(!strcmp(m_command,__MAINS_TO_WELD_STOP__))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&((weld_task_control & __WELD_RISO_MAINS_WELD_IN_PROGRESS)))
+			{	
+				set_event(WELD_RISO_MAINS_TO_WELD_STOP,weld_RISO_MainsToWeld_Stop);
+			}
+		}
+		else if(!strcmp(m_command,__WELD_TO_PE_START__))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&(!(weld_task_control & __WELD_RISO_WELD_PE_IN_PROGRESS)))
+			{	
+				if(!strcmp(&additionalCode[0][0][0],__CONTINIOUS__))
+					weld_task_control |= __WELD_RISO_CONTINIOUS_MEAS;
+				else
+					weld_task_control &= ~__WELD_RISO_CONTINIOUS_MEAS;
+				set_event(WELD_RISO_WELD_TO_PE,weld_RISO_WeldToPE);
+			}
+		}
+		else if(!strcmp(m_command,__WELD_TO_PE_STOP__))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&((weld_task_control & __WELD_RISO_WELD_PE_IN_PROGRESS)))
+			{	
+				set_event(WELD_RISO_WELD_TO_PE_STOP,weld_RISO_WeldToPE_Stop);
+			}
+		}
+		else if(!strcmp(m_command,__MAINS_TO_CLASS2_START__))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&(!(weld_task_control & __WELD_RISO_MAINS_CLASS2_IN_PROGRESS)))
+			{	
+				if(!strcmp(&additionalCode[0][0][0],__CONTINIOUS__))
+					weld_task_control |= __WELD_RISO_CONTINIOUS_MEAS;
+				else
+					weld_task_control &= ~__WELD_RISO_CONTINIOUS_MEAS;
+				set_event(WELD_RISO_MAINS_TO_CLASS2,weld_RISO_MainsToClass2);
+			}
+		}
+		else if(!strcmp(m_command,__MAINS_TO_CLASS2_STOP__))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&((weld_task_control & __WELD_RISO_MAINS_CLASS2_IN_PROGRESS)))
+			{	
+				set_event(WELD_RISO_MAINS_TO_CLASS2_STOP,weld_RISO_MainsToClass2_Stop);
+			}
+		}
+		else if(!strcmp(m_command,__WELD_UNL_RMS_START_))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&(!(weld_task_control & __WELD_UNL_RMS_IN_PROGRESS)))
+			{	
+				set_event(WELD_UNL_START_RMS,weld_UnlStart_RMS);
+			}
+		}
+
+		else if(!strcmp(m_command,__WELD_UNL_RMS_STOP_))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&((weld_task_control & __WELD_UNL_RMS_IN_PROGRESS)))
+			{	
+				set_event(WELD_UNL_STOP_RMS,weld_UnlStop_RMS);
+			}
+		}
+		else if(!strcmp(m_command,__WELD_UNL_PEAK_START_))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&(!(weld_task_control & __WELD_UNL_PEAK_IN_PROGRESS)))
+			{	
+				set_event(WELD_UNL_START_PEAK,weld_UnlStart_peak);
+			}
+		}
+
+		else if(!strcmp(m_command,__WELD_UNL_PEAK_STOP_))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&((weld_task_control & __WELD_UNL_PEAK_IN_PROGRESS)))
+			{	
+				set_event(WELD_UNL_STOP_PEAK,weld_UnlStop_peak);
+			}
+		}
+		else if(!strcmp(m_command,"TEST"))
+		{
+				test4_on;
+				if(temp_ind==false)
+				{
+					SET_L1_CONTACTOR;
+					SET_L2_CONTACTOR;
+					SET_L3_CONTACTOR;
+					SET_N_CONTACTOR;
+					temp_ind=true;
+				}
+				else
+				{
+					RST_L1_CONTACTOR;
+					RST_L2_CONTACTOR;
+					RST_L3_CONTACTOR;
+					RST_N_CONTACTOR;
+					HAL_Delay(1);
+					temp_ind=false;
+				}
+				test4_off;
+		}
+		//namenjen testu s simulatorjem
+		if(!strcmp(m_value,__WELD_TEST__))
+			weld_task_control |= __WELD_TEST_RECIEVED;
+		else
+			weld_task_control &= ~__WELD_TEST_RECIEVED;
 		
 	}
 /*******************************************************************************/
@@ -1807,29 +2046,32 @@ static void SynchronusSendInit(void)
 void SerialSend(uint8_t * msg_ptr,uint16_t msg_size, uint32_t dir)
 {
 	uint8_t result;
-	//smer ce posiljamo prazen string je dir spremenljivka brezpredmetna, zato ji znova dolocimo vrednost
-	if(dir == _EMPTY_DIR)
+	if(connection_control & __CONNECTION_ESTABLISHED)
 	{
-		//v mojem primeru se za smer posiljanja praznega stringa odlocim glede na posiljatelja zadnjega prejetega sporocila
-		if(transmitter_ID==_ID_NONE || transmitter_ID==_ID_DEBUG || transmitter_ID == _ID_PAT || transmitter_ID == _ID_SIMULATION)
-			dir = _UART_DIR_USB;
-		else	//velja za MT
-			dir = _UART_DIR_485;
-	}
-	if(dir == _UART_DIR_MT || dir == _UART_DIR_DEBUG || dir==_UART_DIR_USB)
-	{
-//		for(int i=0; i <= (msg_size/10);i++)
-//		{
-		if(hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED)
+		//smer ce posiljamo prazen string je dir spremenljivka brezpredmetna, zato ji znova dolocimo vrednost
+		if(dir == _EMPTY_DIR)
 		{
-			do
-			{
-				result = CDC_Transmit_FS(msg_ptr, msg_size);//dokler ni enako 0
-				//result = CDC_Transmit_FS(msg_ptr+(i*10), 10);//dokler ni enako 0
-				indikator1=result;
-			}while(result == USBD_BUSY);
+			//v mojem primeru se za smer posiljanja praznega stringa odlocim glede na posiljatelja zadnjega prejetega sporocila
+			if(transmitter_ID==_ID_NONE || transmitter_ID==_ID_DEBUG || transmitter_ID == _ID_PAT || transmitter_ID == _ID_SIMULATION)
+				dir = _UART_DIR_USB;
+			else	//velja za MT
+				dir = _UART_DIR_485;
 		}
-//		}
+		if(dir == _UART_DIR_MT || dir == _UART_DIR_DEBUG || dir==_UART_DIR_USB)
+		{
+	//		for(int i=0; i <= (msg_size/10);i++)
+	//		{
+			if(hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED)
+			{
+				do
+				{
+					result = CDC_Transmit_FS(msg_ptr, msg_size);//dokler ni enako 0
+					//result = CDC_Transmit_FS(msg_ptr+(i*10), 10);//dokler ni enako 0
+					indikator1=result;
+				}while(result == USBD_BUSY);
+			}
+	//		}
+		}
 	}
 	
 	

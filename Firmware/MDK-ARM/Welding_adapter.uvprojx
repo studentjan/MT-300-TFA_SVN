@@ -415,6 +415,11 @@
               <FileType>1</FileType>
               <FilePath>..\Src\com_meas_tasks.c</FilePath>
             </File>
+            <File>
+              <FileName>welding.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\welding.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

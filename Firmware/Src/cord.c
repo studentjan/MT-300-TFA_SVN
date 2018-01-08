@@ -45,7 +45,7 @@ bool manual_set_phase_num = !(AUTO_DETECT_P_NUM);	//ce je na true potem rocno na
 int CORD_PHASE_NUM_SETTING = _3_PHASE;
 
 static uint32_t cord_cw_count=0;
-static uint32_t cord_RISO_count=0;
+uint32_t cord_RISO_count=0;
 static uint32_t cord_continuity_count=0;
 int start_cord_count=0;
 uint32_t cord_err_count;
@@ -5141,7 +5141,8 @@ void cord_RISO_onePhaseToPE(void)
 		case 3:
 			SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__ONE_PHASE_TO_PE_STARTED__,"","",device.device_dir);
 			cord_task_control |= __CORD_RISO_ONE_PHASE_TO_PE_IN_PROGRESS;
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__START_RISO__,"","",device.device_dir);
+			if(!(cord_task_control & __CORD_RISO_STARTED))
+				SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__START_RISO__,"","",device.device_dir);
 			//cord_task_control |= __CORD_RISO_RES_REQUESTED;
 			cord_RISO_count++;
 			//SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__START_RISO__,"","",device.device_dir);

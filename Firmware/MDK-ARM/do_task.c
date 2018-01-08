@@ -204,7 +204,7 @@ void stop_measure(void)
 		input_STOP_measure();
 	#endif
 	disable_sinchro_interrupt(__VOLTAGE_MEAS_SYNCHRO);
-	free_timer(TRANSMIT_RESULTS);
+	end_task(TRANSMIT_RESULTS);
 }
 static void measuring_task_no_THD(void)
 {

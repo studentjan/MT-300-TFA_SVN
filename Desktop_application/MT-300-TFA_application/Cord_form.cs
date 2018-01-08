@@ -754,12 +754,7 @@ namespace MT_300_TFA_application
             Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
                                 Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
                                 serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[31], "", "");
-            MainForm.machines_button.Enabled = true;
-            MainForm.rescan_button.Enabled = true;
-            MainForm.test_com_protocol_button.Enabled = true;
-            MainForm.test_relays_button.Enabled = true;
-            MainForm.port_connect.Enabled = true;
-            MainForm.cord_button.Enabled = true;
+            MainForm.Enable_buttons();
         }
 
 

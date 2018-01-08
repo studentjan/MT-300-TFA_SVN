@@ -426,12 +426,7 @@ namespace MT_300_TFA_application
 
         private void Relay_form_FormClosing(object sender, FormClosingEventArgs e)
         {
-            mainForm.machines_button.Enabled = true;
-            mainForm.rescan_button.Enabled = true;
-            mainForm.test_com_protocol_button.Enabled = true;
-            mainForm.test_relays_button.Enabled = true;
-            mainForm.port_connect.Enabled = true;
-            mainForm.cord_button.Enabled = true;
+           mainForm.Enable_buttons();
         }
 
     }

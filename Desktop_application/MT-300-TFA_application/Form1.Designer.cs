@@ -44,6 +44,7 @@
             this.clear_receive_button = new System.Windows.Forms.Button();
             this.rescan_button = new System.Windows.Forms.Button();
             this.machines_button = new System.Windows.Forms.Button();
+            this.weld_button = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // port_connect
@@ -178,11 +179,22 @@
             this.machines_button.UseVisualStyleBackColor = true;
             this.machines_button.Click += new System.EventHandler(this.machines_button_Click);
             // 
+            // weld_button
+            // 
+            this.weld_button.Location = new System.Drawing.Point(370, 12);
+            this.weld_button.Name = "weld_button";
+            this.weld_button.Size = new System.Drawing.Size(75, 23);
+            this.weld_button.TabIndex = 26;
+            this.weld_button.Text = "WELDING";
+            this.weld_button.UseVisualStyleBackColor = true;
+            this.weld_button.Click += new System.EventHandler(this.weld_button_Click);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(940, 428);
+            this.Controls.Add(this.weld_button);
             this.Controls.Add(this.machines_button);
             this.Controls.Add(this.rescan_button);
             this.Controls.Add(this.clear_receive_button);
@@ -222,6 +234,7 @@
         private System.Windows.Forms.Button clear_receive_button;
         public System.Windows.Forms.Button rescan_button;
         public System.Windows.Forms.Button machines_button;
+        public System.Windows.Forms.Button weld_button;
     }
 }
 

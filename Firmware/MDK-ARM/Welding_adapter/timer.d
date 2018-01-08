@@ -43,3 +43,4 @@ welding_adapter\timer.o: ../Inc/machines.h
 welding_adapter\timer.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 welding_adapter\timer.o: ../Inc/do_task.h
 welding_adapter\timer.o: ../Inc/rel_driver.h
+welding_adapter\timer.o: ../Inc/com_meas_tasks.h

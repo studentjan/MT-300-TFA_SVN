@@ -6,8 +6,11 @@
 #include "defines.h"
 #include "serial_com.h"
 #include "do_task.h"
+#include "sdadc.h"
 
 extern uint32_t global_control;
+extern uint32_t meas_control;
+uint32_t current_URES_measurement=0;
 
 
 //funkcijo je potrebno klicati po power_on_testu
@@ -66,4 +69,66 @@ void setNormal(void)
 	rst_REL(40);
 	rst_REL(41);
 	rst_REL(42);
+}
+
+void WeldMachMt310_RelInit(void)
+{
+		RST_L1_CONTACTOR;
+		RST_L2_CONTACTOR;
+		RST_L3_CONTACTOR;
+		RST_N_CONTACTOR;
+		rst_REL(8);
+		rst_REL(30);
+		rst_REL(10);
+		rst_REL(11);
+		rst_REL(12);
+		rst_REL(13);
+		rst_REL(33);
+		rst_REL(34);
+		rst_REL(35);
+		rst_REL(36);
+		
+		rst_REL(17);
+		rst_REL(18);
+		rst_REL(19);
+		rst_REL(20);
+		rst_REL(22);
+		
+		rst_REL(39);
+		rst_REL(40);
+		rst_REL(41);
+		rst_REL(42);
+		rst_REL(29);
+		
+		rst_REL(26);
+		rst_REL(25);
+		rst_REL(24);
+		rst_REL(23);
+		rst_REL(15);
+		
+		rst_REL(16);
+		rst_REL(14);
+		rst_REL(7);
+		rst_REL(42);
+		rst_REL(29);
+		
+		rst_REL(9);
+		rst_REL(27);
+		rst_REL(28);
+		SET_PE_CONTACTOR;//RST_PE_CONTACTOR;		//PE kontaktor ima NC kontakt, zato ga izklopimo
+}
+
+void startMainsMeasurement(void)
+{
+	meas_control = 0;
+	start_measure();
+	
+}
+void stopMainsMeasurement(void)
+{
+	stop_measure();
+}
+void resultTransmittTask(void)
+{
+	
 }

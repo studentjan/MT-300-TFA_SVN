@@ -68,3 +68,4 @@ welding_adapter\stm32f3xx_it.o: ../Inc/usbd_desc.h
 welding_adapter\stm32f3xx_it.o: ../Inc/machines.h
 welding_adapter\stm32f3xx_it.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 welding_adapter\stm32f3xx_it.o: ../Inc/serial_com.h
+welding_adapter\stm32f3xx_it.o: ../Inc/com_meas_tasks.h

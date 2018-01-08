@@ -45,6 +45,7 @@
 #include "usbd_ioreq.h"
 #include "machines.h"
 #include "serial_com.h"
+#include "com_meas_tasks.h"
 /* USER CODE BEGIN 0 */
 
 /* USER CODE END 0 */

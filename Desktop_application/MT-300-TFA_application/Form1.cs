@@ -24,6 +24,7 @@ namespace MT_300_TFA_application
         public Relay_form Relay_object;// = new Relay_form();
         public Cord_form cord_object;
         public Machines_form Machines_object;
+        public Welding_form Welding_object;
         private Queue<char[]> receiveQueue = new Queue<char[]>();
         private int prev_i = 0;
         //public serial_com Serial_class = new serial_com();
@@ -82,6 +83,7 @@ namespace MT_300_TFA_application
                     serialPort1.Open();
                     AdapterButtonStatus = true;
                     port_connect.Text = "DISCONNECT";
+                    Enable_buttons();
                     Serial_class.synchroTimer.Start();
                         //na zacetku enkrat zazenemo timer zato, da posljemo zacetno komando.
                     Serial_class.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
@@ -121,6 +123,11 @@ namespace MT_300_TFA_application
         private void CodeRed()
         {
             AdapterCOM_status.BackColor = Color.Red;
+            machines_button.Enabled = false;
+            test_com_protocol_button.Enabled = false;
+            test_relays_button.Enabled = false;
+            cord_button.Enabled = false;
+            weld_button.Enabled = false;
         }
         private void serialPort1_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)  //to je tvoja funkcija za com receive handler... nardis eventhandler zato da spustis funkcijo, tam notr mas pa compare (podobn k set_event v cju)
         {
@@ -284,24 +291,14 @@ namespace MT_300_TFA_application
             //Serial_class.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, serial_com.FUNCTION_COMMUNICATON_NAMES[0], serial_com.COMMAND_TYPE_NAMES[5], serial_com.CORD_CODE_NAMES[2], "");
             Cord_form cordForm = new Cord_form(Serial_class,this);
             cordForm.Show();
-            machines_button.Enabled = false;
-            rescan_button.Enabled = false;
-            test_com_protocol_button.Enabled = false;
-            test_relays_button.Enabled = false;
-            port_connect.Enabled = false;
-            cord_button.Enabled = false;
+            Disable_buttons();
         }
 
         private void test_relays_button_Click(object sender, EventArgs e)
         {
             Relay_form RelayForm = new Relay_form(this, Serial_class);
             RelayForm.Show();
-            machines_button.Enabled = false;
-            rescan_button.Enabled = false;
-            test_com_protocol_button.Enabled = false;
-            test_relays_button.Enabled = false;
-            port_connect.Enabled = false;
-            cord_button.Enabled = false;
+            Disable_buttons();
         }
 
         private void clear_send_button_Click(object sender, EventArgs e)
@@ -323,12 +320,35 @@ namespace MT_300_TFA_application
         {
             Machines_form MachinesObject = new Machines_form(Serial_class,this);
             MachinesObject.Show();
+            Disable_buttons();
+        }
+
+        private void weld_button_Click(object sender, EventArgs e)
+        {
+            Welding_form MachinesObject = new Welding_form(Serial_class, this);
+            MachinesObject.Show();
+            Disable_buttons();
+        }
+
+        public void Disable_buttons()
+        {
             machines_button.Enabled = false;
             rescan_button.Enabled = false;
             test_com_protocol_button.Enabled = false;
             test_relays_button.Enabled = false;
             port_connect.Enabled = false;
             cord_button.Enabled = false;
+            weld_button.Enabled = false;
+        }
+        public void Enable_buttons()
+        {
+            machines_button.Enabled = true;
+            rescan_button.Enabled = true;
+            test_com_protocol_button.Enabled = true;
+            test_relays_button.Enabled = true;
+            port_connect.Enabled = true;
+            cord_button.Enabled = true;
+            weld_button.Enabled = true;
         }
         //private void Sendtextboxmaneger()
         //{

@@ -77,6 +77,12 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings1.settings</DependentUpon>
     </Compile>
+    <Compile Include="Welding_form.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Welding_form.Designer.cs">
+      <DependentUpon>Welding_form.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="Form1.resx">
       <DependentUpon>Form1.cs</DependentUpon>
       <SubType>Designer</SubType>
@@ -100,6 +106,9 @@
     <EmbeddedResource Include="Relay_form.resx">
       <DependentUpon>Relay_form.cs</DependentUpon>
       <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Welding_form.resx">
+      <DependentUpon>Welding_form.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

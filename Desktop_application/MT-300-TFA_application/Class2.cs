@@ -93,8 +93,8 @@ namespace MT_300_TFA_application
         private const int MAX_VALID_COMMANDS = 50;
         //                                                  0           1           2           3           4           5           6           7           8           9           10          11          12          13          14          15          16          17          18          19          20          21          22          23          24          25          26          27          28          29          30          31          32          33          34          35          36       
         public static String[] FUNCTION_COMMUNICATON_NAMES = {"MT-300-TFA"};
-            //                                                   0          1       2       3           4       5       6       7
-        public static String[] COMMAND_TYPE_NAMES =  {        "POWER", "RELAY", "WARNING", "TEST", "COMMUN", "CORD", "STATUS" ,"MACH" };
+            //                                                   0          1       2       3           4       5       6        7       8
+        public static String[] COMMAND_TYPE_NAMES =  {        "POWER", "RELAY", "WARNING", "TEST", "COMMUN", "CORD", "STATUS" ,"MACH", "WELD" };
 
         public static String[] CONNECTION_CODE_NAMES = {"CONNECT_REQUEST", "CONNECTION_ESTABLED", "CONNECTION_CHECK"};
         public static String[] CONNECTION_ADD_NAMES = {"MT-310", "OK", "NOK"};
@@ -115,7 +115,10 @@ namespace MT_300_TFA_application
         public static String[] STATUS_VALUE_NAMES = {""};
         public static String[] WARNING_CODE_NAMES = {"COMMAND_SEND_ERROR"};
         public static String[] POWER_CODE_NAMES = {"START", "STOP", "START_NTHD",};
-
+        //                                                  0           1       2           3               4               5            6           7           8                9         10        11          12           13          14               15              16                  17                  18                  19              20           21             22          23              24                  25                  26                  27              28                      29                  30                  31              32              33              34
+        public static String[] WELD_COMMAND_NAMES = { "START_URES", "INIT", "DEINIT", "URES_STARTED", "URES_STOPPED", "URES_FINISHED", "STOP", "URES_OPEN", "URES_OPENED", "INITIATED", "TEST", "START_RPE", "STOP_RPE", "RPE_STARTED", "RPE_STOPPED", "START_ALL-PE", "START_ONE-PE", "RISO_ALL-PE_RESULT", "RISO_ONE-PE_RESULT", "RISO_START", "RISO_STARTED", "RISO_STOP", "RISO_STOPPED", "RISO_RES_GET", "RISO_RES", "START_MAINS-WELD", "START_MAINS-CLASS2", "START_WELD-PE", "MAINS-WELD_RESULT", "MAINS-CLASS2_RESULT", "WELD-PE_RESULT", "START_UNL_RMS", "STOP_UNL_RMS", "START_UNL_PEAK", "STOP_UNL_PEAK" };
+        //                                             0       1
+        public static String[] WELD_CODE_NAMES = { "SINGLE", "CONT"};
         public static String[] RELAY_CODE_NAMES =
         {
             "RESET_ALL", "1_38_ON", "1_38_OFF", "2_ON", "2_OFF", "3_ON", "3_OFF", "4_ON", "4_OFF", "5_ON",
@@ -850,6 +853,56 @@ namespace MT_300_TFA_application
                        mach_return_event("", m_command);
                     }
                 }
+                /*******************************************************************************/
+                /**								WELDING         							  **/
+                /*******************************************************************************/
+                else if (String.Equals(m_function, COMMAND_TYPE_NAMES[8])) //weld
+                {
+                    if (String.Equals(m_command, WELD_COMMAND_NAMES[6])) //STOP
+                    {
+                        weld_return_event(m_leftover, m_command);
+                    }
+                    else if (String.Equals(m_command, WELD_COMMAND_NAMES[9])) //INITIATED
+                    {
+                        weld_return_event(m_leftover, m_command);
+                    }
+                    else if (String.Equals(m_command, WELD_COMMAND_NAMES[3])) //URES STARTED
+                    {
+                        weld_return_event(m_leftover, m_command);
+                    }
+                    else if (String.Equals(m_command, WELD_COMMAND_NAMES[4])) //URES STOPPED
+                    {
+                        weld_return_event(m_leftover, m_command);
+                    }
+                    else if (String.Equals(m_command, WELD_COMMAND_NAMES[8])) //URES OPENED
+                    {
+                        weld_return_event(m_leftover, m_command);
+                    }
+                    else if (String.Equals(m_command, WELD_COMMAND_NAMES[13])) //RPE STARTED
+                    {
+                        weld_return_event(m_leftover, m_command);
+                    }
+                    else if (String.Equals(m_command, WELD_COMMAND_NAMES[14])) //RPE STOPPED
+                    {
+                        weld_return_event(m_leftover, m_command);
+                    }
+                    else if (String.Equals(m_command, WELD_COMMAND_NAMES[17])) //ALL-PE RESULT
+                    {
+                        weld_return_event(m_leftover, m_command);
+                    }
+                    else if (String.Equals(m_command, WELD_COMMAND_NAMES[18])) //ONE-PE RESULT
+                    {
+                        weld_return_event(m_leftover, m_command);
+                    }
+                    else if (String.Equals(m_command, WELD_COMMAND_NAMES[23])) //get RISO resistance
+                    {
+                        weld_return_event(m_leftover, m_command);
+                    }
+                    else
+                    {
+                        weld_return_event("", m_command);
+                    }
+                }
         }
         public delegate void cord_return_result(object sender, string meas_con, string cmd);
         public event cord_return_result cordReturnEventHandler = delegate { };
@@ -863,6 +916,13 @@ namespace MT_300_TFA_application
         public void mach_return_event(string return_string, string cmd)
         {
             this.machReturnEventHandler(this, return_string, cmd);
+        }
+
+        public delegate void weld_return_result(object sender, string meas_con, string cmd);
+        public event weld_return_result weldReturnEventHandler = delegate { };
+        public void weld_return_event(string return_string, string cmd)
+        {
+            this.weldReturnEventHandler(this, return_string, cmd);
         }
 
         private void send_message()

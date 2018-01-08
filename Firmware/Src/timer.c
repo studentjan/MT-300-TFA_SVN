@@ -11,6 +11,7 @@
  #include "machines.h"
  #include "do_task.h"
  #include "rel_driver.h"
+ #include "com_meas_tasks.h"
  //#include "includes.h"
 
 //pozor, inicializacija za TIMER 2 je v serial_com.c

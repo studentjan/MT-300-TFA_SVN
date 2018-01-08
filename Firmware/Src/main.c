@@ -130,7 +130,6 @@ int main(void)
 	led_blink_time = _LED_BLINK_TIME_OK;
 	init_OS();
 	USBConnected_Handler();
-	HAL_Delay(100);
 	MX_NVIC_Init();
 	HAL_Delay(100);
 	init_REL();

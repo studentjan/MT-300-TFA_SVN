@@ -383,7 +383,7 @@ enum MEAS_ON_MASKS
 	__NO_THD_MEAS				= 0x08000000,			//vklopljena meritev brez THD
 	__DEL_START_NORMAL 	= 0x10000000,
 	__DEL_START_THD	  	= 0x20000000,
-	__THD_SYNCHRO_ON	= 0x40000000,	//vklopi sinhronizacijo za THD meritve
+	__THD_SYNCHRO_ON		= 0x40000000,	//vklopi sinhronizacijo za THD meritve
 };
 enum COMPUTE_MASKS
 {
@@ -479,6 +479,7 @@ enum MEAS_TASK_MASKS
 {
 	__CORD_MEAS_IN_PROG												=0x00000001,
 	__MACH_MEAS_IN_PROG												=0x00000002,
+	__WELD_MEAS_IN_PROG												=0x00000004
 //	__CORD_RPE_RES_REQUESTED									=0x00000002,
 //	__CORD_RISO_RES_REQUESTED									=0x00000004,
 //	__CORD_CORECT_WIRING_MEASURED							=0x00000008,
@@ -840,6 +841,59 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define __MACH_L1_L2__				"L1-L2"
 #define __MACH_L2_L3__				"L2-L3"
 #define __MACH_L1_L3__				"L1-L3"
+//+++++++++++++++++++++++++++++++++++++++++++++++++
+//+++++++++++++++WELDING+++++++++++++++++
+#define __WELDING__					"WELD"
+#define __INIT_WELDING__			"INIT"
+#define __WELD_INIT_FAILED__	"INIT_FAILED"
+#define __DEINIT_WELDING__		"DEINIT"
+#define __WELD_RPE_START__		"START_RPE"
+#define __WELD_RPE_STARTED__	"RPE_STARTED"
+#define __WELD_RPE_STOP__			"STOP_RPE"
+#define __WELD_RPE_STOPPED__	"RPE_STOPPED"
+#define __WELD_URES_START__		"START_URES"
+#define __WELD_URES_STARTED__ "URES_STARTED"
+#define __WELD_URES_OPEN__		"URES_OPEN"
+#define __WELD_URES_OPENED__	"URES_OPENED"
+#define __STOP_WELD__					"STOP"
+#define __WELD_INITIATED__		"INITIATED"
+#define __WELD_TEST__					"TEST"
+#define __WELD_URES_FINSHED__	"URES_FINISHED"
+#define __WELD_URES_STOPPED__	"URES_STOPPED"
+#define __WELD_L1_PE__				"L1-PE"
+#define __WELD_L2_PE__				"L2-PE"
+#define __WELD_L3_PE__				"L3-PE"
+#define __WELD_L1_N__					"L1-N"
+#define __WELD_L2_N__					"L2-N"
+#define __WELD_L3_N__					"L3-N"
+#define __WELD_L1_L2__				"L1-L2"
+#define __WELD_L2_L3__				"L2-L3"
+#define __WELD_L1_L3__				"L1-L3"
+#define __MAINS_TO_WELD_START__	"START_MAINS-WELD"
+#define __MAINS_TO_WELD_STARTED__	"MAINS-WELD_STARTED"
+#define __MAINS_TO_WELD_RESULT__	"MAINS-WELD_RESULT"
+#define __MAINS_TO_WELD_STOP__	"MAINS-WELD_STOP"
+#define __MAINS_TO_WELD_STOPPED__	"MAINS-WELD_STOPPED"
+#define __MAINS_TO_CLASS2_START__	"START_MAINS-CLASS2"
+#define __MAINS_TO_CLASS2_STARTED__	"MAINS-CLASS2_STARTED"
+#define __MAINS_TO_CLASS2_RESULT__	"MAINS-CLASS2_RESULT"
+#define __MAINS_TO_CLASS2_STOP__	"MAINS-CLASS2_STOP"
+#define __MAINS_TO_CLASS2_STOPPED__	"MAINS-CLASS2_STOPPED"
+#define __WELD_TO_PE_START__	"START_WELD-PE"
+#define __WELD_TO_PE_STARTED__	"WELD-PE_STARTED"
+#define __WELD_TO_PE_RESULT__	"WELD-PE_RESULT"
+#define __WELD_TO_PE_STOP__	"WELD-PE_STOP"
+#define __WELD_TO_PE_STOPPED__	"WELD-PE_STOPPED"
+#define __CONTINIOUS__				"CONT"
+#define __SINGLE__						"SINGLE"
+#define __WELD_UNL_RMS_START_		"START_UNL_RMS"
+#define __WELD_UNL_RMS_STARTED_		"UNL_RMS_STARTED"
+#define __WELD_UNL_RMS_STOP_		"STOP_UNL_RMS"
+#define __WELD_UNL_RMS_STOPED_		"UNL_RMS_STOPPED"
+#define __WELD_UNL_PEAK_START_		"START_UNL_PEAK"
+#define __WELD_UNL_PEAK_STARTED_		"UNL_PEAK_STARTED"
+#define __WELD_UNL_PEAK_STOP_		"STOP_UNL_PEAK"
+#define __WELD_UNL_PEAK_STOPED_		"UNL_PEAK_STOPPED"
 //++++++++++++++++++++++++++++++++++++++++++++++++
 
 #endif

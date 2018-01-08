@@ -62,3 +62,5 @@ welding_adapter\serial_com.o: ../Inc/os.h
 welding_adapter\serial_com.o: ../Inc/cord.h
 welding_adapter\serial_com.o: ../Inc/machines.h
 welding_adapter\serial_com.o: ../Inc/stm32f3xx_it.h
+welding_adapter\serial_com.o: ../Inc/com_meas_tasks.h
+welding_adapter\serial_com.o: ../Inc/welding.h
