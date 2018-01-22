@@ -7,6 +7,7 @@
 "welding_adapter\machines.o"
 "welding_adapter\com_meas_tasks.o"
 "welding_adapter\welding.o"
+"welding_adapter\calibration.o"
 "welding_adapter\usbd_ioreq.o"
 "welding_adapter\usbd_ctlreq.o"
 "welding_adapter\usbd_cdc.o"

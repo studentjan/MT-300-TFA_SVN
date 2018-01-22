@@ -126,7 +126,7 @@ void start_measure(void)
 		current_THD_sampling = __IL1_THD_SAMPLING;
 		enable_sinchro_interrupt(__VOLTAGE_MEAS_SYNCHRO);	//vklopi interrupt na sinhronizacijo
 		//zarnkrat tole - pol bo treba vretn zbrisat
-		set_timer(TRANSMIT_RESULTS,30,Transmit_results_task);
+		//set_timer(TRANSMIT_RESULTS,30,Transmit_results_task);
 	}
 }
 void start_measure_no_THD(void)
@@ -154,7 +154,7 @@ void start_measure_no_THD(void)
 		set_timer(MEASURING_TASK_NO_THD, 20,measuring_task_no_THD);
 		enable_sinchro_interrupt(__VOLTAGE_MEAS_SYNCHRO);	//vklopi interrupt na sinhronizacijo
 		//zarnkrat tole - pol bo treba vretn zbrisat
-		set_timer(TRANSMIT_RESULTS,30,Transmit_results_task);
+		//set_timer(TRANSMIT_RESULTS,30,Transmit_results_task);
 	}
 }
 void stop_measure(void)

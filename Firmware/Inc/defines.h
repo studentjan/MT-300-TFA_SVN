@@ -265,15 +265,15 @@
 #define IL2_GAIN40_CORRECTION		1.39743f
 #define IL3_GAIN1_CORRECTION		0.78881f
 #define IL3_GAIN40_CORRECTION		1.3941f
-#define IL1_GAIN1								84.0f*0.0000305175f
+#define IL1_GAIN1								84.0f*0.0000305175f	//*100 - prej: 0.0000305175f
 #define IL1_GAIN40							2.12f*0.0000305175f
 #define IL2_GAIN1								84.0f*0.0000305175f
 #define IL2_GAIN40							2.12f*0.0000305175f
 #define IL3_GAIN1								84.0f*0.0000305175f
 #define IL3_GAIN40							2.12f*0.0000305175f
-#define ULN1_GAIN1							612.5f*0.0000305175f
-#define ULN2_GAIN1							612.5f*0.0000305175f
-#define ULN3_GAIN1							612.5f*0.0000305175f
+#define ULN1_GAIN1							612.5f*0.0000305175f	//*100 - prej: 0.0000305175f
+#define ULN2_GAIN1							612.5f*0.00305175f	//*100 - prej: 0.0000305175f
+#define ULN3_GAIN1							612.5f*0.00305175f	//*100 - prej: 0.0000305175f
 #define IDIFF_GAIN_1						26.52f*0.0000305175f//--tole je za trafo MR-4//40.8f*0.0000305175f	//-tale je za CR8420//full scale na gain 1 je (+,-) 0,0408 A - podatek v mA
 #define UL1PE_GAIN1							613.0f*0.0000305175f
 #define UNPE_GAIN1							613.0f*0.0000305175f
@@ -347,8 +347,8 @@
 #define INIT_PE_HIGH_LIMIT			190.0f
 #define PHASE_DETECT_HIGH_LIMIT	150.0f
 #define PHASE_DETECT_LOW_LIMIT	20.0f
-#define MAINS_PLUS10						253.0f
-#define MAINS_MINUS10						207.0f
+#define MAINS_PLUS10						270.0f//253.0f
+#define MAINS_MINUS10						180.0f//207.0f
 //#define THROW_AWAY_RESULTS			1				//koliko rezultatov vrzemo stran preden izberemo pravega za zacetno kontrolo - pomembno zaradi filtrov
 
 enum MEAS_ON_MASKS
@@ -474,28 +474,30 @@ enum CONNECTION_MASKS
 	__ESTABLISHED_TO_PAT_USB	=0x00000200,
 	__USB_IN_SOCKET						=0x00000400,
 	__SERIAL_INITIATED				=0x00000800,
+	__USB_PLUG_CHANGED				=0x00001000
 };
+
+//definicije za meas_task_control
 enum MEAS_TASK_MASKS
 {
 	__CORD_MEAS_IN_PROG												=0x00000001,
 	__MACH_MEAS_IN_PROG												=0x00000002,
-	__WELD_MEAS_IN_PROG												=0x00000004
-//	__CORD_RPE_RES_REQUESTED									=0x00000002,
-//	__CORD_RISO_RES_REQUESTED									=0x00000004,
-//	__CORD_CORECT_WIRING_MEASURED							=0x00000008,
-//	__CORD_CONTINUITY_MEASURED								=0x00000010,
-//	__CORD_RISO_PHASES_TO_PE_MEASURED					=0x00000020,
-//	__CORD_RISO_ONE_PHASE_TO_PE_MEASURED			=0x00000040,
-//	__CORD_RISO_PHASE_TO_PHASE_MEASURED				=0x00000080,
-//	__CORD_INITIATED													=0x00000100,
-//	__CORD_INIT_RECIEVED											=0x00000200,
-//	__CORD_CORRECT_WIRING_IN_PROGRESS					=0x00000400,
-//	__CORD_RISO_PHASES_TO_PE_IN_PROGRESS			=0x00000800,
-//	__CORD_RISO_ONE_PHASE_TO_PE_IN_PROGRESS		=0x00001000,
-//	__CORD_RISO_PHASE_TO_PHASE_IN_PROGRESS		=0x00002000,
-//	__CORD_CONTINUITY_IN_PROGRESS							=0x00004000,
+	__WELD_MEAS_IN_PROG												=0x00000004,
+	__CALIB_MEAS_IN_PROG											=0x00000008,
+	
+	__RETURN_CURRENT													=0x00000100,
+	__RETURN_VOLTAGE													=0x00000200,
+	__RETURN_THD_C														=0x00000400,
+	__RETURN_THD_V														=0x00000800,
+	__RETURN_POWER_R													=0x00001000,
+	__RETURN_POWER_A													=0x00002000,
+	__RETURN_PF																=0x00004000,
+
 
 };
+
+#define __MEAS_TASKS_IN_PROG_MASK						0x0000000F
+#define __TASK_RETURN_MASKS									0x00007F00
 
 enum SYNCHRO_INTERRUPT_USAGE
 {
@@ -511,15 +513,43 @@ enum SYNCHRO_INTERRUPT_USAGE
 
 #define SYNCHRO_INTERRUPT_MASK		0x00000007
 
-#define	__IDIFF	 1
-#define	__ULN1	 2
-#define	__ULN2	 3
-#define	__ULN3	 4
-#define	__IL1		 5
-#define	__IL2		 6
-#define	__IL3		 7
-#define	__UL1PE	 8
-#define	__UNPE	 9
+#define	__IDIFF	 	1
+#define	__ULN1	 	2
+#define	__ULN2	 	3
+#define	__ULN3	 	4
+#define	__IL1		 	5
+#define	__IL2		 	6
+#define	__IL3		 	7
+#define	__UL1PE	 	8
+#define	__UNPE	 	9
+#define __T_ULN1	10
+#define __T_ULN2	11
+#define __T_ULN3	12
+#define	__T_IL1		13
+#define	__T_IL2		14
+#define	__T_IL3		15
+#define __PL1			16
+#define __PL2			17
+#define __PL3			18
+#define __SL1			19
+#define __SL2			20
+#define __SL3			21
+#define __PF1			22
+#define __PF2			23
+#define __PF3			24
+#define __ULN1_K	25
+#define __ULN2_K	26
+#define __ULN3_K	27
+#define __ULN1_N	28
+#define __ULN2_N	29
+#define __ULN3_N	30
+#define __IL1_K		31
+#define __IL2_K		32
+#define __IL3_K		33
+#define __IL1_N		34
+#define __IL2_N		35
+#define __IL3_N		36
+
 
 //INTERRUPT MASKS
 #define __EXTI_9_5			0x00000001
@@ -537,6 +567,7 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define __WARNING__			_MESSAGE_WAR
 #define	__CORD__				"CORD"
 #define __STATUS__			"STATUS"
+#define __CALIB__				"CALIB"
 
 
 //ADDITIONAL CODES
@@ -657,6 +688,26 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define __ALREADY_CONNECTED__				"ALREADY_CONNECTED"
 #define __DIFF_DEVICE_CONNECTED__		"DIFF_DEVICE_CONNECTED"
 
+//++++++++++MAINS ANALYZE+++++++++++++
+#define __START_ANALYZE__			"START_ANALYZE"
+#define __ANALYZE_STARTED__		"ANALYZE_STARTED"
+#define __GET_VOLTAGE__				"GET_VOLTAGE"
+#define __RETURN_VOLTAGE__		"VOLTAGE"
+#define __GET_CURRENT__				"GET_CURRENT"
+#define __RETURN_CURRENT__		"CURRENT"
+#define __GET_THD_C__					"GET_THD_C"
+#define __RETURN_THD_C__			"THD_C"
+#define __GET_THD_V__					"GET_THD_V"
+#define __RETURN_THD_V__			"THD_V"
+#define __GET_POWER_R__				"GET_POWER_R"
+#define __RETURN_POWER_R__		"POWER_R"
+#define __GET_POWER_A__				"GET_POWER_A"
+#define __RETURN_POWER_A__		"POWER_A"
+#define __GET_PF__						"GET_PF"
+#define __RETURN_PF__					"PF"
+#define __STOP_ANALYZE__			"STOP_ANALYZE"
+#define __ANALYZE_STOPPED__		"ANALYZE_STOPPED"
+//----------------------------------------
 
 //+++++++++++++++CORD+++++++++++++++++
 //--additionalcode
@@ -895,5 +946,34 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define __WELD_UNL_PEAK_STOP_		"STOP_UNL_PEAK"
 #define __WELD_UNL_PEAK_STOPED_		"UNL_PEAK_STOPPED"
 //++++++++++++++++++++++++++++++++++++++++++++++++
+//++++++++++++++++++CALIBRATION++++++++++++++++++++
+#define __MEASURE_ULN1__				"MEASURE_ULN1"
+#define __MEASURE_ULN2__				"MEASURE_ULN2"
+#define __MEASURE_ULN3__				"MEASURE_ULN3"
+#define __MEASURE_IL1__					"MEASURE_IL1"
+#define __MEASURE_IL2__					"MEASURE_IL2"
+#define __MEASURE_IL3__					"MEASURE_IL3"
+#define __CALIB_VOLTAGE__				__RETURN_VOLTAGE__
+#define __CALIB_CURRENT__				__RETURN_CURRENT__
+#define __CALIB_GET_CONSTANTS__	"GET_CONSTANTS"
+#define __CONSTANTS__						"CONSTANTS"
+#define __CALIB_ULN1__					"ULN1"
+#define __CALIB_ULN2__					"ULN2"
+#define __CALIB_ULN3__					"ULN3"
+#define __CALIB_IL1__						"IL1"
+#define __CALIB_IL2__						"IL2"
+#define __CALIB_IL3__						"IL3"
+#define __CALIB_ULN1K__					"ULN1_K"
+#define __CALIB_ULN2K__					"ULN2_K"
+#define __CALIB_ULN3K__					"ULN3_K"
+#define __CALIB_ULN1N__					"ULN1_N"
+#define __CALIB_ULN2N__					"ULN2_N"
+#define __CALIB_ULN3N__					"ULN3_N"
+#define __CALIB_IL1N__					"IL1_N"
+#define __CALIB_IL2N__					"IL2_N"
+#define __CALIB_IL3N__					"IL3_N"
+#define __CALIB_IL1K__					"IL1_K"
+#define __CALIB_IL2K__					"IL2_K"
+#define __CALIB_IL3K__					"IL3_K"
 
 #endif

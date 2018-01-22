@@ -69,6 +69,17 @@ void MX_USB_DEVICE_Init(void)
   USBD_Start(&hUsbDeviceFS);
 	HAL_Delay(100);
 }
+
+//zrasl na mojm zelniku
+void MX_USB_DEVICE_Deinit(void)
+{
+  /* Init Device Library,Add Supported Class and Start the library*/
+  USBD_DeInit(&hUsbDeviceFS);
+//  USBD_RegisterClass(&hUsbDeviceFS, &USBD_CDC);
+//  USBD_CDC_RegisterInterface(&hUsbDeviceFS, &USBD_Interface_fops_FS);
+  USBD_Stop(&hUsbDeviceFS);
+	HAL_Delay(100);
+}
 /**
   * @}
   */

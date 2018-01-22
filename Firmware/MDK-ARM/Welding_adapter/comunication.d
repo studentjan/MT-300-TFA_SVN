@@ -64,3 +64,4 @@ welding_adapter\comunication.o: ../Drivers/CMSIS/Include/arm_math.h
 welding_adapter\comunication.o: ../Drivers/CMSIS/Include/core_cm4.h
 welding_adapter\comunication.o: ../Inc/serial_com.h
 welding_adapter\comunication.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+welding_adapter\comunication.o: ../Inc/usb_device.h

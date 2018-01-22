@@ -16,6 +16,7 @@
  #include "test.h"
  #include "sdadc.h"
  #include "serial_com.h"
+ #include "usb_device.h"
 
 extern uint32_t connection_control;
 extern uint8_t ser_ID_sender;
@@ -89,7 +90,9 @@ void USBConnected_Handler(void)
 		connection_control |= __USB_IN_SOCKET;
 		USB_PU_ON; //VKLOPI PU na USB liniji (na racunalniku mi z usb B konektorjem brez tega ni delal)
 		//serial_com_init();
-		set_timer(USB_CHECK_TASK,5,usbCheckTask);
+		//dtr_pin = true;
+		connection_control |= __USB_PLUG_CHANGED;
+		restart_timer(USB_CHECK_TASK,5,usbCheckTask);
 	}
 	else 
 	{
@@ -100,7 +103,10 @@ void USBConnected_Handler(void)
 //			disconnect_function(__ESTABLISHED_TO_PAT_USB);
 		usb_connected = _NO;
 		connection_control &= ~__USB_IN_SOCKET;
-		checkUSBconnected();
+		connection_control |= __USB_PLUG_CHANGED;
+		restart_timer(USB_CHECK_TASK,5,usbCheckTask);
+		//dtr_pin = false;
+		//dtr_pin = false;
 		USB_PU_OFF; //VKLOPI PU na USB liniji (na racunalniku mi z usb B konektorjem brez tega ni delal)
 	}
 		//set_timer(WELCOME_MSG,30,Welcome_msg);
@@ -332,6 +338,7 @@ void checkUSBconnected(void)
 void usbCheckTask(void)
 {
 	checkUSBconnected();
+	connection_control &= ~__USB_PLUG_CHANGED;
 	if(connection_control &__USB_IN_SOCKET)
 		restart_timer(USB_CHECK_TASK,USB_CHECK_INTERVAL,usbCheckTask);
 }

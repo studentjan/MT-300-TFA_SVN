@@ -48,6 +48,7 @@ void weld_UnlStop_peak(void);
 #define	__WELD_UNL_RMS_IN_PROGRESS							0x00008000
 #define __WELD_TEST_RECIEVED										0x00200000
 #define __WELD_TIMER_INIT												0x00400000
+#define __WELD_MAINS_ANALYZE_IN_PROGRESS				0x00800000
 
 #define WELD_MEAS_MASKS				0x001FFCFF
 #define WELD_RISO_PE_MASKS				0x000000FC

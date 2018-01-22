@@ -52,7 +52,8 @@
 #include "stm32f3xx.h"
 #include "com_meas_tasks.h"
 #include "welding.h"
-
+#include "calibration.h"
+#include "sdadc.h"
 //-----------ZUNANJE SPREMENLJIVKE-----------------------
 extern uint8_t event_status; 
 extern uint32_t connection_control;
@@ -68,6 +69,8 @@ extern uint32_t cord_task_control;
 extern uint32_t start_weld_count;
 extern uint32_t weld_RISO_count;
 extern uint32_t weld_task_control;
+extern uint32_t meas_control;
+extern uint32_t calib_task_control;
 
 //-----------GLOBALNE SPREMENLJIVKE----------------------
 uint8_t SERIAL_direction;
@@ -310,6 +313,11 @@ static uint32_t recieve_ack_func(void)
 static uint32_t transmit_func(uint8_t message_size, uint8_t dir,char * ser_ans_buff, char current_ID, char transmitt_to_ID)
 {
 	uint32_t i;
+	//------------------------------preveri ce je buffer poln-------------------------------
+	if((write_count==(TRANSMIT_HANDLE_BUFF_SIZE-1))&&(read_count==0)) return 2;
+	else if(write_count==(read_count-1)) return 2;
+	//--------------------------------------------------------------------------------------
+	//ce je poln ne povecamo stevca ampak smo se zmeri na zadnjem mestu zato je zgoraj return
 	Transmit_handle_buff[write_count].size=message_size;
 	Transmit_handle_buff[write_count].transmitt_to_ID=transmitt_to_ID;
 	Transmit_handle_buff[write_count].message_ID=current_ID;
@@ -318,12 +326,7 @@ static uint32_t transmit_func(uint8_t message_size, uint8_t dir,char * ser_ans_b
 	Transmit_handle_buff[write_count].msg_ptr=(char*)malloc(message_size+1);
 	if(Transmit_handle_buff[write_count].msg_ptr==NULL) return 1;	//v HEAP-u je zmanjkalo spomina
 	strcpy(Transmit_handle_buff[write_count].msg_ptr, ser_ans_buff);
-	//------------------------------preveri ce je buffer poln-------------------------------
-	if((write_count==(TRANSMIT_HANDLE_BUFF_SIZE-1))&&(read_count==0)) return 2;
-	else if(write_count==(read_count-1)) return 2;
-	//--------------------------------------------------------------------------------------
-	//ce je poln ne povecamo stevca ampak smo se zmeri na zadnjem mestu
-	else if(write_count>=(TRANSMIT_HANDLE_BUFF_SIZE-1))write_count=0;
+	if(write_count>=(TRANSMIT_HANDLE_BUFF_SIZE-1))write_count=0;
 	else write_count++;
 	//omogoci, da ce posiljamo vec podatkov naenkrat timer zalavfa sele po zadnjem, kar da tudi zadnjemu 10ms casa da dobi ACK
 	restart_timer(TRANSMIT_COMMAND_HANDLE,TRANSMIT_HANDLE_WAIT,transmit_command_handle);
@@ -414,7 +417,7 @@ static void transmit_command_handle(void)
 			char additional_command[3];
 			sprintf(additional_command,"%.2d",Transmit_handle_buff[read_count+j].message_ID);
 			//ce zelimo poslati warning z send kontrolom mora biti zacetni parameter spodaj _ON
-			SendComMessage(_OFF,_ID_TFA,Transmit_handle_buff[read_count+j].transmitt_to_ID,_MESSAGE_WAR,_MESSAGE_COM_ERR,additional_command,"",Transmit_handle_buff[read_count+j].dirrection);
+			SendComMessage(_ON,_ID_TFA,Transmit_handle_buff[read_count+j].transmitt_to_ID,_MESSAGE_WAR,_MESSAGE_COM_ERR,additional_command,"",Transmit_handle_buff[read_count+j].dirrection);
 			//send_com_message(_MESSAGE_WAR,_MESSAGE_COM_ERR,_VALID,temp_array,Transmit_handle_buff[read_count+j].dirrection);
 			//ce posiljanje v tretje ne uspe zbrisemo podatke in gremo naprej
 			free(Transmit_handle_buff[read_count+j].msg_ptr);
@@ -495,7 +498,7 @@ static void command_analyze(uint8_t dir)
 /*******************************************************************************/
 /**															MEASURING METODS															**/
 /*******************************************************************************/
-	else if(!strcmp(m_function,__POWER__))
+	else if(!strcmp(m_function,__POWER__))//tle more bit pol obvezno else if !!!!!!!!!!!!!!!!!
 	{     
 		if(!strcmp(m_command,__START__))
 		{
@@ -1062,6 +1065,79 @@ static void command_analyze(uint8_t dir)
 			if((meas_task_control & __MACH_MEAS_IN_PROG)&&(mach_task_control & __MACH_URES_IN_PROGRESS))
 				machOPENcontactors();
 		}
+		else if(!strcmp(m_command,__START_ANALYZE__))
+		{
+			if((meas_task_control & __MACH_MEAS_IN_PROG)&&(!(mach_task_control & __MACH_MAINS_ANALYZE_IN_PROGRESS)))
+			{	
+				mach_task_control |= __MACH_MAINS_ANALYZE_IN_PROGRESS;
+				set_event(MAINS_ANALYZE_MEAS_START,startMainsMeasurement);
+			}
+		}
+		else if(!strcmp(m_command,__STOP_ANALYZE__))
+		{
+			if((meas_task_control & __MACH_MEAS_IN_PROG)&&((mach_task_control & __MACH_MAINS_ANALYZE_IN_PROGRESS)))
+			{	
+				mach_task_control &= ~__MACH_MAINS_ANALYZE_IN_PROGRESS;
+				set_event(MAINS_ANALYZE_MEAS_STOP,stopMainsMeasurement);
+				WeldMachMt310_RelInit();
+			}
+		}
+		else if(!strcmp(m_command,__GET_VOLTAGE__))
+		{
+			if((meas_task_control & __MACH_MEAS_IN_PROG)&&((mach_task_control & __MACH_MAINS_ANALYZE_IN_PROGRESS)))
+			{	
+				meas_task_control |= __RETURN_VOLTAGE;
+				restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
+			}
+		}
+		else if(!strcmp(m_command,__GET_CURRENT__))
+		{
+			if((meas_task_control & __MACH_MEAS_IN_PROG)&&((mach_task_control & __MACH_MAINS_ANALYZE_IN_PROGRESS)))
+			{	
+				meas_task_control |= __RETURN_CURRENT;
+				restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
+			}
+		}
+		else if(!strcmp(m_command,__GET_THD_C__))
+		{
+			if((meas_task_control & __MACH_MEAS_IN_PROG)&&((mach_task_control & __MACH_MAINS_ANALYZE_IN_PROGRESS)))
+			{	
+				meas_task_control |= __RETURN_THD_C;
+				restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
+			}
+		}
+		else if(!strcmp(m_command,__GET_THD_V__))
+		{
+			if((meas_task_control & __MACH_MEAS_IN_PROG)&&((mach_task_control & __MACH_MAINS_ANALYZE_IN_PROGRESS)))
+			{	
+				meas_task_control |= __RETURN_THD_V;
+				restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
+			}
+		}
+		else if(!strcmp(m_command,__GET_POWER_R__))
+		{
+			if((meas_task_control & __MACH_MEAS_IN_PROG)&&((mach_task_control & __MACH_MAINS_ANALYZE_IN_PROGRESS)))
+			{	
+				meas_task_control |= __RETURN_POWER_R;
+				restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
+			}
+		}
+		else if(!strcmp(m_command,__GET_POWER_A__))
+		{
+			if((meas_task_control & __MACH_MEAS_IN_PROG)&&((mach_task_control & __MACH_MAINS_ANALYZE_IN_PROGRESS)))
+			{	
+				meas_task_control |= __RETURN_POWER_A;
+				restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
+			}
+		}
+		else if(!strcmp(m_command,__GET_PF__))
+		{
+			if((meas_task_control & __MACH_MEAS_IN_PROG)&&((mach_task_control & __MACH_MAINS_ANALYZE_IN_PROGRESS)))
+			{	
+				meas_task_control |= __RETURN_PF;
+				restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
+			}
+		}
 		else if(!strcmp(m_command,"TEST"))
 		{
 				test4_on;
@@ -1289,6 +1365,79 @@ static void command_analyze(uint8_t dir)
 				set_event(WELD_UNL_STOP_PEAK,weld_UnlStop_peak);
 			}
 		}
+		else if(!strcmp(m_command,__START_ANALYZE__))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&(!(weld_task_control & __WELD_MAINS_ANALYZE_IN_PROGRESS)))
+			{	
+				weld_task_control |= __WELD_MAINS_ANALYZE_IN_PROGRESS;
+				set_event(MAINS_ANALYZE_MEAS_START,startMainsMeasurement);
+			}
+		}
+		else if(!strcmp(m_command,__STOP_ANALYZE__))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&((weld_task_control & __WELD_MAINS_ANALYZE_IN_PROGRESS)))
+			{	
+				weld_task_control &= ~__WELD_MAINS_ANALYZE_IN_PROGRESS;
+				set_event(MAINS_ANALYZE_MEAS_STOP,stopMainsMeasurement);
+				WeldMachMt310_RelInit();
+			}
+		}
+		else if(!strcmp(m_command,__GET_VOLTAGE__))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&((weld_task_control & __WELD_MAINS_ANALYZE_IN_PROGRESS)))
+			{	
+				meas_task_control |= __RETURN_VOLTAGE;
+				restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
+			}
+		}
+		else if(!strcmp(m_command,__GET_CURRENT__))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&((weld_task_control & __WELD_MAINS_ANALYZE_IN_PROGRESS)))
+			{	
+				meas_task_control |= __RETURN_CURRENT;
+				restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
+			}
+		}
+		else if(!strcmp(m_command,__GET_THD_C__))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&((weld_task_control & __WELD_MAINS_ANALYZE_IN_PROGRESS)))
+			{	
+				meas_task_control |= __RETURN_THD_C;
+				restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
+			}
+		}
+		else if(!strcmp(m_command,__GET_THD_V__))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&((weld_task_control & __WELD_MAINS_ANALYZE_IN_PROGRESS)))
+			{	
+				meas_task_control |= __RETURN_THD_V;
+				restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
+			}
+		}
+		else if(!strcmp(m_command,__GET_POWER_R__))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&((weld_task_control & __WELD_MAINS_ANALYZE_IN_PROGRESS)))
+			{	
+				meas_task_control |= __RETURN_POWER_R;
+				restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
+			}
+		}
+		else if(!strcmp(m_command,__GET_POWER_A__))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&((weld_task_control & __WELD_MAINS_ANALYZE_IN_PROGRESS)))
+			{	
+				meas_task_control |= __RETURN_POWER_A;
+				restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
+			}
+		}
+		else if(!strcmp(m_command,__GET_PF__))
+		{
+			if((meas_task_control & __WELD_MEAS_IN_PROG)&&((weld_task_control & __WELD_MAINS_ANALYZE_IN_PROGRESS)))
+			{	
+				meas_task_control |= __RETURN_PF;
+				restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
+			}
+		}
 		else if(!strcmp(m_command,"TEST"))
 		{
 				test4_on;
@@ -1318,10 +1467,73 @@ static void command_analyze(uint8_t dir)
 			weld_task_control &= ~__WELD_TEST_RECIEVED;
 		
 	}
+/*********************************************************************************/
+/**																		CALIBRATION																**/
+/*********************************************************************************/
+	else if(!strcmp(m_function,__CALIB__))
+	{ 
+		if(!strcmp(m_command,__MEASURE_ULN1__))
+		{
+			if((!(meas_task_control &__MEAS_TASKS_IN_PROG_MASK))&&(!(meas_control &__MEAS_IN_PROGRESS)))
+			{
+				calib_task_control |= __CALIB_ULN1_REQUESTED;
+				set_event(CALIBRATION_MEAS_TASK,calibMeasure);
+			}
+		}
+		if(!strcmp(m_command,__MEASURE_ULN2__))
+		{
+			if((!(meas_task_control &__MEAS_TASKS_IN_PROG_MASK))&&(!(meas_control &__MEAS_IN_PROGRESS)))
+			{
+				calib_task_control |= __CALIB_ULN2_REQUESTED;
+				set_event(CALIBRATION_MEAS_TASK,calibMeasure);
+			}
+		}
+		if(!strcmp(m_command,__MEASURE_ULN3__))
+		{
+			if((!(meas_task_control &__MEAS_TASKS_IN_PROG_MASK))&&(!(meas_control &__MEAS_IN_PROGRESS)))
+			{
+				calib_task_control |= __CALIB_ULN3_REQUESTED;
+				set_event(CALIBRATION_MEAS_TASK,calibMeasure);
+			}
+		}
+		if(!strcmp(m_command,__MEASURE_IL1__))
+		{
+			if((!(meas_task_control &__MEAS_TASKS_IN_PROG_MASK))&&(!(meas_control &__MEAS_IN_PROGRESS)))
+			{
+				calib_task_control |= __CALIB_IL1_REQUESTED;
+				set_event(CALIBRATION_MEAS_TASK,calibMeasure);
+			}
+		}
+		if(!strcmp(m_command,__MEASURE_IL2__))
+		{
+			if((!(meas_task_control &__MEAS_TASKS_IN_PROG_MASK))&&(!(meas_control &__MEAS_IN_PROGRESS)))
+			{
+				calib_task_control |= __CALIB_IL2_REQUESTED;
+				set_event(CALIBRATION_MEAS_TASK,calibMeasure);
+			}
+		}
+		if(!strcmp(m_command,__MEASURE_IL3__))
+		{
+			if((!(meas_task_control &__MEAS_TASKS_IN_PROG_MASK))&&(!(meas_control &__MEAS_IN_PROGRESS)))
+			{
+				calib_task_control |= __CALIB_IL3_REQUESTED;
+				set_event(CALIBRATION_MEAS_TASK,calibMeasure);
+			}
+		}
+		if(!strcmp(m_command,__CALIB_GET_CONSTANTS__))
+		{
+			set_event(TRANSMIT_CALIB_CONSTANTS,transmittCalibConstants);
+		}
+		if(!strcmp(m_command,__CONSTANTS__))
+		{
+			setConstant(&additionalCode[0][0][0],&additionalCode[1][0][0]);
+			setConstant(&additionalCode[0][1][0],&additionalCode[1][1][0]);
+		}
+	}
 /*******************************************************************************/
 /**															ADITIONAL SETTINGS														**/
 /*******************************************************************************/
-			
+	
 }
 
 
@@ -1647,13 +1859,20 @@ static void serial_send_handler(char * send_buff, uint16_t buffer_size,uint8_t d
 //	{
 //		//CDC_Transmit_FS((uint8_t *)"DOLZINA BUFERJA JE 64 BITOV - PROSIM SPREMENI KER NE BO DELAL", 61);
 //	}
-	if(SYNCHRONUS_TRANSMITT == _ON)
+	if((SYNCHRONUS_TRANSMITT == _ON))// && (connection_control == __CONNECTION_ESTABLISHED))
 	{
+			//------------------------------preveri ce je buffer poln-------------------------------
+		if((write_out_count==(TRANSMIT_OUT_BUFF_SIZE-1))&&(read_out_count==0)) return;
+		else if(write_out_count==(read_out_count-1)) return;
+		//--------------------------------------------------------------------------------------
+		//ce je poln ne povecamo stevca ampak smo se zmeri na zadnjem mestu zato je zgoraj return
 		Transmit_out_buff[write_out_count].size=buffer_size;
 		Transmit_out_buff[write_out_count].dirrection =dir;
 		Transmit_out_buff[write_out_count].msg_ptr=(char*)malloc(buffer_size+1);
 		if(!(Transmit_out_buff[write_out_count].msg_ptr==NULL))	//v HEAP-u je zmanjkalo spomina
 			strcpy(Transmit_out_buff[write_out_count].msg_ptr, send_buff);
+		else 
+			return;
 		increaseWritePtr();
 	}
 	else	//ce nimamo vklopljenega sinhroneha posiljanja in sprejemanja potem posljemo takoj
@@ -1683,7 +1902,7 @@ uint32_t SendComMessage(int send_control,char transmitter, char receiver, char *
 	
 	MESSAGE_CONSTRUCTOR message_inst = CreateCommandInstance(transmitter,receiver,function,command,additional_code,data);
 	ConstructProtocolString(temp_str,&message_inst);
-	if(send_control == _ON)
+	if((send_control == _ON))// && (connection_control == __CONNECTION_ESTABLISHED))
 		SendConstructedProtocolMessage(temp_str,dirrection,&message_inst);
 	else 
 		serial_send_handler(temp_str,strlen(temp_str),dirrection);
@@ -1724,6 +1943,7 @@ void ConstructProtocolString(char * target_string,MESSAGE_CONSTRUCTOR *instance)
 {
 	static char CRCval[10];
 	char start_sign[4];
+	uint32_t temp_int=0;
 	int krneki;
 	int krneki2;
 	memset(CRCval, 0 , sizeof(CRCval));
@@ -1731,27 +1951,34 @@ void ConstructProtocolString(char * target_string,MESSAGE_CONSTRUCTOR *instance)
 	start_sign[1]=instance ->transmitter;
 	start_sign[2]=instance ->reciever;
 	start_sign[3]=0;
-	sprintf(target_string, "%s:%.2d:%s:%s:%s:%s:1:", start_sign, instance -> msg_ID, instance->replay_function, instance-> replay_cmd, instance-> replay_additional_code, instance ->replay_data);		
-	sprintf(CRCval, "%d:\r\n", CalculateCRC(target_string));
+	snprintf(target_string, (_SER_BUFFER_SIZE-7), "%s:%.2d:%s:%s:%s:%s:1:", start_sign, instance -> msg_ID, instance->replay_function, instance-> replay_cmd, instance-> replay_additional_code, instance ->replay_data);		
+	temp_int = CalculateCRC(target_string);
+	if(temp_int<10)
+		snprintf(CRCval, 7,"00%d:\r\n", temp_int);
+	else if(temp_int<100)
+		snprintf(CRCval, 7,"0%d:\r\n", temp_int);
+	else
+		snprintf(CRCval, 7,"%d:\r\n", temp_int);
 	strcat(target_string, CRCval);
 }
 void SendConstructedProtocolMessage(char * ProtocolMsg, int Receiver,MESSAGE_CONSTRUCTOR *instance)
 {
-	serial_send_handler(ProtocolMsg,(strlen(ProtocolMsg)),Receiver);
-	#if TRANSMIT_COMMAND_CHECK == _ON
-	//postavimo komando v ciklicen buffer za oddajanje
-	switch(transmit_func(strlen(ProtocolMsg),Receiver,ProtocolMsg,instance->msg_ID,instance ->reciever))
-	{
-		//zmanjkalo je HEAP spomina
-		case 1:
-			break;		
-		//buffer poln
-		case 2:
+	//preverimo ce je vse nastavljeno, ce ni potem ne naredimo nic
+		serial_send_handler(ProtocolMsg,(strlen(ProtocolMsg)),Receiver);
+		#if TRANSMIT_COMMAND_CHECK == _ON
+		//postavimo komando v ciklicen buffer za oddajanje
+		switch(transmit_func(strlen(ProtocolMsg),Receiver,ProtocolMsg,instance->msg_ID,instance ->reciever))
+		{
+			//zmanjkalo je HEAP spomina
+			case 1:
+				break;		
+			//buffer poln
+			case 2:
+				break;
+		default:
 			break;
-	default:
-		break;
-	}
-	#endif
+		}
+		#endif
 }
 //-------------------FUNKCIJA ZA PARSANJE VHODNIH PODATKOV-----------------
 //funkcija vrne 0 - vse OK
@@ -2061,14 +2288,30 @@ void SerialSend(uint8_t * msg_ptr,uint16_t msg_size, uint32_t dir)
 		{
 	//		for(int i=0; i <= (msg_size/10);i++)
 	//		{
+			
 			if(hUsbDeviceFS.dev_state == USBD_STATE_CONFIGURED)
 			{
-				do
-				{
-					result = CDC_Transmit_FS(msg_ptr, msg_size);//dokler ni enako 0
-					//result = CDC_Transmit_FS(msg_ptr+(i*10), 10);//dokler ni enako 0
-					indikator1=result;
-				}while(result == USBD_BUSY);
+//				//zajebava ce je string dolg 64, zato posljemo 2x pa se zmeri jebe
+//				if(msg_size==64)
+//				{
+//					do
+//					{
+//						result = CDC_Transmit_FS(msg_ptr, (msg_size/2));
+//					}while(result == USBD_BUSY);
+//					do
+//					{
+//						result = CDC_Transmit_FS((msg_ptr+(msg_size/2)), msg_size/2);
+//					}while(result == USBD_BUSY);
+//				}
+//				else
+//				{
+						do
+						{
+							result = CDC_Transmit_FS(msg_ptr, msg_size);//dokler ni enako 0
+							//result = CDC_Transmit_FS(msg_ptr+(i*10), 10);//dokler ni enako 0
+							indikator1=result;
+						}while(result == USBD_BUSY);
+	//				}
 			}
 	//		}
 		}
@@ -2087,7 +2330,9 @@ void SynchronusProcess(void)
 		if(synchronus_error_count>=SYNCHRONUS_ERROR_CNT)
 		{
 			serialComErrorDetected = true;
-			serial_com_deinit();
+			//serial_com_deinit();
+			//zaenkrat tkole pol bo treba spremenit
+			disconnect_function(__CON_TO_MT310);
 		}
 		else
 		{

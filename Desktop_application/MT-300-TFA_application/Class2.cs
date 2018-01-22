@@ -93,8 +93,8 @@ namespace MT_300_TFA_application
         private const int MAX_VALID_COMMANDS = 50;
         //                                                  0           1           2           3           4           5           6           7           8           9           10          11          12          13          14          15          16          17          18          19          20          21          22          23          24          25          26          27          28          29          30          31          32          33          34          35          36       
         public static String[] FUNCTION_COMMUNICATON_NAMES = {"MT-300-TFA"};
-            //                                                   0          1       2       3           4       5       6        7       8
-        public static String[] COMMAND_TYPE_NAMES =  {        "POWER", "RELAY", "WARNING", "TEST", "COMMUN", "CORD", "STATUS" ,"MACH", "WELD" };
+            //                                                   0          1       2       3           4       5       6        7       8      9
+        public static String[] COMMAND_TYPE_NAMES =  {        "POWER", "RELAY", "WARNING", "TEST", "COMMUN", "CORD", "STATUS" ,"MACH", "WELD","CALIB" };
 
         public static String[] CONNECTION_CODE_NAMES = {"CONNECT_REQUEST", "CONNECTION_ESTABLED", "CONNECTION_CHECK"};
         public static String[] CONNECTION_ADD_NAMES = {"MT-310", "OK", "NOK"};
@@ -111,12 +111,18 @@ namespace MT_300_TFA_application
         //                                                  0           1       2           3               4               5            6           7           8                9         10        11          12           13          14               15              16                  17                  18                  19              20           21             22          23              24
         public static String[] MACH_COMMAND_NAMES = { "START_URES", "INIT", "DEINIT", "URES_STARTED", "URES_STOPPED", "URES_FINISHED", "STOP", "URES_OPEN", "URES_OPENED", "INITIATED", "TEST", "START_RPE", "STOP_RPE", "RPE_STARTED", "RPE_STOPPED", "START_ALL-PE", "START_ONE-PE", "RISO_ALL-PE_RESULT", "RISO_ONE-PE_RESULT", "RISO_START", "RISO_STARTED", "RISO_STOP", "RISO_STOPPED", "RISO_RES_GET", "RISO_RES" };
         public static String[] MACH_ADD_NAMES = { "TEST" };
+        //                                                  0               1           2               3               4               5
+        public static String[] CALIB_COMMAND_NAMES = { "MEASURE_ULN1", "VOLTAGE", "MEASURE_ULN2", "MEASURE_ULN3" , "GET_CONSTANTS", "CONSTANTS"};
+        //                                            0      1       2           3       4           5       6           7       8
+        public static String[] CALIB_ADD_NAMES = { "ULN1", "ULN2", "ULN3", "ULN1_K", "ULN1_N", "ULN2_K", "ULN2_N", "ULN3_K", "ULN3_N" };
         public static String[] STATUS_CODE_NAMES = {""};
         public static String[] STATUS_VALUE_NAMES = {""};
         public static String[] WARNING_CODE_NAMES = {"COMMAND_SEND_ERROR"};
         public static String[] POWER_CODE_NAMES = {"START", "STOP", "START_NTHD",};
         //                                                  0           1       2           3               4               5            6           7           8                9         10        11          12           13          14               15              16                  17                  18                  19              20           21             22          23              24                  25                  26                  27              28                      29                  30                  31              32              33              34
         public static String[] WELD_COMMAND_NAMES = { "START_URES", "INIT", "DEINIT", "URES_STARTED", "URES_STOPPED", "URES_FINISHED", "STOP", "URES_OPEN", "URES_OPENED", "INITIATED", "TEST", "START_RPE", "STOP_RPE", "RPE_STARTED", "RPE_STOPPED", "START_ALL-PE", "START_ONE-PE", "RISO_ALL-PE_RESULT", "RISO_ONE-PE_RESULT", "RISO_START", "RISO_STARTED", "RISO_STOP", "RISO_STOPPED", "RISO_RES_GET", "RISO_RES", "START_MAINS-WELD", "START_MAINS-CLASS2", "START_WELD-PE", "MAINS-WELD_RESULT", "MAINS-CLASS2_RESULT", "WELD-PE_RESULT", "START_UNL_RMS", "STOP_UNL_RMS", "START_UNL_PEAK", "STOP_UNL_PEAK" };
+        //                                                      0                1                  2           3       4               5       6           7       8           9       10              11          12          13      14     15       16              17
+        public static String[] ANALYZE_COMMAND_NAMES = { "START_ANALYZE", "ANALYZE_STARTED", "GET_VOLTAGE","VOLTAGE","GET_CURRENT","CURRENT","GET_THD_C","THD_C","GET_THD_V","THD_V","GET_POWER_R","POWER_R","GET_POWER_A","POWER_A","GET_PF","PF","STOP_ANALYZE","ANALYZE_STOPPED"};
         //                                             0       1
         public static String[] WELD_CODE_NAMES = { "SINGLE", "CONT"};
         public static String[] RELAY_CODE_NAMES =
@@ -848,6 +854,34 @@ namespace MT_300_TFA_application
                     {
                         mach_return_event(m_leftover, m_command);
                     }
+                    else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[3])) //VOLTAGE
+                    {
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], additionalCode[1, 3]);
+                    }
+                    else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[5])) //CURRENT
+                    {
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], "");
+                    }
+                    else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[7])) //THD_C
+                    {
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], "");
+                    }
+                    else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[9])) //THD_V
+                    {
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], "");
+                    }
+                    else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[11])) //POWER R
+                    {
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], additionalCode[1, 3]);
+                    }
+                    else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[13])) //POWER A
+                    {
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], additionalCode[1, 3]);
+                    }
+                    else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[15])) //PF
+                    {
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], additionalCode[1, 3]);
+                    }
                     else
                     {
                        mach_return_event("", m_command);
@@ -898,9 +932,60 @@ namespace MT_300_TFA_application
                     {
                         weld_return_event(m_leftover, m_command);
                     }
+                    else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[3])) //VOLTAGE
+                    {
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], additionalCode[1, 3]);
+                    }
+                    else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[5])) //CURRENT
+                    {
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], "");
+                    }
+                    else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[7])) //THD_C
+                    {
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], "");
+                    }
+                    else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[9])) //THD_V
+                    {
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], "");
+                    }
+                    else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[11])) //POWER R
+                    {
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], additionalCode[1, 3]);
+                    }
+                    else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[13])) //POWER A
+                    {
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], additionalCode[1, 3]);
+                    }
+                    else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[15])) //PF
+                    {
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], additionalCode[1, 3]);
+                    }
                     else
                     {
                         weld_return_event("", m_command);
+                    }
+                }
+                /*******************************************************************************/
+                /**								CALIBRATION        							  **/
+                /*******************************************************************************/
+                else if (String.Equals(m_function, COMMAND_TYPE_NAMES[9])) //CALIBRATION
+                {
+                    if (String.Equals(m_command, CALIB_COMMAND_NAMES[1])) //VOLTAGE
+                    {
+                        calib_event(m_command, additionalCode[0, 0], additionalCode[1, 0]);
+                    }
+                    else if (String.Equals(m_command, CALIB_COMMAND_NAMES[5])) //CONSTANTS
+                    {
+                        calib_event(m_command, additionalCode[0, 0], additionalCode[1, 0]);
+                        calib_event(m_command, additionalCode[0, 1], additionalCode[1, 1]);
+                        calib_event(m_command, additionalCode[0, 2], additionalCode[1, 2]);
+                        calib_event(m_command, additionalCode[0, 3], additionalCode[1, 3]);
+                        calib_event(m_command, additionalCode[0, 4], additionalCode[1, 4]);
+                        calib_event(m_command, additionalCode[0, 5], additionalCode[1, 5]);
+                    }
+                    else
+                    {
+                        calib_event(m_command,"","");
                     }
                 }
         }
@@ -924,7 +1009,19 @@ namespace MT_300_TFA_application
         {
             this.weldReturnEventHandler(this, return_string, cmd);
         }
+        public delegate void analyze_result(object sender, string cmd, string value1, string value2, string value3, string value4);
+        public event analyze_result analyzeReturnEventHandler = delegate { };
+        public void analyze_event(string cmd, string value1, string value2, string value3, string value4)
+        {
+            this.analyzeReturnEventHandler(this, cmd, value1,value2,value3,value4);
+        }
 
+        public delegate void calib_return_result(object sender, string cmd, string value1, string value2);
+        public event calib_return_result calibReturnEventHandler = delegate { };
+        public void calib_event(string cmd, string value1, string value2)
+        {
+            this.calibReturnEventHandler(this, cmd, value1, value2);
+        }
         private void send_message()
         {
             if (message_to_send == 1)
@@ -1089,7 +1186,7 @@ namespace MT_300_TFA_application
             //preveri ce je buffer prazen
             do
             {
-                Thread.Sleep(100);
+                Thread.Sleep(300);
                 if (transmitt_handle_read_count == transmitt_handle_write_count)
                 {
                     task2_ex_flag = false;

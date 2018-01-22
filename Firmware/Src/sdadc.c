@@ -12,10 +12,12 @@
  #include "test.h"
  #include "comunication.h"
  #include "stm32f3xx_hal_conf.h"
+ #include <string.h>
 
 //---------------------------GLOBAL VARIABLES------------------------------------
 struct MEAS_struct{
-	float correction;
+	float k;
+	float n;
 	float effective;
 	float avarage_sq;
 	float THD_value;
@@ -37,6 +39,10 @@ struct SDADC_struct{
 	int32_t peak_sum;
 	uint32_t peak_sum_count;
 	uint32_t aux_count;
+};
+
+struct FilterStruct{
+	float y1,y2,x0,x1,x2;
 };
 
 uint16_t stevec2;
@@ -65,6 +71,12 @@ struct MEAS_struct ULN3;
 struct POWER_struct PHASE1;
 struct POWER_struct PHASE2;
 struct POWER_struct PHASE3;
+struct FilterStruct IL1_LPF_TRMS;
+struct FilterStruct IL2_LPF_TRMS;
+struct FilterStruct IL3_LPF_TRMS;
+struct FilterStruct ULN1_LPF_TRMS;
+struct FilterStruct ULN2_LPF_TRMS;
+struct FilterStruct ULN3_LPF_TRMS;
 enum IL_GAIN IL1_GAIN;
 enum IL_GAIN IL2_GAIN;
 enum IL_GAIN IL3_GAIN;
@@ -124,6 +136,7 @@ static void SDADC1_THD_channel(void);
 //Sampling Frequency: 5.555KHz
 //Lower Cut-off Frequency: 0.005KHz
 //Filter Order: 2
+//																				b0						b1					b2				a1					a0
 static float32_t IIR_HPF2_coeffs[5] = {0.996028066, -1.99205613,0.996028066,1.992002,-0.992033839};	//PAZI! a koeficiente monzi z -1
 //---------------------------------ULN------------------------------------------
 //Fs=16,666 kHz, Fc=5 Hz, butterworth
@@ -183,6 +196,16 @@ static const arm_biquad_casd_df1_inst_f32 INST_UL1PE_LPF = {1, UL1PE_IIR_LOW_sta
 static float32_t UNPE_IIR_LOW_state[4];	
 static const arm_biquad_casd_df1_inst_f32 INST_UNPE_LPF = {1, UNPE_IIR_LOW_state, IIR_LPF2_coeffs};
 //-----------------------------------------------------------------------------------
+
+//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+//IIR Type (Biquad): Butterworth
+//Filter Arithmetic: Floating Point (Single Precision)
+//Response: Lowpass
+//Sampling Frequency: 5.555KHz
+//Lower Cut-off Frequency: 0.005KHz
+//Filter Order: 2
+//																							b0						b1						b2
+static float32_t IIR_LPF_TRMS_coeffs[5] = {0.00000796410,0.0000159282,0.00000796410,1.59282188302,-0.99203398581};
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 void MX_SDADC1_Init(void)
@@ -917,6 +940,33 @@ float get_value(uint32_t param)
 		case __IL3: return IL3.effective;
 		case __UL1PE: return UL1PE.effective;
 		case __UNPE: return UNPE.effective;
+		case __T_ULN1: return ULN1.THD_value;
+		case __T_ULN2: return ULN2.THD_value;
+		case __T_ULN3: return ULN3.THD_value;
+		case __T_IL1: return IL1.THD_value;
+		case __T_IL2: return IL2.THD_value;
+		case __T_IL3: return IL3.THD_value;
+		case __PL1:return PHASE1.real_power;
+		case __PL2:return PHASE2.real_power;
+		case __PL3:return PHASE3.real_power;
+		case __SL1:return PHASE1.apparent_power;
+		case __SL2:return PHASE2.apparent_power;
+		case __SL3:return PHASE3.apparent_power;
+		case __PF1:return PHASE1.PF;
+		case __PF2:return PHASE2.PF;
+		case __PF3:return PHASE3.PF;
+		case __ULN1_K:return ULN1.k;
+		case __ULN2_K:return ULN2.k;
+		case __ULN3_K:return ULN3.k;
+		case __ULN1_N:return ULN1.n;
+		case __ULN2_N:return ULN2.n;
+		case __ULN3_N:return ULN3.n;
+		case __IL1_K:return IL1.k;
+		case __IL2_K:return IL2.k;
+		case __IL3_K:return IL3.k;
+		case __IL1_N:return IL1.n;
+		case __IL2_N:return IL2.n;
+		case __IL3_N:return IL3.n;
 		default: return 0;
 	}
 }
@@ -934,6 +984,59 @@ float get_inst_value(uint32_t param)
 		case __UL1PE: return SDADC3_CH2s.sempl;
 		case __UNPE: return SDADC3_CH3s.sempl;
 		default: return 0;
+	}
+}
+void setConstant(char* constant, char* value)
+{
+	float temp = atof(value);
+		
+	if(!strcmp(constant,__CALIB_ULN1K__))
+	{
+			ULN1.k= temp;
+	}
+	else if(!strcmp(constant,__CALIB_ULN2K__))
+	{
+			ULN2.k= temp;
+	}
+	else if(!strcmp(constant,__CALIB_ULN3K__))
+	{
+			ULN3.k= temp;
+	}
+	else if(!strcmp(constant,__CALIB_ULN1N__))
+	{
+			ULN1.n= temp;
+	}
+	else if(!strcmp(constant,__CALIB_ULN2N__))
+	{
+			ULN2.n= temp;
+	}
+	else if(!strcmp(constant,__CALIB_ULN3N__))
+	{
+			ULN3.n= temp;
+	}
+	else if(!strcmp(constant,__CALIB_IL1K__))
+	{
+			IL1.k= temp;
+	}
+	else if(!strcmp(constant,__CALIB_IL2K__))
+	{
+			IL2.k= temp;
+	}
+	else if(!strcmp(constant,__CALIB_IL3K__))
+	{
+			IL3.k= temp;
+	}
+	else if(!strcmp(constant,__CALIB_IL1N__))
+	{
+			IL1.n= temp;
+	}
+	else if(!strcmp(constant,__CALIB_IL2N__))
+	{
+			IL2.n= temp;
+	}
+	else if(!strcmp(constant,__CALIB_IL3N__))
+	{
+			IL3.n= temp;
 	}
 }
 void SDADC1_Handler(void)
@@ -1048,15 +1151,12 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 	static uint32_t thd_counter2=0;
   float SDADC1_sample;
 	float SDADC1_sample2;
-	ULN1.correction = 1;
-	ULN2.correction = 1;
-	ULN3.correction = 1;
 	float uln1_temp;	
 	float uln2_temp;
 	float uln3_temp;
-	uln1_temp = ULN1.correction*ULN1_GAIN1;
-	uln2_temp = ULN2.correction*ULN2_GAIN1;
-	uln3_temp = ULN3.correction*ULN3_GAIN1;
+	uln1_temp = ULN1_GAIN1;
+	uln2_temp = ULN2_GAIN1;
+	uln3_temp = ULN3_GAIN1;
 	#if THD_FFT_WINDOW != 0
 	float nminus1inv;
 	nminus1inv=(float)(1.0/FFT_SAMPLE_NUMBER);
@@ -1214,8 +1314,10 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 				}
 				if(SDADC1_low_pass_filter==_ON)
 				{
+					test2_on;
 					SDADC1_sample2=SDADC1_sample;
 					arm_biquad_cascade_df1_f32(&INST_ULN2_LPF, &SDADC1_sample2, &SDADC1_sample,1);
+					test2_off;
 				}
 			}
 			break;
@@ -1299,6 +1401,7 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 		}
 			default: break;
 	}
+	float32_t temp_semp;
 	//sledeca koda se izvaja v primeru da ni THD meritev
 	if((!(meas_control & __THD_MEASURING))||(THD_COMPUTATION_METHOD==FFT))
 	{
@@ -1339,7 +1442,18 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 						SDADC1_CH1s.peak_sum=0;
 					}
 					SDADC1_CH1s.sempl=SDADC1_sample;
+//					//filtriranje in mnozenje za izracun TRMS (DC vrednost je ze odrezana z HPF
+//					#if COMPUTE_TRMS == _ON
+//					ULN1_LPF_TRMS.x0=SDADC1_CH1s.sempl*SDADC1_CH1s.sempl;
+//					temp_semp = (ULN1_LPF_TRMS.x0* IIR_LPF_TRMS_coeffs[0]) + (ULN1_LPF_TRMS.x1 * IIR_LPF_TRMS_coeffs[1]) + (ULN1_LPF_TRMS.x2 * IIR_LPF_TRMS_coeffs[2]) + (ULN1_LPF_TRMS.y1 * IIR_LPF_TRMS_coeffs[3]) + (ULN1_LPF_TRMS.y2 * IIR_LPF_TRMS_coeffs[4]);
+//					ULN1_LPF_TRMS.x2=ULN1_LPF_TRMS.x1;
+//					ULN1_LPF_TRMS.x1= ULN1_LPF_TRMS.x0;
+//					ULN1_LPF_TRMS.y2 = ULN1_LPF_TRMS.y1;
+//					ULN1_LPF_TRMS.y1 = temp_semp;
+//					SDADC1_CH1s.sum += temp_semp;
+//					#else
 					SDADC1_CH1s.sum += (SDADC1_CH1s.sempl*SDADC1_CH1s.sempl);
+//					#endif
 					if(SDADC1_CH1s.sample_count>=SDADC1_ULN_SAMPLE_CNT)
 					{
 						if(!(compute_control & __ULN1_SAMPLED))ULN1.avarage_sq = SDADC1_CH1s.sum/(SDADC1_CH1s.sample_count+1);
@@ -1385,8 +1499,21 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 						SDADC1_CH2s.peak_at=SDADC1_CH2s.peak_sum/PHASE_AVARAGE_CNT;//izracunamo povprecje
 						SDADC1_CH2s.peak_sum=0;
 					}
+					test1_on;
 					SDADC1_CH2s.sempl=SDADC1_sample;
+					//filtriranje in mnozenje za izracun TRMS (DC vrednost je ze odrezana z HPF
+					#if COMPUTE_TRMS == _ON
+					ULN2_LPF_TRMS.x0=SDADC1_CH2s.sempl*SDADC1_CH2s.sempl;
+					temp_semp = (ULN2_LPF_TRMS.x0* IIR_LPF_TRMS_coeffs[0]) + (ULN2_LPF_TRMS.x1 * IIR_LPF_TRMS_coeffs[1]) + (ULN2_LPF_TRMS.x2 * IIR_LPF_TRMS_coeffs[2]) + (ULN2_LPF_TRMS.y1 * IIR_LPF_TRMS_coeffs[3]) + (ULN2_LPF_TRMS.y2 * IIR_LPF_TRMS_coeffs[4]);
+					ULN2_LPF_TRMS.x2=ULN2_LPF_TRMS.x1;
+					ULN2_LPF_TRMS.x1= ULN2_LPF_TRMS.x0;
+					ULN2_LPF_TRMS.y2 = ULN2_LPF_TRMS.y1;
+					ULN2_LPF_TRMS.y1 = temp_semp;
+					SDADC1_CH2s.sum += temp_semp;
+					#else
 					SDADC1_CH2s.sum += (SDADC1_CH2s.sempl*SDADC1_CH2s.sempl);
+					#endif
+					test1_off;
 					if(SDADC1_CH2s.sample_count>=SDADC1_ULN_SAMPLE_CNT)
 					{
 						if(!(compute_control & __ULN2_SAMPLED))ULN2.avarage_sq = (SDADC1_CH2s.sum/(SDADC1_CH2s.sample_count+1));
@@ -1433,7 +1560,18 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 						SDADC1_CH3s.peak_sum=0;
 					}
 					SDADC1_CH3s.sempl=SDADC1_sample;
+					//filtriranje in mnozenje za izracun TRMS (DC vrednost je ze odrezana z HPF
+					#if COMPUTE_TRMS == _ON
+					ULN3_LPF_TRMS.x0=SDADC1_CH3s.sempl*SDADC1_CH3s.sempl;
+					temp_semp = (ULN3_LPF_TRMS.x0* IIR_LPF_TRMS_coeffs[0]) + (ULN3_LPF_TRMS.x1 * IIR_LPF_TRMS_coeffs[1]) + (ULN3_LPF_TRMS.x2 * IIR_LPF_TRMS_coeffs[2]) + (ULN3_LPF_TRMS.y1 * IIR_LPF_TRMS_coeffs[3]) + (ULN3_LPF_TRMS.y2 * IIR_LPF_TRMS_coeffs[4]);
+					ULN3_LPF_TRMS.x2=ULN3_LPF_TRMS.x1;
+					ULN3_LPF_TRMS.x1= ULN3_LPF_TRMS.x0;
+					ULN3_LPF_TRMS.y2 = ULN3_LPF_TRMS.y1;
+					ULN3_LPF_TRMS.y1 = temp_semp;
+					SDADC1_CH3s.sum += temp_semp;
+					#else
 					SDADC1_CH3s.sum += (SDADC1_CH3s.sempl*SDADC1_CH3s.sempl);
+					#endif
 					if(SDADC1_CH3s.sample_count>=SDADC1_ULN_SAMPLE_CNT)
 					{
 						if(!(compute_control & __ULN3_SAMPLED))ULN3.avarage_sq = (SDADC1_CH3s.sum/(SDADC1_CH3s.sample_count+1));
@@ -1473,14 +1611,11 @@ static void measure_IL_Current(int16_t ConvertionResult, uint32_t channel)
 	//-------------------------racunanje korekcijske spremenljivke-----------------------
 	//ko bo narejen umerjanje s softwerom zamenjaj ILX_GAIN1_CORRECTION z ILX.correction
 	//in pobrisi spodnje tri vrstice
-	IL1.correction = 1;
-	IL2.correction = 1;
-	IL3.correction = 1;
-	if(IL1_GAIN==__GAIN1) il1_temp = IL1_GAIN1_CORRECTION*IL1_GAIN1;
+	if(IL1_GAIN==__GAIN1) il1_temp = IL1_GAIN1;
 	else il1_temp = IL1_GAIN40_CORRECTION*IL1_GAIN40;
-	if(IL2_GAIN==__GAIN1) il2_temp = IL2_GAIN1_CORRECTION*IL2_GAIN1;
+	if(IL2_GAIN==__GAIN1) il2_temp = IL2_GAIN1;
 	else il2_temp = IL2_GAIN40_CORRECTION*IL2_GAIN40;
-	if(IL3_GAIN==__GAIN1) il3_temp = IL3_GAIN1_CORRECTION*IL3_GAIN1;
+	if(IL3_GAIN==__GAIN1) il3_temp = IL3_GAIN1;
 	else il3_temp = IL3_GAIN40_CORRECTION*IL3_GAIN40;
 	//-----------------------------------------------------------------------------------
 	switch(channel)
@@ -1767,6 +1902,7 @@ static void measure_IL_Current(int16_t ConvertionResult, uint32_t channel)
 		}
 		default: break;
 	}
+	float32_t temp_semp;
 	//sledeca koda se izvaja v primeru da ni THD meritev
 	if((!(meas_control & __THD_MEASURING))||(THD_COMPUTATION_METHOD==FFT))
 	{
@@ -1777,7 +1913,19 @@ static void measure_IL_Current(int16_t ConvertionResult, uint32_t channel)
 				if((!(meas_control & __IL1_MEASURED))||(meas_control & __NO_THD_MEAS)||(THD_COMPUTATION_METHOD==FFT))
 				{
 					SDADC2_CH1s.sempl=SDADC2_sample;
+					//filter cca 2x hitrejsi od CMSIS (trajanje filtra cca 1.05 us)
+					//filtriranje in mnozenje za izracun TRMS (DC vrednost je ze odrezana z HPF
+					#if COMPUTE_TRMS == _ON
+					IL1_LPF_TRMS.x0 = SDADC2_CH1s.sempl*SDADC2_CH1s.sempl;
+					temp_semp = (IL1_LPF_TRMS.x0* IIR_LPF_TRMS_coeffs[0]) + (IL1_LPF_TRMS.x1 * IIR_LPF_TRMS_coeffs[1]) + (IL1_LPF_TRMS.x2 * IIR_LPF_TRMS_coeffs[2]) + (IL1_LPF_TRMS.y1 * IIR_LPF_TRMS_coeffs[3]) + (IL1_LPF_TRMS.y2 * IIR_LPF_TRMS_coeffs[4]);
+					IL1_LPF_TRMS.x2=IL1_LPF_TRMS.x1;
+					IL1_LPF_TRMS.x1= IL1_LPF_TRMS.x0;
+					IL1_LPF_TRMS.y2 = IL1_LPF_TRMS.y1;
+					IL1_LPF_TRMS.y1 = temp_semp;
+					SDADC2_CH1s.sum += temp_semp;
+					#else
 					SDADC2_CH1s.sum += (SDADC2_CH1s.sempl*SDADC2_CH1s.sempl);
+					#endif
 					if(compute_control2 & __POWER_MEAS_ON)
 					{
 						//trenutna delovna moc	(SDADC1_CH1.sempl se pomeri pred tem)
@@ -1811,7 +1959,19 @@ static void measure_IL_Current(int16_t ConvertionResult, uint32_t channel)
 				if((!(meas_control & __IL2_MEASURED))||(meas_control & __NO_THD_MEAS)||(THD_COMPUTATION_METHOD==FFT))
 				{
 					SDADC2_CH2s.sempl=SDADC2_sample;
+					//filter cca 2x hitrejsi od CMSIS (trajanje filtra cca 1.05 us)
+					//filtriranje in mnozenje za izracun TRMS (DC vrednost je ze odrezana z HPF
+					#if COMPUTE_TRMS == _ON
+					IL2_LPF_TRMS.x0 = SDADC2_CH2s.sempl*SDADC2_CH2s.sempl;
+					temp_semp = (IL2_LPF_TRMS.x0* IIR_LPF_TRMS_coeffs[0]) + (IL2_LPF_TRMS.x1 * IIR_LPF_TRMS_coeffs[1]) + (IL2_LPF_TRMS.x2 * IIR_LPF_TRMS_coeffs[2]) + (IL2_LPF_TRMS.y1 * IIR_LPF_TRMS_coeffs[3]) + (IL2_LPF_TRMS.y2 * IIR_LPF_TRMS_coeffs[4]);
+					IL2_LPF_TRMS.x2=IL2_LPF_TRMS.x1;
+					IL2_LPF_TRMS.x1= IL2_LPF_TRMS.x0;
+					IL2_LPF_TRMS.y2 = IL2_LPF_TRMS.y1;
+					IL2_LPF_TRMS.y1 = temp_semp;
+					SDADC2_CH2s.sum += temp_semp;
+					#else
 					SDADC2_CH2s.sum += (SDADC2_CH2s.sempl*SDADC2_CH2s.sempl);
+					#endif
 					if(compute_control2 & __POWER_MEAS_ON)
 					{
 						//trenutna delovna moc	(SDADC1_CH1.sempl se pomeri pred tem)
@@ -1843,7 +2003,20 @@ static void measure_IL_Current(int16_t ConvertionResult, uint32_t channel)
 				if((!(meas_control & __IL3_MEASURED))||(meas_control & __NO_THD_MEAS)||(THD_COMPUTATION_METHOD==FFT))
 				{
 					SDADC2_CH3s.sempl=SDADC2_sample;
+					//filter cca 2x hitrejsi od CMSIS (trajanje filtra cca 1.05 us)
+					//filtriranje in mnozenje za izracun TRMS (DC vrednost je ze odrezana z HPF
+					#if COMPUTE_TRMS == _ON
+					IL3_LPF_TRMS.x0 = SDADC2_CH3s.sempl*SDADC2_CH3s.sempl;
+					temp_semp = (IL3_LPF_TRMS.x0* IIR_LPF_TRMS_coeffs[0]) + (IL3_LPF_TRMS.x1 * IIR_LPF_TRMS_coeffs[1]) + (IL3_LPF_TRMS.x2 * IIR_LPF_TRMS_coeffs[2]) + (IL3_LPF_TRMS.y1 * IIR_LPF_TRMS_coeffs[3]) + (IL3_LPF_TRMS.y2 * IIR_LPF_TRMS_coeffs[4]);
+					IL3_LPF_TRMS.x2=IL3_LPF_TRMS.x1;
+					IL3_LPF_TRMS.x1= IL3_LPF_TRMS.x0;
+					IL3_LPF_TRMS.y2 = IL3_LPF_TRMS.y1;
+					IL3_LPF_TRMS.y1 = temp_semp;
+					SDADC2_CH3s.sum += temp_semp;
+					#else
 					SDADC2_CH3s.sum += (SDADC2_CH3s.sempl*SDADC2_CH3s.sempl);
+					#endif
+					//SDADC2_CH3s.sum += (SDADC2_CH3s.sempl*SDADC2_CH3s.sempl);
 					if(compute_control2 & __POWER_MEAS_ON)
 					{
 						//trenutna delovna moc	(SDADC1_CH1.sempl se pomeri pred tem)
@@ -1979,36 +2152,42 @@ void compute_rms(void)
 	if(compute_control & __ULN1_SAMPLED)	
 	{
 		arm_sqrt_f32(ULN1.avarage_sq, &ULN1.effective);
+		ULN1.effective = ULN1.effective*ULN1.k+ULN1.n;
 		compute_control |= __ULN1_EFF_COMPUTED;
 		compute_control&=(~__ULN1_SAMPLED);
 	}
 	if(compute_control & __ULN2_SAMPLED)	
 	{
 		arm_sqrt_f32(ULN2.avarage_sq, &ULN2.effective);
+		ULN2.effective = ULN2.effective*ULN2.k+ULN2.n;
 		compute_control2 |= __ULN2_EFF_COMPUTED;
 		compute_control&=(~__ULN2_SAMPLED);
 	}
 	if(compute_control & __ULN3_SAMPLED)	
 	{
 		arm_sqrt_f32(ULN3.avarage_sq, &ULN3.effective);	
+		ULN3.effective = ULN3.effective*ULN3.k+ULN3.n;
 		compute_control2 |= __ULN3_EFF_COMPUTED;		
 		compute_control&=(~__ULN3_SAMPLED);
 	}
 	if(compute_control & __IL1_SAMPLED)	
 	{
 		arm_sqrt_f32(IL1.avarage_sq, &IL1.effective);
+		IL1.effective = IL1.effective*IL1.k+IL1.n;
 		compute_control |= __IL1_EFF_COMPUTED;
 		compute_control&=(~__IL1_SAMPLED);
 	}
 	if(compute_control & __IL2_SAMPLED)	
 	{
 		arm_sqrt_f32(IL2.avarage_sq, &IL2.effective);
+		IL2.effective = IL2.effective*IL2.k+IL2.n;
 		compute_control |= __IL2_EFF_COMPUTED;
 		compute_control&=(~__IL2_SAMPLED);
 	}
 	if(compute_control & __IL3_SAMPLED)	
 	{
 		arm_sqrt_f32(IL3.avarage_sq, &IL3.effective);
+		IL3.effective = IL3.effective*IL3.k+IL3.n;
 		compute_control |= __IL3_EFF_COMPUTED;
 		compute_control&=(~__IL3_SAMPLED);
 	}
@@ -2149,9 +2328,8 @@ static void measure_IDIFF(int16_t ConvertionResult)
 {
 	float SDADC3_sample;
 	float SDADC3_sample2;
-	IDIFF.correction = 1;
 	float idiff1_temp;
-	idiff1_temp = IDIFF.correction*IDIFF_GAIN_1;
+	idiff1_temp = IDIFF_GAIN_1;
 	float32_t temp1, temp2, temp3;
 
 	SDADC3_sample = ConvertionResult*idiff1_temp;// - 32768;//pretvorba v 1k
@@ -2211,9 +2389,8 @@ static void measure_UL1PE(int16_t ConvertionResult)
 {
 	float SDADC3_sample;
 	float SDADC3_sample2;
-	UL1PE.correction = 1;
 	float ul1pe_temp;	
-	ul1pe_temp = UL1PE.correction*UL1PE_GAIN1;
+	ul1pe_temp = UL1PE_GAIN1;
 
 	
 
@@ -2246,9 +2423,8 @@ static void measure_UNPE(int16_t ConvertionResult)
 {
 	float SDADC3_sample;
 	float SDADC3_sample2;
-	UNPE.correction = 1;
 	float unpe_temp;	
-	unpe_temp = UNPE.correction*UNPE_GAIN1;
+	unpe_temp = UNPE_GAIN1;
 	SDADC3_sample = ConvertionResult*unpe_temp;// - 32768;//pretvorba v 1k
 	//--------------------------------------
 	if(UNPE_high_pass_filter==_ON)
@@ -2390,4 +2566,19 @@ void write_THD(float32_t value, uint32_t place)
     	default:
     		break;
     }
+}
+void setInitConstants(void)
+{
+	ULN1.k=1;
+	ULN1.n=0;
+	ULN2.k=1;//2.369;
+	ULN2.n=0;//-17.016;
+	ULN3.k=1;//2.369;
+	ULN3.n=0;//-17.016;
+	IL1.k=1;
+	IL1.n=0;
+	IL2.k=1;
+	IL2.n=0;
+	IL3.k=1;
+	IL3.n=0;
 }

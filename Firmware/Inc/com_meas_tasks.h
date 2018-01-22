@@ -3,6 +3,9 @@
 
 void setNormal(void);
 void WeldMachMt310_RelInit(void);
+void startMainsMeasurement(void);
+void returnMeasuredTask(void);
+void stopMainsMeasurement(void);
 
 #define _1_PHASE 1
 #define _3_PHASE 3

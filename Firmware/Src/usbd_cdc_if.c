@@ -50,7 +50,10 @@
 #include "usbd_cdc_if.h"
 #include "usb.h"
 #include <stdbool.h>
+#include "defines.h"
 /* USER CODE BEGIN INCLUDE */
+
+extern uint32_t connection_control;
 /* USER CODE END INCLUDE */
 
 /** @addtogroup STM32_USB_OTG_DEVICE_LIBRARY
@@ -254,9 +257,14 @@ static int8_t CDC_Control_FS  (uint8_t cmd, uint8_t* pbuf, uint16_t length)
     break;
 
   case CDC_SET_CONTROL_LINE_STATE:
-		dtr_pin = ~dtr_pin;
-    break;
-
+		//if(!(connection_control & __USB_PLUG_CHANGED))
+		//{
+			if(dtr_pin==false)
+				dtr_pin= true;
+			else if(dtr_pin==true)
+				dtr_pin= false;
+		//}
+		break;
   case CDC_SEND_BREAK:
  
     break;    

@@ -72,4 +72,9 @@
 #define WELD_UNL_STOP_RMS											60
 #define WELD_UNL_START_PEAK										61
 #define WELD_UNL_STOP_PEAK										62
+#define MAINS_ANALYZE_MEAS_START							63
+#define RETURN_MEASURED_RESULT								64
+#define MAINS_ANALYZE_MEAS_STOP								65
+#define CALIBRATION_MEAS_TASK									66
+#define TRANSMIT_CALIB_CONSTANTS							67
 #endif // __TASKS_H

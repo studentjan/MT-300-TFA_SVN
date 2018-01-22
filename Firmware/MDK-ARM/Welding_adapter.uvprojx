@@ -420,6 +420,11 @@
               <FileType>1</FileType>
               <FilePath>..\Src\welding.c</FilePath>
             </File>
+            <File>
+              <FileName>calibration.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Src\calibration.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

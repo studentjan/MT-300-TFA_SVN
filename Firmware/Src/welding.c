@@ -133,6 +133,7 @@ void deinitWelding(void)
 	setNormal();
 	disable_sinchro_interrupt(__URES_SYNCHRO);
 	meas_task_control &= ~__WELD_MEAS_IN_PROG;
+	meas_task_control &= ~(__TASK_RETURN_MASKS);
 	SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__DEINITIATED__,"","",device.device_dir);
 }
 void stop_weld(void)

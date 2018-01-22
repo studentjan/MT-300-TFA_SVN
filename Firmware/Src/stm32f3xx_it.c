@@ -67,6 +67,7 @@ extern uint32_t mach_task_control;
 extern uint32_t current_URES_measurement;
 extern uint32_t serialComErrorTimeout;
 extern uint32_t synchro_interrupt_control;
+extern uint32_t connection_control;
 uint32_t stevec3;
 uint32_t global;
 uint32_t global2;
@@ -145,7 +146,6 @@ void Hard_Fault_Handler(uint32_t stack[])
       }
    }
 	 stackDump(stack);
-	 test1_on;
    __ASM volatile("BKPT #01");
   /* USER CODE END HardFault_IRQn 0 */
   while (1)
@@ -173,7 +173,6 @@ __asm void HardFault_Handler(void)
 void MemManage_Handler(void)
 {
   /* USER CODE BEGIN MemoryManagement_IRQn 0 */
-	test2_on;
   /* USER CODE END MemoryManagement_IRQn 0 */
   while (1)
   {
@@ -364,7 +363,6 @@ void TIM7_IRQHandler(void)
 void EXTI15_10_IRQHandler(void)
 {
   /* USER CODE BEGIN EXTI15_10_IRQn 0 */
-
   /* USER CODE END EXTI15_10_IRQn 0 */
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_10);
   /* USER CODE BEGIN EXTI15_10_IRQn 1 */

@@ -17,6 +17,7 @@ namespace MT_300_TFA_application
         private Form1 MainForm;
         private Thread task1;
         private Thread task2;
+        private Thread task3;
 
         private int weld_ures_count=0;
         private bool weld_ures_in_prog = false;
@@ -43,11 +44,13 @@ namespace MT_300_TFA_application
             return_iso_nok_textbox.AppendText("0.5");
             Serial_object = S_object;
             Serial_object.weldReturnEventHandler += OnMachReturnResult;
+            Serial_object.analyzeReturnEventHandler += AnalyzeResults;
             iso_state_combobox.SelectedIndex = 0;
             MainForm = main_form;
             Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
                                 Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
                                 serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[1], "", "");
+            reset_analyze_textbox();
         }
         private void Welding_form_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -171,8 +174,66 @@ namespace MT_300_TFA_application
             {
                 clearWELD_PEStarted();
             }
+
         }
 
+        private void AnalyzeResults(object sender, string cmd, string value1, string value2, string value3, string value4)
+        {
+            if (String.Equals(cmd, serial_com.ANALYZE_COMMAND_NAMES[3])) //ANALYZE VOLTAGE
+            {
+                Invoke(new MethodInvoker(delegate() { UL1textBox.Text = value1; }));
+                Invoke(new MethodInvoker(delegate() { UL2textBox.Text = value2;}));
+                Invoke(new MethodInvoker(delegate() { UL3textBox.Text = value3;}));
+                Invoke(new MethodInvoker(delegate() { UNPEtextBox.Text = value4;}));
+                voltage_received = true;
+            }
+            else if (String.Equals(cmd, serial_com.ANALYZE_COMMAND_NAMES[5])) //ANALYZE CURRENT
+            {
+                Invoke(new MethodInvoker(delegate() { IL1textBox.Text = value1;}));
+                Invoke(new MethodInvoker(delegate() { IL2textBox.Text = value2;}));
+                Invoke(new MethodInvoker(delegate() { IL3textBox.Text = value3;}));
+                current_received = true;
+            }
+            else if (String.Equals(cmd, serial_com.ANALYZE_COMMAND_NAMES[7])) //ANALYZE THD C
+            {
+                Invoke(new MethodInvoker(delegate() { THD_IL1textBox.Text = value1;}));
+                Invoke(new MethodInvoker(delegate() { THD_IL2textBox.Text = value2;}));
+                Invoke(new MethodInvoker(delegate() { THD_IL3textBox.Text = value3;}));
+                thd_c_received = true;
+            }
+            else if (String.Equals(cmd, serial_com.ANALYZE_COMMAND_NAMES[9])) //ANALYZE THD V
+            {
+                Invoke(new MethodInvoker(delegate() { THD_ULN1textBox.Text = value1;}));
+                Invoke(new MethodInvoker(delegate() { THD_ULN2textBox.Text = value2;}));
+                Invoke(new MethodInvoker(delegate() { THD_ULN3textBox.Text = value3; }));
+                thd_v_received = true;
+            }
+            else if (String.Equals(cmd, serial_com.ANALYZE_COMMAND_NAMES[11])) //ANALYZE POWER R
+            {
+                Invoke(new MethodInvoker(delegate() { P1textBox.Text = value1;}));
+                Invoke(new MethodInvoker(delegate() { P2textBox.Text = value2;}));
+                Invoke(new MethodInvoker(delegate() { P3textBox.Text = value3;}));
+                Invoke(new MethodInvoker(delegate() { P3PtextBox.Text = value4;}));
+                power_r_received = true;
+            }
+            else if (String.Equals(cmd, serial_com.ANALYZE_COMMAND_NAMES[13])) //ANALYZE POWER A
+            {
+                Invoke(new MethodInvoker(delegate() { S1textBox.Text = value1;}));
+                Invoke(new MethodInvoker(delegate() { S2textBox.Text = value2;}));
+                Invoke(new MethodInvoker(delegate() { S3textBox.Text = value3;}));
+                Invoke(new MethodInvoker(delegate() { S3PtextBox.Text = value4; }));
+                power_a_received = true;
+            }
+            else if (String.Equals(cmd, serial_com.ANALYZE_COMMAND_NAMES[15])) //ANALYZE PF
+            {
+                Invoke(new MethodInvoker(delegate() { PF1textBox.Text = value1;}));
+                Invoke(new MethodInvoker(delegate() { PF2textBox.Text = value2;}));
+                Invoke(new MethodInvoker(delegate() { PF3textBox.Text = value3;}));
+                Invoke(new MethodInvoker(delegate() { PF3PtextBox.Text = value4; }));
+                pf_received = true;
+            }
+            
+        }
         public void weld_return_RISO_result(string meas_con)
         {
             if (riso_all_pe_in_prog || riso_one_pe_in_prog || riso_mains_weld_in_prog || riso_mains_acc_in_prog || riso_weld_pe_in_prog)
@@ -283,6 +344,7 @@ namespace MT_300_TFA_application
             this.Invoke(new MethodInvoker(delegate() { weld_pe_button.Enabled = false; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_PEAK_button.Enabled = false; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_RMS_button.Enabled = false; }));
+            this.Invoke(new MethodInvoker(delegate() { MainsAnalyzeButton.Enabled = false; }));
         }
         private void clearRPEStarted()
         {
@@ -294,6 +356,7 @@ namespace MT_300_TFA_application
             this.Invoke(new MethodInvoker(delegate() { weld_pe_button.Enabled = true; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_PEAK_button.Enabled = true; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_RMS_button.Enabled = true; }));
+            this.Invoke(new MethodInvoker(delegate() { MainsAnalyzeButton.Enabled = true; }));
             rpe_in_prog = false;
         }
 
@@ -307,6 +370,7 @@ namespace MT_300_TFA_application
             this.Invoke(new MethodInvoker(delegate() { weld_pe_button.Enabled = false; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_PEAK_button.Enabled = false; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_RMS_button.Enabled = false; }));
+            this.Invoke(new MethodInvoker(delegate() { MainsAnalyzeButton.Enabled = false; }));
         }
         private void clearALL_PEStarted()
         {
@@ -320,6 +384,7 @@ namespace MT_300_TFA_application
                 this.Invoke(new MethodInvoker(delegate() { weld_pe_button.Enabled = true; }));
                 this.Invoke(new MethodInvoker(delegate() { UNL_PEAK_button.Enabled = true; }));
                 this.Invoke(new MethodInvoker(delegate() { UNL_RMS_button.Enabled = true; }));
+                this.Invoke(new MethodInvoker(delegate() { MainsAnalyzeButton.Enabled = true; }));
             }
             riso_all_pe_in_prog = false;
         }
@@ -334,6 +399,7 @@ namespace MT_300_TFA_application
             this.Invoke(new MethodInvoker(delegate() { weld_pe_button.Enabled = false; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_PEAK_button.Enabled = false; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_RMS_button.Enabled = false; }));
+            this.Invoke(new MethodInvoker(delegate() { MainsAnalyzeButton.Enabled = false; }));
         }
         private void clearONE_PEStarted()
         {
@@ -345,6 +411,7 @@ namespace MT_300_TFA_application
             this.Invoke(new MethodInvoker(delegate() { weld_pe_button.Enabled = true; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_PEAK_button.Enabled = true; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_RMS_button.Enabled = true; }));
+            this.Invoke(new MethodInvoker(delegate() { MainsAnalyzeButton.Enabled = true; }));
             riso_one_pe_in_prog = false;
         }
         private void setMAINS_WELDStarted()
@@ -357,6 +424,7 @@ namespace MT_300_TFA_application
             this.Invoke(new MethodInvoker(delegate() { weld_pe_button.Enabled = false; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_PEAK_button.Enabled = false; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_RMS_button.Enabled = false; }));
+            this.Invoke(new MethodInvoker(delegate() { MainsAnalyzeButton.Enabled = false; }));
         }
         private void clearMAINS_WELDStarted()
         {
@@ -368,6 +436,7 @@ namespace MT_300_TFA_application
             this.Invoke(new MethodInvoker(delegate() { weld_pe_button.Enabled = true; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_PEAK_button.Enabled = true; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_RMS_button.Enabled = true; }));
+            this.Invoke(new MethodInvoker(delegate() { MainsAnalyzeButton.Enabled = true; }));
             riso_mains_weld_in_prog = false;
         }
         private void setMAINS_ACCStarted()
@@ -380,6 +449,7 @@ namespace MT_300_TFA_application
             this.Invoke(new MethodInvoker(delegate() { weld_pe_button.Enabled = false; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_PEAK_button.Enabled = false; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_RMS_button.Enabled = false; }));
+            this.Invoke(new MethodInvoker(delegate() { MainsAnalyzeButton.Enabled = false; }));
         }
         private void clearMAINS_ACCStarted()
         {
@@ -391,6 +461,7 @@ namespace MT_300_TFA_application
             this.Invoke(new MethodInvoker(delegate() { weld_pe_button.Enabled = true; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_PEAK_button.Enabled = true; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_RMS_button.Enabled = true; }));
+            this.Invoke(new MethodInvoker(delegate() { MainsAnalyzeButton.Enabled = true; }));
             riso_mains_acc_in_prog = false;
         }
         private void setWELD_PEStarted()
@@ -403,6 +474,7 @@ namespace MT_300_TFA_application
             this.Invoke(new MethodInvoker(delegate() { mains_acc_button.Enabled = false; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_PEAK_button.Enabled = false; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_RMS_button.Enabled = false; }));
+            this.Invoke(new MethodInvoker(delegate() { MainsAnalyzeButton.Enabled = false; }));
         }
         private void clearWELD_PEStarted()
         {
@@ -414,6 +486,7 @@ namespace MT_300_TFA_application
             this.Invoke(new MethodInvoker(delegate() { mains_acc_button.Enabled = true; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_PEAK_button.Enabled = true; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_RMS_button.Enabled = true; }));
+            this.Invoke(new MethodInvoker(delegate() { MainsAnalyzeButton.Enabled = true; }));
 
             riso_weld_pe_in_prog = false;
         }
@@ -427,6 +500,7 @@ namespace MT_300_TFA_application
             this.Invoke(new MethodInvoker(delegate() { mains_acc_button.Enabled = false; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_RMS_button.Enabled = false; }));
             this.Invoke(new MethodInvoker(delegate() { weld_pe_button.Enabled = false; }));
+            this.Invoke(new MethodInvoker(delegate() { MainsAnalyzeButton.Enabled = false; }));
         }
         private void clearUNL_PeakStarted()
         {
@@ -438,6 +512,7 @@ namespace MT_300_TFA_application
             this.Invoke(new MethodInvoker(delegate() { mains_acc_button.Enabled = true; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_RMS_button.Enabled = true; }));
             this.Invoke(new MethodInvoker(delegate() { weld_pe_button.Enabled = true; }));
+            this.Invoke(new MethodInvoker(delegate() { MainsAnalyzeButton.Enabled = true; }));
             unl_peak_in_prog = false;
         }
         private void setUNL_RMSStarted()
@@ -450,6 +525,7 @@ namespace MT_300_TFA_application
             this.Invoke(new MethodInvoker(delegate() { mains_acc_button.Enabled = false; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_PEAK_button.Enabled = false; }));
             this.Invoke(new MethodInvoker(delegate() { weld_pe_button.Enabled = false; }));
+            this.Invoke(new MethodInvoker(delegate() { MainsAnalyzeButton.Enabled = false; }));
         }
         private void clearUNL_RMSStarted()
         {
@@ -461,7 +537,33 @@ namespace MT_300_TFA_application
             this.Invoke(new MethodInvoker(delegate() { mains_acc_button.Enabled = true; }));
             this.Invoke(new MethodInvoker(delegate() { UNL_PEAK_button.Enabled = true; }));
             this.Invoke(new MethodInvoker(delegate() { weld_pe_button.Enabled = true; }));
+            this.Invoke(new MethodInvoker(delegate() { MainsAnalyzeButton.Enabled = true; }));
             unl_rms_in_prog = false;
+        }
+        private void setAnalyzeStarted()
+        {
+            this.Invoke(new MethodInvoker(delegate() { MainsAnalyzeButton.Text = "STOP MAINS ANALYZE"; }));
+            this.Invoke(new MethodInvoker(delegate() { rpe_button.Enabled = false; }));
+            this.Invoke(new MethodInvoker(delegate() { riso_button.Enabled = false; }));
+            this.Invoke(new MethodInvoker(delegate() { riso_button2.Enabled = false; }));
+            this.Invoke(new MethodInvoker(delegate() { mains_weld_button.Enabled = false; }));
+            this.Invoke(new MethodInvoker(delegate() { mains_acc_button.Enabled = false; }));
+            this.Invoke(new MethodInvoker(delegate() { UNL_PEAK_button.Enabled = false; }));
+            this.Invoke(new MethodInvoker(delegate() { weld_pe_button.Enabled = false; }));
+            this.Invoke(new MethodInvoker(delegate() { UNL_RMS_button.Enabled = false; }));
+        }
+        private void clearAnalyzeStarted()
+        {
+            this.Invoke(new MethodInvoker(delegate() { MainsAnalyzeButton.Text = "START MAINS ANALYZE"; }));
+            this.Invoke(new MethodInvoker(delegate() { rpe_button.Enabled = true; }));
+            this.Invoke(new MethodInvoker(delegate() { riso_button.Enabled = true; }));
+            this.Invoke(new MethodInvoker(delegate() { riso_button2.Enabled = true; }));
+            this.Invoke(new MethodInvoker(delegate() { mains_weld_button.Enabled = true; }));
+            this.Invoke(new MethodInvoker(delegate() { mains_acc_button.Enabled = true; }));
+            this.Invoke(new MethodInvoker(delegate() { UNL_PEAK_button.Enabled = true; }));
+            this.Invoke(new MethodInvoker(delegate() { weld_pe_button.Enabled = true; }));
+            this.Invoke(new MethodInvoker(delegate() { UNL_RMS_button.Enabled = true; }));
+            analyze_in_prog = false;
         }
         private void rpe_button_Click(object sender, EventArgs e)
         {
@@ -633,7 +735,129 @@ namespace MT_300_TFA_application
                 clearUNL_PeakStarted();
             }
         }
+        private bool analyze_in_prog;
+        private int analyze_state=0;
+        private bool voltage_received;
+        private bool current_received;
+        private bool thd_c_received;
+        private bool thd_v_received;
+        private bool power_r_received;
+        private bool power_a_received;
+        private bool pf_received;
+        private void MainsAnalyzeButton_Click(object sender, EventArgs e)
+        {
+            if (analyze_in_prog == false)
+            {
+                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                    Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                    serial_com.COMMAND_TYPE_NAMES[8], serial_com.ANALYZE_COMMAND_NAMES[0], "", "");
+                setAnalyzeStarted();
+                analyze_state = 0;
+                analyze_in_prog = true;
+                task3 = new Thread(MainsAnalyzeTask);
+                task3.Start();
+                //naslednje je zato, da se sploh zacne
+                power_a_received = true;
+                power_r_received = true;
+                pf_received = true;
+            }
+            else
+            {
+                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                    Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                    serial_com.COMMAND_TYPE_NAMES[8], serial_com.ANALYZE_COMMAND_NAMES[16], "", "");
+                clearAnalyzeStarted();
+                task3.Abort();
+            }
+        }
 
+        private void MainsAnalyzeTask()
+        {
+            while (analyze_in_prog)
+            {
+                Thread.Sleep(50);
+                switch (analyze_state)
+                {
+                    case 0:
+                        if (power_a_received && power_r_received && pf_received)
+                        {
+                            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.ANALYZE_COMMAND_NAMES[2], "", "");
+                            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.ANALYZE_COMMAND_NAMES[4], "", "");
+                            voltage_received = false;
+                            current_received = false;
+                            analyze_state++;
+                        }
+                        break;
+                    case 1:
+                        if (current_received && voltage_received)
+                        {
+                            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.ANALYZE_COMMAND_NAMES[6], "", "");
+                            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.ANALYZE_COMMAND_NAMES[8], "", "");
+                            thd_v_received = false;
+                            thd_c_received = false;
+                            analyze_state++;
+                        }
+                        break;
+                    case 2:
+                        if (thd_c_received && thd_v_received)
+                        {
+                            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.ANALYZE_COMMAND_NAMES[10], "", "");
+                            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.ANALYZE_COMMAND_NAMES[12], "", "");
+                            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.ANALYZE_COMMAND_NAMES[14], "", "");
+                            power_a_received = false;
+                            power_r_received = false;
+                            pf_received = false;
+                            analyze_state = 0;
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        }
+
+        private void reset_analyze_textbox()
+        {
+            UL1textBox.AppendText("0.0");
+            UL2textBox.AppendText("0.0");
+            UL3textBox.AppendText("0.0");
+            IL1textBox.AppendText("0.0");
+            IL2textBox.AppendText("0.0");
+            IL3textBox.AppendText("0.0");
+            UNPEtextBox.AppendText("0.0");
+            P1textBox.AppendText("0.0");
+            P2textBox.AppendText("0.0");
+            P3PtextBox.AppendText("0.0");
+            P3textBox.AppendText("0.0");
+            S1textBox.AppendText("0.0");
+            S2textBox.AppendText("0.0");
+            S3textBox.AppendText("0.0");
+            S3PtextBox.AppendText("0.0");
+            THD_IL1textBox.AppendText("0.0");
+            THD_IL2textBox.AppendText("0.0");
+            THD_IL3textBox.AppendText("0.0");
+            THD_ULN1textBox.AppendText("0.0");
+            THD_ULN2textBox.AppendText("0.0");
+            THD_ULN3textBox.AppendText("0.0");
+            PF1textBox.AppendText("0.0");
+            PF2textBox.AppendText("0.0");
+            PF3textBox.AppendText("0.0");
+            PF3PtextBox.AppendText("0.0");
+        }
         
 
     }

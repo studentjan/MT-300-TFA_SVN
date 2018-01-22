@@ -6,3 +6,13 @@ welding_adapter\com_meas_tasks.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 welding_adapter\com_meas_tasks.o: ../Inc/serial_com.h
 welding_adapter\com_meas_tasks.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 welding_adapter\com_meas_tasks.o: ../Inc/do_task.h
+welding_adapter\com_meas_tasks.o: ../Inc/sdadc.h
+welding_adapter\com_meas_tasks.o: ../Drivers/CMSIS/Include/arm_math.h
+welding_adapter\com_meas_tasks.o: ../Drivers/CMSIS/Include/core_cm4.h
+welding_adapter\com_meas_tasks.o: ../Drivers/CMSIS/Include/core_cmInstr.h
+welding_adapter\com_meas_tasks.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
+welding_adapter\com_meas_tasks.o: ../Drivers/CMSIS/Include/core_cmFunc.h
+welding_adapter\com_meas_tasks.o: ../Drivers/CMSIS/Include/core_cmSimd.h
+welding_adapter\com_meas_tasks.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+welding_adapter\com_meas_tasks.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
+welding_adapter\com_meas_tasks.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h

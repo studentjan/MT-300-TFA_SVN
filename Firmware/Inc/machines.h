@@ -50,6 +50,7 @@ void stop_mach(void);
 #define __MACH_URES_DISCONNECT_PS								0x00100000
 #define __MACH_TEST_RECIEVED										0x00200000
 #define __MACH_TIMER_INIT												0x00400000
+#define __MACH_MAINS_ANALYZE_IN_PROGRESS				0x00800000
 
 #define MACH_MEAS_MASKS				0x001FFCFF
 #define MACH_RISO_MASKS				0x000000FC

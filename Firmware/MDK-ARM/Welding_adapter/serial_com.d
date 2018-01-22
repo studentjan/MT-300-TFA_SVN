@@ -64,3 +64,8 @@ welding_adapter\serial_com.o: ../Inc/machines.h
 welding_adapter\serial_com.o: ../Inc/stm32f3xx_it.h
 welding_adapter\serial_com.o: ../Inc/com_meas_tasks.h
 welding_adapter\serial_com.o: ../Inc/welding.h
+welding_adapter\serial_com.o: ../Inc/calibration.h
+welding_adapter\serial_com.o: ../Inc/sdadc.h
+welding_adapter\serial_com.o: ../Drivers/CMSIS/Include/arm_math.h
+welding_adapter\serial_com.o: ../Drivers/CMSIS/Include/core_cm4.h
+welding_adapter\serial_com.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h

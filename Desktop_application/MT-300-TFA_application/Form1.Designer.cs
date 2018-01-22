@@ -45,6 +45,7 @@
             this.rescan_button = new System.Windows.Forms.Button();
             this.machines_button = new System.Windows.Forms.Button();
             this.weld_button = new System.Windows.Forms.Button();
+            this.CalibrationButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // port_connect
@@ -111,9 +112,9 @@
             // 
             // test_com_protocol_button
             // 
-            this.test_com_protocol_button.Location = new System.Drawing.Point(767, 12);
+            this.test_com_protocol_button.Location = new System.Drawing.Point(778, 37);
             this.test_com_protocol_button.Name = "test_com_protocol_button";
-            this.test_com_protocol_button.Size = new System.Drawing.Size(118, 23);
+            this.test_com_protocol_button.Size = new System.Drawing.Size(121, 23);
             this.test_com_protocol_button.TabIndex = 19;
             this.test_com_protocol_button.Text = "TEST PROTOCOL";
             this.test_com_protocol_button.UseVisualStyleBackColor = true;
@@ -121,9 +122,9 @@
             // 
             // cord_button
             // 
-            this.cord_button.Location = new System.Drawing.Point(532, 12);
+            this.cord_button.Location = new System.Drawing.Point(621, 121);
             this.cord_button.Name = "cord_button";
-            this.cord_button.Size = new System.Drawing.Size(105, 23);
+            this.cord_button.Size = new System.Drawing.Size(121, 23);
             this.cord_button.TabIndex = 20;
             this.cord_button.Text = "CORD TEST";
             this.cord_button.UseVisualStyleBackColor = true;
@@ -131,9 +132,9 @@
             // 
             // test_relays_button
             // 
-            this.test_relays_button.Location = new System.Drawing.Point(643, 12);
+            this.test_relays_button.Location = new System.Drawing.Point(621, 37);
             this.test_relays_button.Name = "test_relays_button";
-            this.test_relays_button.Size = new System.Drawing.Size(118, 23);
+            this.test_relays_button.Size = new System.Drawing.Size(121, 23);
             this.test_relays_button.TabIndex = 21;
             this.test_relays_button.Text = "TEST RELAYS";
             this.test_relays_button.UseVisualStyleBackColor = true;
@@ -171,9 +172,9 @@
             // 
             // machines_button
             // 
-            this.machines_button.Location = new System.Drawing.Point(451, 12);
+            this.machines_button.Location = new System.Drawing.Point(778, 121);
             this.machines_button.Name = "machines_button";
-            this.machines_button.Size = new System.Drawing.Size(75, 23);
+            this.machines_button.Size = new System.Drawing.Size(121, 23);
             this.machines_button.TabIndex = 25;
             this.machines_button.Text = "MACHINES";
             this.machines_button.UseVisualStyleBackColor = true;
@@ -181,19 +182,30 @@
             // 
             // weld_button
             // 
-            this.weld_button.Location = new System.Drawing.Point(370, 12);
+            this.weld_button.Location = new System.Drawing.Point(466, 121);
             this.weld_button.Name = "weld_button";
-            this.weld_button.Size = new System.Drawing.Size(75, 23);
+            this.weld_button.Size = new System.Drawing.Size(121, 23);
             this.weld_button.TabIndex = 26;
             this.weld_button.Text = "WELDING";
             this.weld_button.UseVisualStyleBackColor = true;
             this.weld_button.Click += new System.EventHandler(this.weld_button_Click);
+            // 
+            // CalibrationButton
+            // 
+            this.CalibrationButton.Location = new System.Drawing.Point(466, 37);
+            this.CalibrationButton.Name = "CalibrationButton";
+            this.CalibrationButton.Size = new System.Drawing.Size(121, 23);
+            this.CalibrationButton.TabIndex = 27;
+            this.CalibrationButton.Text = "CALIBRATION";
+            this.CalibrationButton.UseVisualStyleBackColor = true;
+            this.CalibrationButton.Click += new System.EventHandler(this.CalibrationButton_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(940, 428);
+            this.Controls.Add(this.CalibrationButton);
             this.Controls.Add(this.weld_button);
             this.Controls.Add(this.machines_button);
             this.Controls.Add(this.rescan_button);
@@ -235,6 +247,7 @@
         public System.Windows.Forms.Button rescan_button;
         public System.Windows.Forms.Button machines_button;
         public System.Windows.Forms.Button weld_button;
+        public System.Windows.Forms.Button CalibrationButton;
     }
 }
 

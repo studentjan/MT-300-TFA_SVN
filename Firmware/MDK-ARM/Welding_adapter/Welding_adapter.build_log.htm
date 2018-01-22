@@ -22,20 +22,127 @@ Dialog DLL:      TCM.DLL V1.32.0.0
  
 <h2>Project:</h2>
 K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Firmware\MDK-ARM\Welding_adapter.uvprojx
-Project File Date:  01/07/2018
+Project File Date:  01/21/2018
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 5 (build 528)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'Welding_adapter'
-compiling welding.c...
-../Inc/welding.h(66): warning:  #1-D: last line of file ends without a newline
+compiling com_meas_tasks.c...
+compiling calibration.c...
+../Inc/calibration.h(22): warning:  #1-D: last line of file ends without a newline
   #endif
-..\Src\welding.c(951): warning:  #1-D: last line of file ends without a newline
-  //+++++++++++++++++++++++++++++++++++++++++++END U-NO-LOAD (RMS)++++++++++++++++++++++++++++++++++++++
-..\Src\welding.c: 2 warnings, 0 errors
+..\Src\calibration.c: 1 warning, 0 errors
+compiling main.c...
+compiling test.c...
+compiling stm32f3xx_it.c...
+../Inc/machines.h(66): warning:  #1-D: last line of file ends without a newline
+  #endif
+../Src/stm32f3xx_it.c(136): warning:  #177-D: variable "msg"  was declared but never referenced
+  	static char msg[80];
+../Src/stm32f3xx_it.c(550): warning:  #177-D: variable "temp4"  was declared but never referenced
+  		float temp4;
+../Src/stm32f3xx_it.c: 3 warnings, 0 errors
+compiling do_task.c...
+do_task.c(337): warning:  #177-D: variable "j"  was declared but never referenced
+  	uint32_t i, j;
+do_task.c(338): warning:  #177-D: variable "temp2"  was declared but never referenced
+  	float temp1, temp2, temp3;
+do_task.c(338): warning:  #177-D: variable "temp3"  was declared but never referenced
+  	float temp1, temp2, temp3;
+do_task.c(339): warning:  #177-D: variable "table_ptr"  was declared but never referenced
+  	const float * table_ptr;
+do_task.c(340): warning:  #177-D: variable "table_ptr2"  was declared but never referenced
+  	float * table_ptr2;
+do_task.c: 5 warnings, 0 errors
+compiling comunication.c...
+..\Src\comunication.c(86): warning:  #550-D: variable "usb_connected"  was set but never used
+  	static char usb_connected=_NO;
+..\Src\comunication.c: 1 warning, 0 errors
+compiling sdadc.c...
+..\Src\sdadc.c(357): warning:  #177-D: variable "ConfParamStruct"  was declared but never referenced
+  	SDADC_ConfParamTypeDef ConfParamStruct;
+..\Src\sdadc.c(424): warning:  #177-D: variable "ConfParamStruct"  was declared but never referenced
+    SDADC_ConfParamTypeDef ConfParamStruct;
+..\Src\sdadc.c(671): warning:  #177-D: variable "ConfParamStruct"  was declared but never referenced
+  	SDADC_ConfParamTypeDef ConfParamStruct;
+..\Src\sdadc.c(745): warning:  #177-D: variable "ConfParamStruct"  was declared but never referenced
+  	SDADC_ConfParamTypeDef ConfParamStruct;
+..\Src\sdadc.c(1045): warning:  #550-D: variable "ConvertionResult2"  was set but never used
+  	int16_t ConvertionResult2;
+..\Src\sdadc.c(1102): warning:  #188-D: enumerated type mixed with another type
+  				HAL_GPIO_WritePin(
+URRENT_GAIN1_GPIO_Port, 
+URRENT_GAIN1_Pin, 
+OFF);
+..\Src\sdadc.c(1108): warning:  #188-D: enumerated type mixed with another type
+  				HAL_GPIO_WritePin(
+URRENT_GAIN2_GPIO_Port, 
+URRENT_GAIN2_Pin, 
+OFF);
+..\Src\sdadc.c(1114): warning:  #188-D: enumerated type mixed with another type
+  				HAL_GPIO_WritePin(
+URRENT_GAIN3_GPIO_Port, 
+URRENT_GAIN3_Pin, 
+OFF);
+..\Src\sdadc.c(1127): warning:  #188-D: enumerated type mixed with another type
+  				HAL_GPIO_WritePin(
+URRENT_GAIN1_GPIO_Port, 
+URRENT_GAIN1_Pin, 
+ON);
+..\Src\sdadc.c(1133): warning:  #188-D: enumerated type mixed with another type
+  				HAL_GPIO_WritePin(
+URRENT_GAIN2_GPIO_Port, 
+URRENT_GAIN2_Pin, 
+ON);
+..\Src\sdadc.c(1139): warning:  #188-D: enumerated type mixed with another type
+  				HAL_GPIO_WritePin(
+URRENT_GAIN3_GPIO_Port, 
+URRENT_GAIN3_Pin, 
+ON);
+..\Src\sdadc.c(1151): warning:  #177-D: variable "thd_counter2"  was declared but never referenced
+  	static uint32_t thd_counter2=0;
+..\Src\sdadc.c(1596): warning:  #177-D: variable "thd_counter2"  was declared but never referenced
+  	static uint32_t thd_counter2=	0;
+..\Src\sdadc.c(1603): warning:  #177-D: variable "cos"  was declared but never referenced
+  	float cos;
+..\Src\sdadc.c(1604): warning:  #177-D: variable "count"  was declared but never referenced
+  	static uint32_t count=1;
+..\Src\sdadc.c(2584): warning:  #1-D: last line of file ends without a newline
+  }
+..\Src\sdadc.c: 16 warnings, 0 errors
+compiling serial_com.c...
+../Inc/machines.h(66): warning:  #1-D: last line of file ends without a newline
+  #endif
+../Inc/welding.h(67): warning:  #1-D: last line of file ends without a newline
+  #endif
+../Inc/calibration.h(22): warning:  #1-D: last line of file ends without a newline
+  #endif
+serial_com.c(315): warning:  #177-D: variable "i"  was declared but never referenced
+  	uint32_t i;
+serial_com.c(342): warning:  #550-D: variable "temp_array"  was set but never used
+  	char temp_array[3];
+serial_com.c(490): warning:  #177-D: variable "direction"  was declared but never referenced
+   uint8_t direction;
+serial_com.c(1947): warning:  #177-D: variable "krneki"  was declared but never referenced
+  	int krneki;
+serial_com.c(1948): warning:  #177-D: variable "krneki2"  was declared but never referenced
+  	int krneki2;
+serial_com.c(1996): warning:  #177-D: variable "IN_START_TAG"  was declared but never referenced
+  		char *IN_START_TAG;
+serial_com.c(2140): warning:  #177-D: variable "cnt"  was declared but never referenced
+   uint32_t cnt;
+serial_com.c(2141): warning:  #177-D: variable "cc"  was declared but never referenced
+   uint8_t cc,cd,d1,d2,d3;
+serial_com.c(2142): warning:  #177-D: variable "dir_tmp"  was declared but never referenced
+   uint8_t dir_tmp; 
+serial_com.c(2353): warning:  #177-D: variable "sClockSourceConfig"  was declared but never referenced
+    TIM_ClockConfigTypeDef sClockSourceConfig;
+serial_com.c(2394): warning:  #1-D: last line of file ends without a newline
+  }
+serial_com.c: 14 warnings, 0 errors
 linking...
-Program Size: Code=93524 RO-data=14692 RW-data=868 ZI-data=28356  
-"Welding_adapter\Welding_adapter.axf" - 0 Error(s), 2 Warning(s).
+Program Size: Code=98588 RO-data=14692 RW-data=912 ZI-data=28496  
+"Welding_adapter\Welding_adapter.axf" - 0 Error(s), 40 Warning(s).
 
 <h2>Software Packages used:</h2>
 
@@ -58,7 +165,7 @@ Package Vendor: Keil
 <h2>Collection of Component Files used:</h2>
 
    * Component: ARM::CMSIS:CORE:5.0.2
-Build Time Elapsed:  00:00:03
+Build Time Elapsed:  00:00:10
 </pre>
 </body>
 </html>

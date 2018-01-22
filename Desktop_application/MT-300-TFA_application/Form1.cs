@@ -339,6 +339,7 @@ namespace MT_300_TFA_application
             port_connect.Enabled = false;
             cord_button.Enabled = false;
             weld_button.Enabled = false;
+            CalibrationButton.Enabled = false;
         }
         public void Enable_buttons()
         {
@@ -349,6 +350,14 @@ namespace MT_300_TFA_application
             port_connect.Enabled = true;
             cord_button.Enabled = true;
             weld_button.Enabled = true;
+            CalibrationButton.Enabled = true;
+        }
+
+        private void CalibrationButton_Click(object sender, EventArgs e)
+        {
+            Calibration CalibrationObject = new Calibration(Serial_class, this);
+            CalibrationObject.Show();
+            Disable_buttons();
         }
         //private void Sendtextboxmaneger()
         //{

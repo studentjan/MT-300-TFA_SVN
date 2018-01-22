@@ -117,6 +117,7 @@ int main(void)
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
+	setInitConstants();
   MX_GPIO_Init();
   MX_SDADC1_Init();
   MX_SDADC2_Init();
@@ -126,7 +127,7 @@ int main(void)
 	MX_TIM7_Init();
 	MX_TIM6_Init();
 	MX_USART3_UART_Init();
-  MX_USB_DEVICE_Init();
+	MX_USB_DEVICE_Init();
 	led_blink_time = _LED_BLINK_TIME_OK;
 	init_OS();
 	USBConnected_Handler();
