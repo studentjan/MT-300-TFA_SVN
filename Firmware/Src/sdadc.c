@@ -1440,7 +1440,7 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 					SDADC1_CH1s.sempl=SDADC1_sample;
 					if((SDADC1_CH1s.sample_count<(PHASE_AVARAGE_CNT*(uint32_t)(ULN_MEAS_FS*0.02f)))&&(compute_control2 & __GET_PHASES)&&(!(compute_control2 & __PHASE1_MEASURED)))//samo 1. periodo gledamo za maksimum
 					{
-						
+						//dolocimo maksimaleno vrednost
 						if(SDADC1_CH1s.sempl > SDADC1_CH1s.max_float)
 						{
 							SDADC1_CH1s.peak_at = (htim6.Instance -> CNT)+12;//timer ki steje tece na 10 us ker je frekvenca vzorcenja 16,666 za vse kanale je 60us zakasnitve med vzorcenji kanalov
@@ -1458,6 +1458,7 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 						else
 							SDADC1_CH1s.aux_count++;
 					}
+					//na zacetku, ko zelimo pomeriti fazno zaporedje
 					else if((compute_control2 & __GET_PHASES)&&(!(compute_control2 & __PHASE1_MEASURED)))
 					{
 						compute_control2 |= __PHASE1_MEASURED;
@@ -2173,6 +2174,7 @@ static void IL_auto_gain(uint32_t channel)
 }
 void compute_rms(void)
 {
+	static uint32_t count = 0;
 	//funkcija za racunannje rms vrednosti, ker sqrt operacija uzame prevec casa za
 	//izvajanje v interruptu
 	if(compute_control & __ULN1_SAMPLED)	
@@ -2363,13 +2365,13 @@ void compute_rms(void)
 	}
 	if(global_control & __ON_TEST_IN_PROG) 
 	{
-//		if(count>=THROW_AWAY_RESULTS)
-//		{
+		if(count<TEST_THROW_AWAY_RESULTS)
+		{
 			stop_measure();
 			compute_control2 |= __INIT_MEASURED;
-//			count=0;
-//		}
-//		else count++;
+			count=0;
+		}
+		else count++;
 	}
 
 

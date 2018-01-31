@@ -281,7 +281,7 @@ static void measuring_task(void)
 		meas_control &= (~__ULN_THD_MEASURED);
 		SDADC1_set_normal();
 		SDADC2_set_normal();
-		set_SDADC_zero();
+//		set_SDADC_zero();--filter se pobrise samo ob startu med samo meritvijo se ne sme brisati
 		meas_control |= __DEL_START_NORMAL;
 		tim_count=0;
 	}

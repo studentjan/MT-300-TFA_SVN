@@ -27,7 +27,7 @@ struct connected_device{
 	char device_ID;
 	uint32_t device_dir;
 };
-
+#define TEST_THROW_AWAY_RESULTS			3	//nekaj rezultatov moramo zavreci zato da se filter nafila
 
 //------------------------------------result_transmitt_control---------------------------
 #define UL1N_TRANSMITT_READY				0x00000001
