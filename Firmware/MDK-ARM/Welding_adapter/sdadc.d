@@ -53,3 +53,5 @@ welding_adapter\sdadc.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\ctype.h
 welding_adapter\sdadc.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\errno.h
 welding_adapter\sdadc.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\limits.h
 welding_adapter\sdadc.o: ../Inc/comunication.h
+welding_adapter\sdadc.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+welding_adapter\sdadc.o: ../Inc/com_meas_tasks.h

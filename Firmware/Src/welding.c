@@ -14,6 +14,7 @@
 #include "do_task.h"
 #include "com_meas_tasks.h"
 #include "stm32f3xx_hal.h"
+#include "comunication.h"
 
 
 static struct connected_device device;
@@ -24,7 +25,7 @@ extern uint32_t synchro_interrupt_control;
 extern uint32_t current_URES_measurement;
 
 
-float weld_riso_resistance = 0;
+float weld_riso_resistance = 0.0;
 	
 void WeldingInit(void);
 void init_weld(void);
@@ -40,6 +41,8 @@ void weld_transmittWeldToPE(bool pass);
 bool weld_check_RISO_resistance(void);
 void WeldRstRels(void);
 void weld_UNL_init(void);
+
+float WeldRisoLimit = WELD_RISO_LIMIT;
 
 uint32_t weld_task_control;
 uint32_t weld_insolation_status;
@@ -98,10 +101,12 @@ void init_weld(void)
 		WeldingInit();
 		set_event(SEND_TFA_MAINS_STATUS,send_mains_status);
 		weld_task_control |= __WELD_INITIATED;
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__WELD_INITIATED__,"","",device.device_dir);
-		//ce ne dobimo inita in hocemo direktno zagnat correct wiring se najprej izvede init nato pa gre na correct wiring
-		if((WELD_AUTO_CONTINUE_MEAS==_ON)||(!(weld_task_control & __WELD_INIT_RECIEVED)))
-			restart_timer(WELD_RPE_START,2,WeldingRPEStart);
+		weld_task_control &= ~ __WELD_REINIT;
+		meas_task_control |= __WELD_MEAS_IN_PROG;
+//		SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__WELD_INITIATED__,"","",device.device_dir);
+//		//ce ne dobimo inita in hocemo direktno zagnat correct wiring se najprej izvede init nato pa gre na correct wiring
+//		if((WELD_AUTO_CONTINUE_MEAS==_ON)||(!(weld_task_control & __WELD_INIT_RECIEVED)))
+//			restart_timer(WELD_RPE_START,2,WeldingRPEStart);
 	}
 }
 
@@ -110,11 +115,13 @@ void WeldingInit(void)
 	weld_task_control &= (~WELD_MEAS_MASKS);
 	weld_insolation_status=0;
 	weld_RISO_count=0;
+	weld_RISO_count2=0;
 	weld_URES_count=0;
 	if(connection_control & __CON_TO_MT310)
 	{
 		//postavimo vse releje v nevtralno stanje, tako da vemo kaksno situacijo imamo
 		WeldMachMt310_RelInit();
+		WeldRstRels();
 	}
 	
 }
@@ -134,7 +141,7 @@ void deinitWelding(void)
 	disable_sinchro_interrupt(__URES_SYNCHRO);
 	meas_task_control &= ~__WELD_MEAS_IN_PROG;
 	meas_task_control &= ~(__TASK_RETURN_MASKS);
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__DEINITIATED__,"","",device.device_dir);
+	//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__DEINITIATED__,"","",device.device_dir);
 }
 void stop_weld(void)
 {
@@ -145,8 +152,9 @@ void stop_weld(void)
 	end_task(INIT_WELD);
 	end_task(WELD_RISO_PHASES_TO_PE);
 	end_task(WELD_RISO_ONE_PHASE_TO_PE);
+	transmitEvent(__STOPPED_EN,__WELDING_EN,"",device.device_dir);
 //	end_task(WELD_URES_STOP);
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__STOPED_C__,"","",device.device_dir);
+//	SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__STOPED_C__,"","",device.device_dir);
 }
 
 void WeldRstRels(void)
@@ -179,10 +187,15 @@ void WeldRstRels(void)
 //++++++++++++++++++++++++++++++++++++++++++++RPE+++++++++++++++++++++++++++++++++++++++++++
 void WeldingRPEStart(void)
 {
-	WeldRstRels();
-	set_REL(8);
-	weld_task_control |= __WELD_RPE_IN_PROGRESS;
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__WELD_RPE_STARTED__,"","",device.device_dir);
+	if(checkAndChangeMeasurement(__WELDING))
+	{
+		WeldRstRels();
+		set_REL(8);
+		weld_task_control |= __WELD_RPE_IN_PROGRESS;
+		transmitCommFunc(__RPE,__START,__HIGH,"",device.device_dir);
+	}
+	else 
+		set_event(WELD_RPE_START,WeldingRPEStart);
 }
 
 void WeldingRPEStop(void)
@@ -190,7 +203,7 @@ void WeldingRPEStop(void)
 	rst_REL(8);
 	weld_task_control &= ~__WELD_RPE_IN_PROGRESS;
 	weld_task_control |= __WELD_RPE_MEASURED;
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__WELD_RPE_STOPPED__,"","",device.device_dir);
+//	SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__WELD_RPE_STOPPED__,"","",device.device_dir);
 }
 //+++++++++++++++++++++++++++++++++++++++++++++END RPE+++++++++++++++++++++++++++++++++++
 
@@ -212,301 +225,279 @@ void weld_RISO_init(void)
 }
 void weld_RISO_phasesToPE(void)
 {
-	switch(weld_RISO_count)
+	if(checkAndChangeMeasurement(__WELDING))
 	{
-		case 0:
-			weld_RISO_init();
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__PHASES_TO_PE_STARTED__,"","",device.device_dir);
-			weld_task_control |=__WELD_RISO_PHASES_TO_PE_IN_PROGRESS;
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__START_RISO__,"","",device.device_dir);
-			weld_RISO_count++;
-			break;
-		case 1:
-			if(weld_task_control & __WELD_RISO_STARTED)
-			{
-				if(WELD_PHASE_NUM_SETTING == _1_PHASE)
+		switch(weld_RISO_count)
+		{
+			case 0:
+				weld_RISO_init();
+				weld_task_control |=__WELD_RISO_PHASES_TO_PE_IN_PROGRESS;
+				weld_RISO_count++;
+				break;
+			case 1:
+					if(WELD_PHASE_NUM_SETTING == _1_PHASE)
+					{
+						CON_L1_A;
+						CON_N_A;
+						CON_PE_B;
+					}	
+					else 
+					{
+						CON_L1_A;
+						CON_L2_A;
+						CON_L3_A;
+						CON_N_A;
+						CON_PE_B;
+					}
+					weld_task_control |= __WELD_RISO_RES_REQUESTED;
+					transmitCommFunc(__RISO,__START,__500V,"PHASES_PE",device.device_dir);
+					weld_RISO_count++;
+				break;
+			case 2://L1,L2,L3,N proti PE ali L1,N proti PE za enofazin podalsek
+				if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
 				{
-					CON_L1_A;
-					CON_N_A;
-					CON_PE_B;
-				}	
-				else 
-				{
-					CON_L1_A;
-					CON_L2_A;
-					CON_L3_A;
-					CON_N_A;
-					CON_PE_B;
+					weld_RISO_count++;
 				}
-				weld_task_control |= __WELD_RISO_RES_REQUESTED;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__GET_RISO_RES__,"","PHASES_PE",device.device_dir);
-				weld_RISO_count++;
-			}
 			break;
-		case 2://L1,L2,L3,N proti PE ali L1,N proti PE za enofazin podalsek
-			if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
-			{
-				
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__STOP_RISO__,"","",device.device_dir);
-				weld_RISO_count++;
-			}
-		break;
+		}
 	}
 	if(weld_RISO_count < 3)
 		restart_timer(WELD_RISO_PHASES_TO_PE,5,weld_RISO_phasesToPE);
 	else
 	{
-		if(weld_task_control & __WELD_RISO_STARTED)
-			restart_timer(WELD_RISO_PHASES_TO_PE,5,weld_RISO_phasesToPE);
-		else if(WELD_AUTO_CONTINUE_MEAS==_ON)
-			set_timer(WELD_RISO_ONE_PHASE_TO_PE,5,weld_RISO_onePhaseToPE);
-		if(!(weld_task_control & __WELD_RISO_STARTED))
-		{
-			weld_task_control &=(~__WELD_RISO_PHASES_TO_PE_IN_PROGRESS);
-			weld_task_control |= __WELD_RISO_PHASES_TO_PE_MEASURED;
-			if(weld_check_RISO_resistance())
-			{
-				weld_transmittPhasesToPE(true);
-				weld_RISO_count=11;
-			}
-			else
-			{
-				weld_transmittPhasesToPE(false);
-			}
-		}
+		weld_task_control &=(~__WELD_RISO_PHASES_TO_PE_IN_PROGRESS);
+		weld_task_control |= __WELD_RISO_PHASES_TO_PE_MEASURED;
+		weld_task_control &= ~__WELD_RISO_STARTED;
 	}
 }
-
 // v naslednjo funkcijo pridemo samo ce je prej ze pomerjena upornost proti PE in je bila ta premajhna
 void weld_RISO_onePhaseToPE(void)
 {
-	switch (weld_RISO_count)
+	if(checkAndChangeMeasurement(__WELDING))
 	{
-		case 0:
-			weld_RISO_init();
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__PHASES_TO_PE_STARTED__,"","",device.device_dir);
-			weld_task_control |=__WELD_RISO_PHASES_TO_PE_IN_PROGRESS;
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__START_RISO__,"","",device.device_dir);
-			weld_RISO_count++;
-			break;
-		case 1:
-			if(!(weld_task_control & __WELD_RISO_STARTED))
-			{
-				if(WELD_PHASE_NUM_SETTING == _1_PHASE)
+		switch (weld_RISO_count)
+		{
+			case 0:
+				weld_RISO_count = 3;
+			case 1:
+				weld_RISO_count = 3;
+			case 2://L1,L2,L3,N proti PE ali L1,N proti PE za enofazin podalsek
+				weld_RISO_count = 3;
+			case 3://uporablja se sele od tle naprej
+				weld_task_control |= __WELD_RISO_ONE_PHASE_TO_PE_IN_PROGRESS;
+						if(WELD_PHASE_NUM_SETTING == _1_PHASE)
+						{
+							CON_L1_A;
+							CON_N_A;
+							CON_PE_B;
+							DIS_PE_A;
+							DIS_L1_B;
+							DIS_L2_B;
+							DIS_L3_B;
+							DIS_N_B;
+							DIS_L2_A;
+							DIS_L3_A;
+						}	
+						else 
+						{
+							CON_L1_A;
+							CON_L2_A;
+							CON_L3_A;
+							CON_N_A;
+							CON_PE_B;
+							DIS_PE_A;
+							DIS_L1_B;
+							DIS_L2_B;
+							DIS_L3_B;
+							DIS_N_B;
+						}
+						weld_task_control |= __WELD_RISO_RES_REQUESTED;
+						transmitCommFunc(__RISO,__START,__500V,"PHASES_PE",device.device_dir);
+						weld_RISO_count++;
+				break;
+			case 4:	
+				if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
 				{
-					CON_L1_A;
-					CON_N_A;
-					CON_PE_B;
-				}	
-				else 
-				{
-					CON_L1_A;
-					CON_L2_A;
-					CON_L3_A;
-					CON_N_A;
-					CON_PE_B;
+					if(weld_check_RISO_resistance())
+					{
+						weld_RISO_count=11;
+					}
+					else
+					{
+						if(WELD_PHASE_NUM_SETTING == _1_PHASE)
+						{
+							DIS_PE_A;
+							DIS_L1_A;
+							DIS_L1_B;
+							DIS_L2_B;
+							DIS_L3_B;
+							DIS_N_B;
+							DIS_L2_A;
+							DIS_L3_A;
+							CON_N_A;
+							CON_PE_B;
+							weld_RISO_count=7;
+							weld_task_control |= __WELD_RISO_RES_REQUESTED;
+							transmitCommFunc(__RISO,__GET,__RESULT,"N_PE",device.device_dir);
+							//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDINES__,__GET_RISO_RES__,"","N_PE",device.device_dir);
+						}
+						else
+						{
+							DIS_PE_A;
+							DIS_L1_A;
+							DIS_L1_B;
+							DIS_L2_B;
+							DIS_L3_B;
+							DIS_N_B;
+							CON_L2_A;
+							CON_L3_A;
+							CON_N_A;
+							CON_PE_B;
+							weld_RISO_count++;
+							weld_task_control |= __WELD_RISO_RES_REQUESTED;
+							transmitCommFunc(__RISO,__GET,__RESULT,"L2-L3-N_PE",device.device_dir);
+							//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDINES__,__GET_RISO_RES__,"","L2-L3-N_PE",device.device_dir);
+						}
+					}
 				}
-				weld_task_control |= __WELD_RISO_RES_REQUESTED;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__GET_RISO_RES__,"","PHASES_PE",device.device_dir);
-				weld_RISO_count++;
-			}
-			break;
-		case 2://L1,L2,L3,N proti PE ali L1,N proti PE za enofazin podalsek
-			if(weld_task_control & __WELD_RISO_STARTED)
-			{
-				if(weld_check_RISO_resistance())
-				{
-					weld_transmittPhasesToPE(true);
-				}
-				else
-				{
-					weld_transmittPhasesToPE(false);
-				}
-				weld_RISO_count++;
-				weld_task_control &=(~__WELD_RISO_PHASES_TO_PE_IN_PROGRESS);
-				weld_task_control |= __WELD_RISO_PHASES_TO_PE_MEASURED;
-			}
-		break;
-		case 3:
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__ONE_PHASE_TO_PE_STARTED__,"","",device.device_dir);
-			weld_task_control |= __WELD_RISO_ONE_PHASE_TO_PE_IN_PROGRESS;
-			if(!(weld_task_control & __WELD_RISO_STARTED))
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__START_RISO__,"","",device.device_dir);
-			//weld_task_control |= __WELD_RISO_RES_REQUESTED;
-			weld_RISO_count++;
-			//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__START_RISO__,"","",device.device_dir);
-			break;
-		case 4:	
-			if(weld_task_control & __WELD_RISO_STARTED)
-			{
-				if(WELD_PHASE_NUM_SETTING == _1_PHASE)
-				{
-					DIS_PE_A;
-					DIS_L1_A;
-					DIS_L1_B;
-					DIS_L2_B;
-					DIS_L3_B;
-					DIS_N_B;
-					DIS_L2_A;
-					DIS_L3_A;
-					CON_N_A;
-					CON_PE_B;
-					weld_RISO_count=7;
-					weld_task_control |= __WELD_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__GET_RISO_RES__,"","N_PE",device.device_dir);
-				}
-				else
-				{
-					DIS_PE_A;
-					DIS_L1_A;
-					DIS_L1_B;
-					DIS_L2_B;
-					DIS_L3_B;
-					DIS_N_B;
-					CON_L2_A;
-					CON_L3_A;
-					CON_N_A;
-					CON_PE_B;
-					weld_RISO_count++;
-					weld_task_control |= __WELD_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__GET_RISO_RES__,"","L2-L3-N_PE",device.device_dir);
-				}
-			}
-			break;
-		case 5:	//L2,L3,N proti PE
-			if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
-			{
-				if(weld_check_RISO_resistance())
-				{
-					weld_RISO_count=11;
-					weld_insolation_status |= L1_PE_FAIL;
-					DIS_PE_B;
-					DIS_N_A;
-					CON_L1_A;
-					CON_N_B;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__STOP_RISO__,"","",device.device_dir);
-				}
-				else
-				{
-					DIS_L2_A;
-					weld_RISO_count++;
-					weld_task_control |= __WELD_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__GET_RISO_RES__,"","L3-N_PE",device.device_dir);
-				}
-				
-			}
-			break;
-		case 6:	//L3,N proti PE
-			if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
-			{
-				if(weld_check_RISO_resistance())
-				{
-					weld_RISO_count=10;
-					weld_insolation_status |= L2_PE_FAIL;
-					DIS_L3_A;
-					DIS_N_A;
-					CON_L1_A;
-					weld_task_control |= __WELD_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__GET_RISO_RES__,"","L1_PE",device.device_dir);
-				}
-				else
-				{
-					DIS_L3_A;
-					weld_RISO_count++;
-					weld_task_control |= __WELD_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__GET_RISO_RES__,"","N_PE",device.device_dir);
-				}
-				
-			}
-			break;
-		case 7:	//N proti PE
-			if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
-			{
-				if(WELD_PHASE_NUM_SETTING == _1_PHASE)
+				break;
+			case 5:	//L2,L3,N proti PE
+				if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
 				{
 					if(weld_check_RISO_resistance())
 					{
 						weld_RISO_count=11;
 						weld_insolation_status |= L1_PE_FAIL;
+						DIS_PE_B;
+						DIS_N_A;
+						CON_L1_A;
+						CON_N_B;
+						//transmitCommFunc(__RISO,__START,__500V,"",device.device_dir);
+						//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDINES__,__STOP_RISO__,"","",device.device_dir);
 					}
 					else
 					{
-						weld_insolation_status |= N_PE_FAIL;
-						weld_RISO_count=11;
+						DIS_L2_A;
+						weld_RISO_count++;
+						weld_task_control |= __WELD_RISO_RES_REQUESTED;
+						transmitCommFunc(__RISO,__GET,__RESULT,"L3-N_PE",device.device_dir);
+						//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDINES__,__GET_RISO_RES__,"","L3-N_PE",device.device_dir);
 					}
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__STOP_RISO__,"","",device.device_dir);
-					DIS_N_A;
-					DIS_PE_B;
-					CON_L1_A;
-					CON_N_B;
+					
 				}
-				else
+				break;
+			case 6:	//L3,N proti PE
+				if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
 				{
 					if(weld_check_RISO_resistance())
 					{
-						weld_RISO_count=9;
-						weld_insolation_status |= L3_PE_FAIL;
+						weld_RISO_count=10;
+						weld_insolation_status |= L2_PE_FAIL;
+						DIS_L3_A;
 						DIS_N_A;
-						CON_L2_A;
+						CON_L1_A;
 						weld_task_control |= __WELD_RISO_RES_REQUESTED;
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__GET_RISO_RES__,"","L2_PE",device.device_dir);
+						transmitCommFunc(__RISO,__GET,__RESULT,"L1_PE",device.device_dir);
+						//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDINES__,__GET_RISO_RES__,"","L1_PE",device.device_dir);
 					}
 					else
 					{
-						weld_insolation_status |= N_PE_FAIL;
-						DIS_N_A;
-						CON_L3_A;
+						DIS_L3_A;
 						weld_RISO_count++;
 						weld_task_control |= __WELD_RISO_RES_REQUESTED;
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__GET_RISO_RES__,"","L3_PE",device.device_dir);
+						transmitCommFunc(__RISO,__GET,__RESULT,"N_PE",device.device_dir);
+						//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDINES__,__GET_RISO_RES__,"","N_PE",device.device_dir);
 					}
-				}	
+					
+				}
+				break;
+			case 7:	//N proti PE
+				if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
+				{
+					if(WELD_PHASE_NUM_SETTING == _1_PHASE)
+					{
+						if(weld_check_RISO_resistance())
+						{
+							weld_RISO_count=11;
+							weld_insolation_status |= L1_PE_FAIL;
+						}
+						else
+						{
+							weld_insolation_status |= N_PE_FAIL;
+							weld_RISO_count=11;
+						}
+						//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDINES__,__STOP_RISO__,"","",device.device_dir);
+						DIS_N_A;
+						DIS_PE_B;
+						CON_L1_A;
+						CON_N_B;
+					}
+					else
+					{
+						if(weld_check_RISO_resistance())
+						{
+							weld_RISO_count=9;
+							weld_insolation_status |= L3_PE_FAIL;
+							DIS_N_A;
+							CON_L2_A;
+							weld_task_control |= __WELD_RISO_RES_REQUESTED;
+							transmitCommFunc(__RISO,__GET,__RESULT,"L2_PE",device.device_dir);
+							//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDINES__,__GET_RISO_RES__,"","L2_PE",device.device_dir);
+						}
+						else
+						{
+							weld_insolation_status |= N_PE_FAIL;
+							DIS_N_A;
+							CON_L3_A;
+							weld_RISO_count++;
+							weld_task_control |= __WELD_RISO_RES_REQUESTED;
+							transmitCommFunc(__RISO,__GET,__RESULT,"L3_PE",device.device_dir);
+							//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDINES__,__GET_RISO_RES__,"","L3_PE",device.device_dir);
+						}
+					}	
+				}
+				break;
+			case 8:	//L3 proti PE
+			if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
+			{
+				if(!(weld_check_RISO_resistance()))
+					weld_insolation_status |= L3_PE_FAIL;
+				weld_RISO_count++;
+				DIS_L3_A;
+				CON_L2_A;
+				transmitCommFunc(__RISO,__GET,__RESULT,"L2_PE",device.device_dir);
+			}
+			case 9:	//L2 proti PE
+			if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
+			{
+				if(!(weld_check_RISO_resistance()))
+					weld_insolation_status |= L2_PE_FAIL;
+				weld_RISO_count++;
+				DIS_L2_A;
+				CON_L1_A;
+				weld_task_control |= __WELD_RISO_RES_REQUESTED;
+				transmitCommFunc(__RISO,__GET,__RESULT,"L1_PE",device.device_dir);
+				//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDINES__,__GET_RISO_RES__,"","L1_PE",device.device_dir);
 			}
 			break;
-		case 8:	//L3 proti PE
-		if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
-		{
-			if(!(weld_check_RISO_resistance()))
-				weld_insolation_status |= L3_PE_FAIL;
-			weld_RISO_count++;
-			DIS_L3_A;
-			CON_L2_A;
+			case 10:	//L1 proti PE
+			if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
+			{
+				if(!(weld_check_RISO_resistance()))
+					weld_insolation_status |= L1_PE_FAIL;
+				weld_RISO_count++;
+				//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDINES__,__STOP_RISO__,"","",device.device_dir);
+			}
+			break;
 		}
-		case 9:	//L2 proti PE
-		if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
-		{
-			if(!(weld_check_RISO_resistance()))
-				weld_insolation_status |= L2_PE_FAIL;
-			weld_RISO_count++;
-			DIS_L2_A;
-			CON_L1_A;
-			weld_task_control |= __WELD_RISO_RES_REQUESTED;
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__GET_RISO_RES__,"","L1_PE",device.device_dir);
-		}
-		break;
-		case 10:	//L1 proti PE
-		if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
-		{
-			if(!(weld_check_RISO_resistance()))
-				weld_insolation_status |= L1_PE_FAIL;
-			weld_RISO_count++;
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__STOP_RISO__,"","",device.device_dir);
-		}
-		break;
 	}
 	if(weld_RISO_count <= 10)
 		restart_timer(WELD_RISO_ONE_PHASE_TO_PE,5,weld_RISO_onePhaseToPE);
 	else
 	{
-		//rezultat poslejmo sele ko nam vrne riso stopped
-		if(weld_task_control & __WELD_RISO_STARTED)
-			restart_timer(WELD_RISO_ONE_PHASE_TO_PE,5,weld_RISO_onePhaseToPE);
-		else
-		{
-			weld_transmittOnePhaseToPE();
-			weld_task_control |= __WELD_RISO_ONE_PHASE_TO_PE_MEASURED;
-			weld_task_control &= (~__WELD_RISO_ONE_PHASE_TO_PE_IN_PROGRESS);
-		}
+		weld_transmittOnePhaseToPE();
+		weld_task_control |= __WELD_RISO_ONE_PHASE_TO_PE_MEASURED;
+		weld_task_control &= (~__WELD_RISO_ONE_PHASE_TO_PE_IN_PROGRESS);
 	}
 }
 
@@ -554,7 +545,8 @@ void weld_transmittOnePhaseToPE(void)
 	{
 		sprintf(temp_str,__PASS__);
 	}
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__RISO_ONE_PHASE_TO_PE__,temp_str,"",device.device_dir);
+	transmitFunc(__ONE_PE, __RESULT ,temp_str,"", device.device_dir);
+	//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__RISO_ONE_PHASE_TO_PE__,temp_str,"",device.device_dir);
 }
 
 
@@ -565,7 +557,7 @@ void set_RISO_weld_resistance(char* value)
 }
 bool weld_check_RISO_resistance(void)
 {
-	if(weld_riso_resistance < WELD_RISO_LIMIT)
+	if(weld_riso_resistance < WeldRisoLimit)
 		return false;
 	else
 		return true;
@@ -586,8 +578,10 @@ void weld_RISO_MainsToWeldClass2_init(void)
 }
 void weld_RISO_MainsToWeld(void)
 {
-	if(weld_task_control & __WELD_RISO_CONTINIOUS_MEAS)
+	if(checkAndChangeMeasurement(__WELDING))
 	{
+//	if(weld_task_control & __WELD_RISO_CONTINIOUS_MEAS)
+//	{
 		weld_RISO_MainsToWeldClass2_init();
 		if(WELD_PHASE_NUM_SETTING == _1_PHASE)
 		{
@@ -606,75 +600,80 @@ void weld_RISO_MainsToWeld(void)
 			set_REL(26);
 		}
 		weld_task_control |=__WELD_RISO_MAINS_WELD_IN_PROGRESS;
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__MAINS_TO_WELD_STARTED__,"","",device.device_dir);
+		transmitCommFunc(__RISO,__START,__500V,"",device.device_dir);
+		//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__MAINS_TO_WELD_STARTED__,"","",device.device_dir);
+//	}
+//	else
+//	{
+//		switch(weld_RISO_count2)
+//		{
+//			case 0:
+//				weld_RISO_MainsToWeldClass2_init();
+//				//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__MAINS_TO_WELD_STARTED__,"","",device.device_dir);
+//				weld_task_control |=__WELD_RISO_MAINS_WELD_IN_PROGRESS;
+//				//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__START_RISO__,"","",device.device_dir);
+//				weld_RISO_count2++;
+//				break;
+//			case 1:
+//				if(weld_task_control & __WELD_RISO_STARTED)
+//				{
+//					if(WELD_PHASE_NUM_SETTING == _1_PHASE)
+//					{
+//						CON_L1_A;
+//						CON_N_A;
+//						set_REL(25);
+//						set_REL(26);
+//					}	
+//					else 
+//					{
+//						CON_L1_A;
+//						CON_L2_A;
+//						CON_L3_A;
+//						CON_N_A;
+//						set_REL(25);
+//						set_REL(26);
+//					}
+//					weld_task_control |= __WELD_RISO_RES_REQUESTED;
+//					transmitCommFunc(__RISO,__START,__500V,"",device.device_dir);
+//					//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__GET_RISO_RES__,"","MAINS-WELD",device.device_dir);
+//					weld_RISO_count2++;
+//				}
+//				break;
+//			case 2://L1,L2,L3,N proti PE ali L1,N proti PE za enofazin podalsek
+//				if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
+//				{
+//					
+//					SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__STOP_RISO__,"","",device.device_dir);
+//					weld_RISO_count2++;
+//				}
+//			break;
+//		}
+//		if(weld_RISO_count2 < 3)
+//			restart_timer(WELD_RISO_MAINS_TO_WELD,5,weld_RISO_MainsToWeld);
+//		else
+//		{
+//			if(weld_task_control & __WELD_RISO_STARTED)
+//				restart_timer(WELD_RISO_MAINS_TO_WELD,5,weld_RISO_MainsToWeld);
+//			else if(WELD_AUTO_CONTINUE_MEAS==_ON)
+//				set_timer(WELD_RISO_WELD_TO_PE,5,weld_RISO_WeldToPE);
+//			if(!(weld_task_control & __WELD_RISO_STARTED))
+//			{
+//				weld_task_control &=(~__WELD_RISO_MAINS_WELD_IN_PROGRESS);
+//				if(weld_check_RISO_resistance())
+//				{
+//					weld_transmittMainsToWeld(true);
+//				}
+//				else
+//				{
+//					weld_transmittMainsToWeld(false);
+//				}
+//				weld_RISO_count2=0;
+//			}
+//		}
+//	}
 	}
 	else
-	{
-		switch(weld_RISO_count2)
-		{
-			case 0:
-				weld_RISO_MainsToWeldClass2_init();
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__MAINS_TO_WELD_STARTED__,"","",device.device_dir);
-				weld_task_control |=__WELD_RISO_MAINS_WELD_IN_PROGRESS;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__START_RISO__,"","",device.device_dir);
-				weld_RISO_count2++;
-				break;
-			case 1:
-				if(weld_task_control & __WELD_RISO_STARTED)
-				{
-					if(WELD_PHASE_NUM_SETTING == _1_PHASE)
-					{
-						CON_L1_A;
-						CON_N_A;
-						set_REL(25);
-						set_REL(26);
-					}	
-					else 
-					{
-						CON_L1_A;
-						CON_L2_A;
-						CON_L3_A;
-						CON_N_A;
-						set_REL(25);
-						set_REL(26);
-					}
-					weld_task_control |= __WELD_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__GET_RISO_RES__,"","MAINS-WELD",device.device_dir);
-					weld_RISO_count2++;
-				}
-				break;
-			case 2://L1,L2,L3,N proti PE ali L1,N proti PE za enofazin podalsek
-				if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
-				{
-					
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__STOP_RISO__,"","",device.device_dir);
-					weld_RISO_count2++;
-				}
-			break;
-		}
-		if(weld_RISO_count2 < 3)
-			restart_timer(WELD_RISO_MAINS_TO_WELD,5,weld_RISO_MainsToWeld);
-		else
-		{
-			if(weld_task_control & __WELD_RISO_STARTED)
-				restart_timer(WELD_RISO_MAINS_TO_WELD,5,weld_RISO_MainsToWeld);
-			else if(WELD_AUTO_CONTINUE_MEAS==_ON)
-				set_timer(WELD_RISO_WELD_TO_PE,5,weld_RISO_WeldToPE);
-			if(!(weld_task_control & __WELD_RISO_STARTED))
-			{
-				weld_task_control &=(~__WELD_RISO_MAINS_WELD_IN_PROGRESS);
-				if(weld_check_RISO_resistance())
-				{
-					weld_transmittMainsToWeld(true);
-				}
-				else
-				{
-					weld_transmittMainsToWeld(false);
-				}
-				weld_RISO_count2=0;
-			}
-		}
-	}
+		restart_timer(WELD_RISO_MAINS_TO_WELD,5,weld_RISO_MainsToWeld);
 }
 void weld_RISO_MainsToWeld_Stop(void)
 {
@@ -701,68 +700,74 @@ void weld_transmittMainsToWeld(bool pass)
 //+++++++++++++++++++++++++++++++++++++++++++++RISO (WELDING - PE)+++++++++++++++++++++++++++++
 void weld_RISO_WeldToPE(void)
 {
-	if(weld_task_control & __WELD_RISO_CONTINIOUS_MEAS)
+	if(checkAndChangeMeasurement(__WELDING))
 	{
+//	if(weld_task_control & __WELD_RISO_CONTINIOUS_MEAS)
+//	{
 		weld_RISO_MainsToWeldClass2_init();
 		set_REL(25);
 		set_REL(26);
 		set_REL(8);
 		weld_task_control |=__WELD_RISO_WELD_PE_IN_PROGRESS;
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__WELD_TO_PE_STARTED__,"","",device.device_dir);
+		transmitCommFunc(__RISO,__START,__500V,"",device.device_dir);
+		//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__WELD_TO_PE_STARTED__,"","",device.device_dir);
+//	}
+//	else
+//	{
+//		switch(weld_RISO_count2)
+//		{
+//			case 0:
+//				weld_RISO_MainsToWeldClass2_init();
+//				SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__WELD_TO_PE_STARTED__,"","",device.device_dir);
+//				weld_task_control |= __WELD_RISO_WELD_PE_IN_PROGRESS;
+//				SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__START_RISO__,"","",device.device_dir);
+//				weld_RISO_count2++;
+//				break;
+//			case 1:
+//				if(weld_task_control & __WELD_RISO_STARTED)
+//				{
+//					set_REL(25);
+//					set_REL(26);
+//					set_REL(8);
+//					weld_task_control |= __WELD_RISO_RES_REQUESTED;
+//					SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__GET_RISO_RES__,"","WELD-PE",device.device_dir);
+//					weld_RISO_count2++;
+//				}
+//				break;
+//			case 2:
+//				if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
+//				{
+//					SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__STOP_RISO__,"","",device.device_dir);
+//					weld_RISO_count2++;
+//				}
+//			break;
+//		}
+//		if(weld_RISO_count2 < 3)
+//			restart_timer(WELD_RISO_WELD_TO_PE,5,weld_RISO_WeldToPE);
+//		else
+//		{
+//			if(weld_task_control & __WELD_RISO_STARTED)
+//				restart_timer(WELD_RISO_WELD_TO_PE,5,weld_RISO_WeldToPE);
+//			else if(WELD_AUTO_CONTINUE_MEAS==_ON)
+//				set_timer(WELD_RISO_MAINS_TO_CLASS2,5,weld_RISO_MainsToClass2);
+//			if(!(weld_task_control & __WELD_RISO_STARTED))
+//			{
+//				weld_task_control &=(~__WELD_RISO_WELD_PE_IN_PROGRESS);
+//				if(weld_check_RISO_resistance())
+//				{
+//					weld_transmittWeldToPE(true);
+//				}
+//				else
+//				{
+//					weld_transmittWeldToPE(false);
+//				}
+//				weld_RISO_count2=0;
+//			}
+//		}
+//	}
 	}
 	else
-	{
-		switch(weld_RISO_count2)
-		{
-			case 0:
-				weld_RISO_MainsToWeldClass2_init();
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__WELD_TO_PE_STARTED__,"","",device.device_dir);
-				weld_task_control |= __WELD_RISO_WELD_PE_IN_PROGRESS;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__START_RISO__,"","",device.device_dir);
-				weld_RISO_count2++;
-				break;
-			case 1:
-				if(weld_task_control & __WELD_RISO_STARTED)
-				{
-					set_REL(25);
-					set_REL(26);
-					set_REL(8);
-					weld_task_control |= __WELD_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__GET_RISO_RES__,"","WELD-PE",device.device_dir);
-					weld_RISO_count2++;
-				}
-				break;
-			case 2:
-				if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
-				{
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__STOP_RISO__,"","",device.device_dir);
-					weld_RISO_count2++;
-				}
-			break;
-		}
-		if(weld_RISO_count2 < 3)
-			restart_timer(WELD_RISO_WELD_TO_PE,5,weld_RISO_WeldToPE);
-		else
-		{
-			if(weld_task_control & __WELD_RISO_STARTED)
-				restart_timer(WELD_RISO_WELD_TO_PE,5,weld_RISO_WeldToPE);
-			else if(WELD_AUTO_CONTINUE_MEAS==_ON)
-				set_timer(WELD_RISO_MAINS_TO_CLASS2,5,weld_RISO_MainsToClass2);
-			if(!(weld_task_control & __WELD_RISO_STARTED))
-			{
-				weld_task_control &=(~__WELD_RISO_WELD_PE_IN_PROGRESS);
-				if(weld_check_RISO_resistance())
-				{
-					weld_transmittWeldToPE(true);
-				}
-				else
-				{
-					weld_transmittWeldToPE(false);
-				}
-				weld_RISO_count2=0;
-			}
-		}
-	}
+		restart_timer(WELD_RISO_WELD_TO_PE,5,weld_RISO_WeldToPE);
 }
 void weld_RISO_WeldToPE_Stop(void)
 {
@@ -789,8 +794,10 @@ void weld_transmittWeldToPE(bool pass)
 //+++++++++++++++++++++++++++++++++++++++++++++RISO (MAINS - CLASS2)+++++++++++++++++++++++++++++
 void weld_RISO_MainsToClass2(void)
 {
-	if(weld_task_control & __WELD_RISO_CONTINIOUS_MEAS)
+	if(checkAndChangeMeasurement(__WELDING))
 	{
+//	if(weld_task_control & __WELD_RISO_CONTINIOUS_MEAS)
+//	{
 		weld_RISO_MainsToWeldClass2_init();
 		if(WELD_PHASE_NUM_SETTING == _1_PHASE)
 		{
@@ -806,72 +813,76 @@ void weld_RISO_MainsToClass2(void)
 			CON_N_A;
 			set_REL(9);
 		}
+		transmitCommFunc(__RISO,__START,__500V,"",device.device_dir);
 		weld_task_control |=__WELD_RISO_MAINS_CLASS2_IN_PROGRESS;
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__MAINS_TO_CLASS2_STARTED__,"","",device.device_dir);
+		//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__MAINS_TO_CLASS2_STARTED__,"","",device.device_dir);
+//	}
+//	else
+//	{
+//		switch(weld_RISO_count2)
+//		{
+//			case 0:
+//				weld_RISO_MainsToWeldClass2_init();
+//				SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__MAINS_TO_CLASS2_STARTED__,"","",device.device_dir);
+//				weld_task_control |=__WELD_RISO_MAINS_CLASS2_IN_PROGRESS;
+//				SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__START_RISO__,"","",device.device_dir);
+//				weld_RISO_count2++;
+//				break;
+//			case 1:
+//				if(weld_task_control & __WELD_RISO_STARTED)
+//				{
+//					if(WELD_PHASE_NUM_SETTING == _1_PHASE)
+//					{
+//						CON_L1_A;
+//						CON_N_A;
+//						set_REL(9);
+//					}	
+//					else 
+//					{
+//						CON_L1_A;
+//						CON_L2_A;
+//						CON_L3_A;
+//						CON_N_A;
+//						set_REL(9);
+//					}
+//					weld_task_control |= __WELD_RISO_RES_REQUESTED;
+//					SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__GET_RISO_RES__,"","MAINS-CLASS2",device.device_dir);
+//					weld_RISO_count2++;
+//				}
+//				break;
+//			case 2://L1,L2,L3,N proti PE ali L1,N proti PE za enofazin podalsek
+//				if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
+//				{
+//					
+//					SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__STOP_RISO__,"","",device.device_dir);
+//					weld_RISO_count2++;
+//				}
+//			break;
+//		}
+//		if(weld_RISO_count2 < 3)
+//			restart_timer(WELD_RISO_MAINS_TO_CLASS2,5,weld_RISO_MainsToClass2);
+//		else
+//		{
+//			if(weld_task_control & __WELD_RISO_STARTED)
+//				restart_timer(WELD_RISO_MAINS_TO_CLASS2,5,weld_RISO_MainsToClass2);
+//			if(!(weld_task_control & __WELD_RISO_STARTED))
+//			{
+//				weld_task_control &=(~__WELD_RISO_MAINS_CLASS2_IN_PROGRESS);
+//				if(weld_check_RISO_resistance())
+//				{
+//					weld_transmittMainsToClass2(true);
+//				}
+//				else
+//				{
+//					weld_transmittMainsToClass2(false);
+//				}
+//				weld_RISO_count2=0;
+//			}
+//		}
+//	}
 	}
 	else
-	{
-		switch(weld_RISO_count2)
-		{
-			case 0:
-				weld_RISO_MainsToWeldClass2_init();
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__MAINS_TO_CLASS2_STARTED__,"","",device.device_dir);
-				weld_task_control |=__WELD_RISO_MAINS_CLASS2_IN_PROGRESS;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__START_RISO__,"","",device.device_dir);
-				weld_RISO_count2++;
-				break;
-			case 1:
-				if(weld_task_control & __WELD_RISO_STARTED)
-				{
-					if(WELD_PHASE_NUM_SETTING == _1_PHASE)
-					{
-						CON_L1_A;
-						CON_N_A;
-						set_REL(9);
-					}	
-					else 
-					{
-						CON_L1_A;
-						CON_L2_A;
-						CON_L3_A;
-						CON_N_A;
-						set_REL(9);
-					}
-					weld_task_control |= __WELD_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__GET_RISO_RES__,"","MAINS-CLASS2",device.device_dir);
-					weld_RISO_count2++;
-				}
-				break;
-			case 2://L1,L2,L3,N proti PE ali L1,N proti PE za enofazin podalsek
-				if(!(weld_task_control&__WELD_RISO_RES_REQUESTED))
-				{
-					
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__STOP_RISO__,"","",device.device_dir);
-					weld_RISO_count2++;
-				}
-			break;
-		}
-		if(weld_RISO_count2 < 3)
-			restart_timer(WELD_RISO_MAINS_TO_CLASS2,5,weld_RISO_MainsToClass2);
-		else
-		{
-			if(weld_task_control & __WELD_RISO_STARTED)
-				restart_timer(WELD_RISO_MAINS_TO_CLASS2,5,weld_RISO_MainsToClass2);
-			if(!(weld_task_control & __WELD_RISO_STARTED))
-			{
-				weld_task_control &=(~__WELD_RISO_MAINS_CLASS2_IN_PROGRESS);
-				if(weld_check_RISO_resistance())
-				{
-					weld_transmittMainsToClass2(true);
-				}
-				else
-				{
-					weld_transmittMainsToClass2(false);
-				}
-				weld_RISO_count2=0;
-			}
-		}
-	}
+		restart_timer(WELD_RISO_MAINS_TO_CLASS2,5,weld_RISO_MainsToClass2);
 }
 void weld_RISO_MainsToClass2_Stop(void)
 {
@@ -909,16 +920,22 @@ void weld_UNL_init(void)
 
 void weld_UnlStart_peak(void)
 {
-	weld_UNL_init();
-	set_REL(24);
-	set_REL(26);
-	synchroSetContactor(__SET_L1_CONTACTOR);
-	synchroSetContactor(__SET_L2_CONTACTOR);
-	synchroSetContactor(__SET_L3_CONTACTOR);
-	synchroSetContactor(__SET_N_CONTACTOR);
-	synchroSetContactor(__SET_PE_CONTACTOR);
-	weld_task_control |= __WELD_UNL_PEAK_IN_PROGRESS;
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__WELD_UNL_PEAK_STARTED_,"","",device.device_dir);
+	if(checkAndChangeMeasurement(__WELDING))
+	{
+		weld_UNL_init();
+		set_REL(24);
+		set_REL(26);
+		synchroSetContactor(__SET_L1_CONTACTOR);
+		synchroSetContactor(__SET_L2_CONTACTOR);
+		synchroSetContactor(__SET_L3_CONTACTOR);
+		synchroSetContactor(__SET_N_CONTACTOR);
+		synchroSetContactor(__SET_PE_CONTACTOR);
+		weld_task_control |= __WELD_UNL_PEAK_IN_PROGRESS;
+		transmitFunc(__UNL_PEAK,__STARTED,"","",device.device_dir);
+		//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__WELD_UNL_PEAK_STARTED_,"","",device.device_dir);
+	}
+	else
+		set_timer(WELD_UNL_START_RMS,5,weld_UnlStart_peak);
 }
 void weld_UnlStop_peak(void)
 {
@@ -932,16 +949,22 @@ void weld_UnlStop_peak(void)
 
 void weld_UnlStart_RMS(void)
 {
-	weld_UNL_init();
-	set_REL(24);
-	set_REL(26);
-	synchroSetContactor(__SET_L1_CONTACTOR);
-	synchroSetContactor(__SET_L2_CONTACTOR);
-	synchroSetContactor(__SET_L3_CONTACTOR);
-	synchroSetContactor(__SET_N_CONTACTOR);
-	synchroSetContactor(__SET_PE_CONTACTOR);
-	weld_task_control |= __WELD_UNL_RMS_IN_PROGRESS;
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__WELD_UNL_RMS_STARTED_,"","",device.device_dir);
+	if(checkAndChangeMeasurement(__WELDING))
+	{
+		weld_UNL_init();
+		set_REL(24);
+		set_REL(26);
+		synchroSetContactor(__SET_L1_CONTACTOR);
+		synchroSetContactor(__SET_L2_CONTACTOR);
+		synchroSetContactor(__SET_L3_CONTACTOR);
+		synchroSetContactor(__SET_N_CONTACTOR);
+		synchroSetContactor(__SET_PE_CONTACTOR);
+		weld_task_control |= __WELD_UNL_RMS_IN_PROGRESS;
+		transmitFunc(__UNL_RMS,__STARTED,"","",device.device_dir);
+		//SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__WELD_UNL_RMS_STARTED_,"","",device.device_dir);
+	}
+	else
+		set_timer(WELD_UNL_START_RMS,5,weld_UnlStart_RMS);
 }
 void weld_UnlStop_RMS(void)
 {
@@ -950,3 +973,7 @@ void weld_UnlStop_RMS(void)
 	SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__WELD_UNL_RMS_STOPED_,"","",device.device_dir);
 }
 //+++++++++++++++++++++++++++++++++++++++++++END U-NO-LOAD (RMS)++++++++++++++++++++++++++++++++++++++
+void SetWeldLimit(char * lim_str)
+{
+	WeldRisoLimit = atof(lim_str);
+}

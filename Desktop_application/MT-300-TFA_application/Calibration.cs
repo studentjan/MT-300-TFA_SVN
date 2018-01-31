@@ -35,7 +35,9 @@ namespace MT_300_TFA_application
             ULN3,
             IL1,
             IL2,
-            IL3
+            IL3,
+            UL1PE,
+            UNPE
         }
 
         private string prev_msg = "";
@@ -97,6 +99,34 @@ namespace MT_300_TFA_application
                     }
                     EnableAllButtons();
                 }
+                else if (String.Equals(value1, serial_com.CALIB_ADD_NAMES[10])) // UL1PE
+                {
+                    if (UL1PE_low_requested)
+                    {
+                        Invoke(new MethodInvoker(delegate() { UL1PElowRetTextBox.Text = value2; }));
+                        UL1PE_low_requested = false;
+                    }
+                    else if (UL1PE_high_requested)
+                    {
+                        Invoke(new MethodInvoker(delegate() { UL1PEhighRetTextBox.Text = value2; }));
+                        UL1PE_high_requested = false;
+                    }
+                    EnableAllButtons();
+                }
+                else if (String.Equals(value1, serial_com.CALIB_ADD_NAMES[9])) // UNPE
+                {
+                    if (UNPE_low_requested)
+                    {
+                        Invoke(new MethodInvoker(delegate() { UNPElowRetTextBox.Text = value2; }));
+                        UNPE_low_requested = false;
+                    }
+                    else if (UNPE_high_requested)
+                    {
+                        Invoke(new MethodInvoker(delegate() { UNPEhighRetTextBox.Text = value2; }));
+                        UNPE_high_requested = false;
+                    }
+                    EnableAllButtons();
+                }
                 else
                 {
                     ULN1_high_requested = false;
@@ -105,6 +135,10 @@ namespace MT_300_TFA_application
                     ULN1_low_requested = false;
                     ULN2_low_requested = false;
                     ULN3_low_requested = false;
+                    UL1PE_high_requested = false;
+                    UNPE_high_requested = false;
+                    UL1PE_low_requested = false;
+                    UNPE_low_requested = false;
                     EnableAllButtons();
                 }
             }
@@ -143,6 +177,22 @@ namespace MT_300_TFA_application
             {
                 Invoke(new MethodInvoker(delegate() { ULN3nTextbox.Text = constValue; }));
             }
+            else if (String.Equals(constName, serial_com.CALIB_ADD_NAMES[11]))
+            {
+                Invoke(new MethodInvoker(delegate() { UNPEkTextbox.Text = constValue; }));
+            }
+            else if (String.Equals(constName, serial_com.CALIB_ADD_NAMES[12]))
+            {
+                Invoke(new MethodInvoker(delegate() { UL1PEkTextbox.Text = constValue; }));
+            }
+            else if (String.Equals(constName, serial_com.CALIB_ADD_NAMES[13]))
+            {
+                Invoke(new MethodInvoker(delegate() { UNPEnTextbox.Text = constValue; }));
+            }
+            else if (String.Equals(constName, serial_com.CALIB_ADD_NAMES[14]))
+            {
+                Invoke(new MethodInvoker(delegate() { UL1PEnTextbox.Text = constValue; }));
+            }
         }
 
         private void computeConstants(int vmeter)
@@ -157,8 +207,8 @@ namespace MT_300_TFA_application
                 float n2prev = float.Parse(ULN1nTextbox.Text, System.Globalization.CultureInfo.InvariantCulture);
                 float k2 = ((y2 - y1)/(x2 - x1));
                 float n2 = y1 - (k2*x1);
-                float n2new = n2prev-n2;
-                float k2new = (2-k2)/k2prev;
+                float n2new = -n2;
+                float k2new = k2prev/k2;
                 Invoke(new MethodInvoker(delegate() { ULN1nTextbox.Text = n2new.ToString(); }));
                 Invoke(new MethodInvoker(delegate() { ULN1kTextbox.Text = k2new.ToString(); }));
             }
@@ -172,8 +222,8 @@ namespace MT_300_TFA_application
                 float n2prev = float.Parse(ULN2nTextbox.Text, System.Globalization.CultureInfo.InvariantCulture);
                 float k2 = ((y2 - y1) / (x2 - x1));
                 float n2 = y1 - (k2 * x1);
-                float n2new = n2prev - n2;
-                float k2new = (2 - k2) / k2prev;
+                float n2new = -n2;
+                float k2new = k2prev / k2;
                 Invoke(new MethodInvoker(delegate() { ULN2nTextbox.Text = n2new.ToString(); }));
                 Invoke(new MethodInvoker(delegate() { ULN2kTextbox.Text = k2new.ToString(); }));
             }
@@ -187,10 +237,40 @@ namespace MT_300_TFA_application
                 float n2prev = float.Parse(ULN3nTextbox.Text, System.Globalization.CultureInfo.InvariantCulture);
                 float k2 = ((y2 - y1) / (x2 - x1));
                 float n2 = y1 - (k2 * x1);
-                float n2new = n2prev - n2;
-                float k2new = (2 - k2) / k2prev;
+                float n2new = -n2;
+                float k2new = k2prev / k2;
                 Invoke(new MethodInvoker(delegate() { ULN3nTextbox.Text = n2new.ToString(); }));
                 Invoke(new MethodInvoker(delegate() { ULN3kTextbox.Text = k2new.ToString(); }));
+            }
+            else if (vmeter == (int)voltmeter.UL1PE)
+            {
+                float y1 = float.Parse(UL1PElowRetTextBox.Text, System.Globalization.CultureInfo.InvariantCulture);
+                float y2 = float.Parse(UL1PEhighRetTextBox.Text, System.Globalization.CultureInfo.InvariantCulture);
+                float x1 = float.Parse(UL1PElowTextbox.Text, System.Globalization.CultureInfo.InvariantCulture);
+                float x2 = float.Parse(UL1PEhighTextbox.Text, System.Globalization.CultureInfo.InvariantCulture);
+                float k2prev = float.Parse(UL1PEkTextbox.Text, System.Globalization.CultureInfo.InvariantCulture);
+                float n2prev = float.Parse(UL1PEnTextbox.Text, System.Globalization.CultureInfo.InvariantCulture);
+                float k2 = ((y2 - y1) / (x2 - x1));
+                float n2 = y1 - (k2 * x1);
+                float n2new = -n2;
+                float k2new = k2prev / k2;
+                Invoke(new MethodInvoker(delegate() { UL1PEnTextbox.Text = n2new.ToString(); }));
+                Invoke(new MethodInvoker(delegate() { UL1PEkTextbox.Text = k2new.ToString(); }));
+            }
+            else if (vmeter == (int)voltmeter.UNPE)
+            {
+                float y1 = float.Parse(UNPElowRetTextBox.Text, System.Globalization.CultureInfo.InvariantCulture);
+                float y2 = float.Parse(UNPEhighRetTextBox.Text, System.Globalization.CultureInfo.InvariantCulture);
+                float x1 = float.Parse(UNPElowTextbox.Text, System.Globalization.CultureInfo.InvariantCulture);
+                float x2 = float.Parse(UNPEhighTextbox.Text, System.Globalization.CultureInfo.InvariantCulture);
+                float k2prev = float.Parse(UNPEkTextbox.Text, System.Globalization.CultureInfo.InvariantCulture);
+                float n2prev = float.Parse(UNPEnTextbox.Text, System.Globalization.CultureInfo.InvariantCulture);
+                float k2 = ((y2 - y1) / (x2 - x1));
+                float n2 = y1 - (k2 * x1);
+                float n2new = -n2;
+                float k2new = k2prev / k2;
+                Invoke(new MethodInvoker(delegate() { UNPEnTextbox.Text = n2new.ToString(); }));
+                Invoke(new MethodInvoker(delegate() { UNPEkTextbox.Text = k2new.ToString(); }));
             }
         }
 
@@ -208,6 +288,14 @@ namespace MT_300_TFA_application
             else if (vmeter == (int) voltmeter.ULN3)
             {
                 temp_str = string.Format("ULN3_K|{0},ULN3_N|{1}", ULN3kTextbox.Text, ULN3nTextbox.Text);
+            }
+            else if (vmeter == (int)voltmeter.UL1PE)
+            {
+                temp_str = string.Format("UL1PE_K|{0},UL1PE_N|{1}", UL1PEkTextbox.Text, UL1PEnTextbox.Text);
+            }
+            else if (vmeter == (int)voltmeter.UNPE)
+            {
+                temp_str = string.Format("UNPE_K|{0},UNPE_N|{1}", UNPEkTextbox.Text, UNPEnTextbox.Text);
             }
             else
             {
@@ -237,6 +325,10 @@ namespace MT_300_TFA_application
             ULN2kTextbox.AppendText("1.0");
             ULN3kTextbox.AppendText("1.0");
             ULN3nTextbox.AppendText("0.0");
+            UL1PEnTextbox.AppendText("0.0");
+            UL1PEkTextbox.AppendText("1.0");
+            UNPEkTextbox.AppendText("1.0");
+            UNPEnTextbox.AppendText("0.0");
         }
 
         private bool ULN1_low_requested;
@@ -245,6 +337,10 @@ namespace MT_300_TFA_application
         private bool ULN3_high_requested;
         private bool ULN2_high_requested;
         private bool ULN1_high_requested;
+        private bool UL1PE_low_requested;
+        private bool UNPE_low_requested;
+        private bool UL1PE_high_requested;
+        private bool UNPE_high_requested;
         private void ULN1lowButton_Click(object sender, EventArgs e)
         {
             DisableAllButtons();
@@ -344,6 +440,12 @@ namespace MT_300_TFA_application
             Invoke(new MethodInvoker(delegate() { ULN1lowButton.Enabled = true; }));
             Invoke(new MethodInvoker(delegate() { ULN2lowButton.Enabled = true; }));
             Invoke(new MethodInvoker(delegate() { ULN3lowButton.Enabled = true; }));
+            Invoke(new MethodInvoker(delegate() { UL1PElowButton.Enabled = true; }));
+            Invoke(new MethodInvoker(delegate() { UNPElowButton.Enabled = true; }));
+            Invoke(new MethodInvoker(delegate() { UL1PEhighButton.Enabled = true; }));
+            Invoke(new MethodInvoker(delegate() { UNPEhighButton.Enabled = true; }));
+            Invoke(new MethodInvoker(delegate() { UNPEcomputeButton.Enabled = true; }));
+            Invoke(new MethodInvoker(delegate() { UL1PEcomputeButton.Enabled = true; }));
         }
 
         private void DisableAllButtons()
@@ -360,6 +462,12 @@ namespace MT_300_TFA_application
             Invoke(new MethodInvoker(delegate() { ULN1lowButton.Enabled = false; }));
             Invoke(new MethodInvoker(delegate() { ULN2lowButton.Enabled = false; }));
             Invoke(new MethodInvoker(delegate() { ULN3lowButton.Enabled = false; }));
+            Invoke(new MethodInvoker(delegate() { UL1PElowButton.Enabled = false; }));
+            Invoke(new MethodInvoker(delegate() { UNPElowButton.Enabled = false; }));
+            Invoke(new MethodInvoker(delegate() { UL1PEhighButton.Enabled = false; }));
+            Invoke(new MethodInvoker(delegate() { UNPEhighButton.Enabled = false; }));
+            Invoke(new MethodInvoker(delegate() { UNPEcomputeButton.Enabled = false; }));
+            Invoke(new MethodInvoker(delegate() { UL1PEcomputeButton.Enabled = false; }));
         }
 
         private void Calibration_FormClosing(object sender, FormClosingEventArgs e)
@@ -373,6 +481,64 @@ namespace MT_300_TFA_application
                                 Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
                                 serial_com.COMMAND_TYPE_NAMES[9], serial_com.CALIB_COMMAND_NAMES[4], "", "");
         }
+
+        private void UL1PElowButton_Click(object sender, EventArgs e)
+        {
+            DisableAllButtons();
+            UL1PE_low_requested = true;
+            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                                serial_com.COMMAND_TYPE_NAMES[9], serial_com.CALIB_COMMAND_NAMES[6], "", "");
+        }
+
+        private void UL1PEhighButton_Click(object sender, EventArgs e)
+        {
+            DisableAllButtons();
+            UL1PE_high_requested = true;
+            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                                serial_com.COMMAND_TYPE_NAMES[9], serial_com.CALIB_COMMAND_NAMES[6], "", "");
+        }
+
+        private void UL1PEcomputeButton_Click(object sender, EventArgs e)
+        {
+            computeConstants((int)voltmeter.UL1PE);
+        }
+
+        private void UL1PEsaveButton_Click(object sender, EventArgs e)
+        {
+            transmittConstants((int)voltmeter.UL1PE);
+        }
+
+        private void UNPElowButton_Click(object sender, EventArgs e)
+        {
+            DisableAllButtons();
+            UNPE_low_requested = true;
+            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                                serial_com.COMMAND_TYPE_NAMES[9], serial_com.CALIB_COMMAND_NAMES[7], "", "");
+        }
+
+        private void UNPEhighButton_Click(object sender, EventArgs e)
+        {
+            DisableAllButtons();
+            UNPE_high_requested = true;
+            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                                serial_com.COMMAND_TYPE_NAMES[9], serial_com.CALIB_COMMAND_NAMES[7], "", "");
+        }
+
+        private void UNPEcomputeButton_Click(object sender, EventArgs e)
+        {
+            computeConstants((int)voltmeter.UNPE);
+        }
+
+        private void UNPEsaveButton_Click(object sender, EventArgs e)
+        {
+            transmittConstants((int)voltmeter.UNPE);
+        }
+
+
 
     }
 }

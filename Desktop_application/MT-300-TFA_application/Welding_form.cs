@@ -40,6 +40,8 @@ namespace MT_300_TFA_application
         public Welding_form(serial_com S_object, Form1 main_form)
         {
             InitializeComponent();
+            Cable_type_comboBox.SelectedIndex = 0;
+            RisoLimitTextbox.AppendText("1.0");
             return_iso_ok_textbox.AppendText("10.0");
             return_iso_nok_textbox.AppendText("0.5");
             Serial_object = S_object;
@@ -47,17 +49,17 @@ namespace MT_300_TFA_application
             Serial_object.analyzeReturnEventHandler += AnalyzeResults;
             iso_state_combobox.SelectedIndex = 0;
             MainForm = main_form;
-            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[1], "", "");
+            //Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+            //                    Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+            //                    serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[1], "", "");
             reset_analyze_textbox();
         }
         private void Welding_form_FormClosing(object sender, FormClosingEventArgs e)
         {
             MainForm.Enable_buttons();
-            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[2], "", "");
+            //Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+            //                    Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+            //                    serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[2], "", "");
         }
 
         private void setURESstarted()
@@ -120,7 +122,7 @@ namespace MT_300_TFA_application
             clearURESstarted();
         }
 
-        public void OnMachReturnResult(object sender, string returned_string, string command)
+        public void OnMachReturnResult(object sender, string returned_string, string command, string leftover)
         {
             if (String.Equals(command, serial_com.WELD_COMMAND_NAMES[3])) //URES STARTED
             {
@@ -130,50 +132,36 @@ namespace MT_300_TFA_application
             {
                 stop_weld();
             }
-            else if (String.Equals(command, serial_com.WELD_COMMAND_NAMES[13])) //RPE STARTED
+            else if (String.Equals(command, serial_com.FUNCTION_COMMUNICATON_NAMES[2])) //ALL-PE
             {
-                setRPEStarted();
+                if (String.Equals(returned_string, serial_com.COMMAND_COMMUNICATON_NAMES2[1])) //RESULT
+                {
+                    clearALL_PEStarted();
+                }
             }
-            else if (String.Equals(command, serial_com.WELD_COMMAND_NAMES[14])) //RPE STOPPED
+            else if (String.Equals(command, serial_com.FUNCTION_COMMUNICATON_NAMES[3])) //ONE-PE
             {
-                clearRPEStarted();
+                if (String.Equals(returned_string, serial_com.COMMAND_COMMUNICATON_NAMES2[1])) //RESULT
+                {
+                    clearONE_PEStarted();
+                }
             }
-            else if (String.Equals(command, serial_com.WELD_COMMAND_NAMES[17])) //ALL-PE RESULT
+            else if (String.Equals(command, serial_com.FUNCTION_COMMUNICATON_NAMES[6]))//RISO
             {
-                clearALL_PEStarted();
+                if (String.Equals(returned_string, serial_com.COMMAND_COMMUNICATON_NAMES[0]))
+                {
+                    weld_return_RISO_result(leftover);
+                    if(riso_all_pe_in_prog)
+                        clearALL_PEStarted();
+                }
+                else if (String.Equals(returned_string, serial_com.COMMAND_COMMUNICATON_NAMES[2]))
+                {
+                    weld_return_RISO_result(leftover);
+                    if(riso_one_pe_in_prog)
+                        clearONE_PEStarted();
+                }
             }
-            else if (String.Equals(command, serial_com.WELD_COMMAND_NAMES[18])) //ONE-PE RESULT
-            {
-                clearONE_PEStarted();
-            }
-            else if (String.Equals(command, serial_com.WELD_COMMAND_NAMES[19])) //start RISO START
-            {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                               Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                               serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[20], "", "");
-            }
-            else if (String.Equals(command, serial_com.WELD_COMMAND_NAMES[21])) //start RISO STOP
-            {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                               Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                               serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[22], "", "");
-            }
-            else if (String.Equals(command, serial_com.WELD_COMMAND_NAMES[23])) //get RISO resistance
-            {
-                weld_return_RISO_result(returned_string);
-            }
-            else if (String.Equals(command, serial_com.WELD_COMMAND_NAMES[28])) //Mains-weld result
-            {
-                clearMAINS_WELDStarted();
-            }
-            else if (String.Equals(command, serial_com.WELD_COMMAND_NAMES[29])) //Mains-class2 result
-            {
-                clearMAINS_ACCStarted();
-            }
-            else if (String.Equals(command, serial_com.WELD_COMMAND_NAMES[30])) //weld-PE result
-            {
-                clearWELD_PEStarted();
-            }
+            
 
         }
 
@@ -257,19 +245,19 @@ namespace MT_300_TFA_application
                 switch (getCableInsulationComboValue())
                 {
                     case "L1 - PE":
-                        temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
+                        temp_str = _failTempString;
                         break;
                     case "L3 - PE":
-                        temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
+                        temp_str = _failTempString;
                         break;
                     case "L1,N -PE":
-                        temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
+                        temp_str = _failTempString;
                         break;
                     case "N - PE":
-                        temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
+                        temp_str = _failTempString;
                         break;
                     default:
-                        temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString;
+                        temp_str = _passTempString;
                         break;
                 }
             }
@@ -279,30 +267,30 @@ namespace MT_300_TFA_application
                 {
                     case "L1 - PE":
                         if (String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[1]))
-                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString;
+                            temp_str =  _passTempString;
                         else
-                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
+                            temp_str =  _failTempString;
                         break;
                     case "L3 - PE":
                         if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[1])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[2])))
-                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
+                            temp_str =  _failTempString;
                         else
-                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString;
+                            temp_str =  _passTempString;
                         break;
                     case "L1,N -PE":
                         if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[1])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[2])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[3])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[6])))
-                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
+                            temp_str =  _failTempString;
                         else
-                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString;
+                            temp_str =  _passTempString;
                         break;
                     case "N - PE":
                         if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[1])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[2])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[3])))
-                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
+                            temp_str =  _failTempString;
                         else
-                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString;
+                            temp_str =  _passTempString;
                         break;
                     default:
-                        temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString;
+                        temp_str =  _passTempString;
                         break;
                 }
             }
@@ -310,10 +298,11 @@ namespace MT_300_TFA_application
             {
                 temp_str = "";
             }
-            Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.COMMAND_TYPE_NAMES[8],
-                                serial_com.WELD_COMMAND_NAMES[24], temp_str, "");
+            Serial_object.returnRisoRes(temp_str);
+            //Serial_object.Send_protocol_message(
+            //                    Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
+            //                    Settings1.Default._ID_TFA, serial_com.COMMAND_TYPE_NAMES[8],
+            //                    serial_com.WELD_COMMAND_NAMES[24], temp_str, "");
         }
 
         private string getIsoOKValue()
@@ -569,17 +558,18 @@ namespace MT_300_TFA_application
         {
             if (rpe_in_prog == false)
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[11], "" ,"");
+                Serial_object.transmittComand((int)serial_com.funcEnums.__M_RPE, (int)serial_com.commandEnums.__START, (int)serial_com.stdEnums.__WELD, "", "");
+                //Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                //                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                //                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[11], "" ,"");
                 rpe_in_prog = true;
             }
             else
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[12], "", "");
-                clearURESstarted();
+                Serial_object.transmittComand((int)serial_com.funcEnums.__M_RPE, (int)serial_com.commandEnums.__STOP, (int)serial_com.stdEnums.__WELD, "", "");
+                //Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                //                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                //                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[12], "", "");
                 rpe_in_prog = false;
             }
 
@@ -587,40 +577,51 @@ namespace MT_300_TFA_application
 
         private void riso_button_Click(object sender, EventArgs e)
         {
+            string temp_str;
+            string temp_str2;
             if (riso_all_pe_in_prog == false)
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[15], "", "");
+                if (String.Equals(getCableTypeComboValue(), "1 PHASE"))
+                    temp_str = Serial_object.buildPhaseStr(true);
+                else
+                    temp_str = Serial_object.buildPhaseStr(false);
+                temp_str2 = String.Format("{0},LIMIT|{1}", temp_str, RisoLimitTextbox.Text);
+                Serial_object.transmittComand((int)serial_com.funcEnums.__ALL_PE, (int)serial_com.commandEnums.__START, (int)serial_com.stdEnums.__WELD, temp_str2, "");
+                //Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                //                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                //                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[15], "", "");
                 riso_all_pe_in_prog = true;
                 setALL_PEStarted();
             }
             else
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[6], "", "");
-                riso_all_pe_in_prog = false;
+                Serial_object.transmittComand((int)serial_com.funcEnums.__ALL_PE, (int)serial_com.commandEnums.__STOP, (int)serial_com.stdEnums.__WELD, "", "");
+                //Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                //                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                //                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[6], "", "");
                 clearALL_PEStarted();
+                riso_all_pe_in_prog = false;
             }
         }
 
         private void riso_button2_Click(object sender, EventArgs e)
         {
+            string temp_str;
+            string temp_str2;
             if (riso_one_pe_in_prog == false)
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[16], "", "");
+                if (String.Equals(getCableTypeComboValue(), "1 PHASE"))
+                    temp_str = Serial_object.buildPhaseStr(true);
+                else
+                    temp_str = Serial_object.buildPhaseStr(false);
+                temp_str2 = String.Format("{0},LIMIT|{1}", temp_str, RisoLimitTextbox.Text);
+                Serial_object.transmittComand((int)serial_com.funcEnums.__ONE_PE, (int)serial_com.commandEnums.__START, (int)serial_com.stdEnums.__WELD, temp_str2, "");
                 riso_one_pe_in_prog = true;
                 setONE_PEStarted();
             }
             else
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[6], "", "");
-                clearURESstarted();
+                Serial_object.transmittComand((int)serial_com.funcEnums.__ONE_PE, (int)serial_com.commandEnums.__STOP, (int)serial_com.stdEnums.__WELD, "", "");
                 riso_one_pe_in_prog = false;
                 clearONE_PEStarted();
             }
@@ -630,19 +631,21 @@ namespace MT_300_TFA_application
         {
             if (riso_mains_weld_in_prog == false)
             {
-                string temp_str = riso_cont_checkbox.Checked ? serial_com.WELD_CODE_NAMES[1] : serial_com.WELD_CODE_NAMES[0];
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[25], temp_str, "");
+                Serial_object.transmittComand((int)serial_com.funcEnums.__MAINS_WELD, (int)serial_com.commandEnums.__START, (int)serial_com.stdEnums.__WELD, "", "");
+                //string temp_str = riso_cont_checkbox.Checked ? serial_com.WELD_CODE_NAMES[1] : serial_com.WELD_CODE_NAMES[0];
+                //Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                //                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                //                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[25], temp_str, "");
                 riso_mains_weld_in_prog = true;
                 setMAINS_WELDStarted();
             }
             else
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[6], "", "");
-                clearURESstarted();
+                Serial_object.transmittComand((int)serial_com.funcEnums.__MAINS_WELD, (int)serial_com.commandEnums.__STOP, (int)serial_com.stdEnums.__WELD, "", "");
+                //Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                //                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                //                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[6], "", "");
+                //clearURESstarted();
                 riso_mains_weld_in_prog = false;
                 clearMAINS_WELDStarted();
             }
@@ -653,20 +656,22 @@ namespace MT_300_TFA_application
             
             if (riso_weld_pe_in_prog == false)
             {
-                string temp_str = riso_cont_checkbox.Checked ? serial_com.WELD_CODE_NAMES[1] : serial_com.WELD_CODE_NAMES[0];
+                Serial_object.transmittComand((int)serial_com.funcEnums.__WELD_PE, (int)serial_com.commandEnums.__START, (int)serial_com.stdEnums.__WELD, "", "");
+                //string temp_str = riso_cont_checkbox.Checked ? serial_com.WELD_CODE_NAMES[1] : serial_com.WELD_CODE_NAMES[0];
                 
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[27], temp_str, "");
+                //Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                //                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                //                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[27], temp_str, "");
                 riso_weld_pe_in_prog = true;
                 setWELD_PEStarted();
             }
             else
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[6], "", "");
-                clearURESstarted();
+                Serial_object.transmittComand((int)serial_com.funcEnums.__WELD_PE, (int)serial_com.commandEnums.__STOP, (int)serial_com.stdEnums.__WELD, "", "");
+                //Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                //                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                //                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[6], "", "");
+                //clearURESstarted();
                 riso_weld_pe_in_prog = false;
                 clearWELD_PEStarted();
             }
@@ -676,19 +681,21 @@ namespace MT_300_TFA_application
         {
             if (riso_mains_acc_in_prog == false)
             {
-                string temp_str = riso_cont_checkbox.Checked ? serial_com.WELD_CODE_NAMES[1] : serial_com.WELD_CODE_NAMES[0];
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[26], temp_str, "");
+                Serial_object.transmittComand((int)serial_com.funcEnums.__MAINS_CLASS2, (int)serial_com.commandEnums.__START, (int)serial_com.stdEnums.__WELD, "", "");
+                //string temp_str = riso_cont_checkbox.Checked ? serial_com.WELD_CODE_NAMES[1] : serial_com.WELD_CODE_NAMES[0];
+                //Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                //                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                //                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[26], temp_str, "");
                 riso_mains_acc_in_prog = true;
                 setMAINS_ACCStarted();
             }
             else
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[6], "", "");
-                clearURESstarted();
+                Serial_object.transmittComand((int)serial_com.funcEnums.__MAINS_CLASS2, (int)serial_com.commandEnums.__STOP, (int)serial_com.stdEnums.__WELD, "", "");
+                //Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                //                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                //                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[6], "", "");
+                //clearURESstarted();
                 riso_mains_acc_in_prog = false;
                 clearMAINS_ACCStarted();
             }
@@ -698,17 +705,19 @@ namespace MT_300_TFA_application
         {
             if (unl_rms_in_prog == false)
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[31], "", "");
+                //Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                //                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                //                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[31], "", "");
+                Serial_object.transmittComand((int)serial_com.funcEnums.__UNL_RMS, (int)serial_com.commandEnums.__START, (int)serial_com.stdEnums.__WELD, "", "");
                 unl_rms_in_prog = true;
                 setUNL_RMSStarted();
             }
             else
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[32], "", "");
+                Serial_object.transmittComand((int)serial_com.funcEnums.__UNL_RMS, (int)serial_com.commandEnums.__STOP, (int)serial_com.stdEnums.__WELD, "", "");
+                //Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                //                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                //                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[32], "", "");
                 clearURESstarted();
                 unl_rms_in_prog = false;
                 clearUNL_RMSStarted();
@@ -719,20 +728,21 @@ namespace MT_300_TFA_application
         {
             if (unl_peak_in_prog == false)
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[33], "", "");
+                Serial_object.transmittComand((int)serial_com.funcEnums.__UNL_PEAK, (int)serial_com.commandEnums.__START, (int)serial_com.stdEnums.__WELD, "", "");
+                //Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                //                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                //                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[33], "", "");
                 unl_peak_in_prog = true;
                 setUNL_PeakStarted();
             }
             else
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[34], "", "");
-                clearURESstarted();
-                unl_peak_in_prog = false;
+                //Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
+                //                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
+                //                serial_com.COMMAND_TYPE_NAMES[8], serial_com.WELD_COMMAND_NAMES[34], "", "");
+                Serial_object.transmittComand((int)serial_com.funcEnums.__UNL_PEAK, (int)serial_com.commandEnums.__STOP, (int)serial_com.stdEnums.__WELD, "", "");
                 clearUNL_PeakStarted();
+                unl_peak_in_prog = false;
             }
         }
         private bool analyze_in_prog;
@@ -748,14 +758,10 @@ namespace MT_300_TFA_application
         {
             if (analyze_in_prog == false)
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                    Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                    serial_com.COMMAND_TYPE_NAMES[8], serial_com.ANALYZE_COMMAND_NAMES[0], "", "");
+                Serial_object.transmittComand((int)serial_com.funcEnums.__POWER, (int)serial_com.commandEnums.__START, (int)serial_com.stdEnums.__WELD, "", "");
                 setAnalyzeStarted();
                 analyze_state = 0;
                 analyze_in_prog = true;
-                task3 = new Thread(MainsAnalyzeTask);
-                task3.Start();
                 //naslednje je zato, da se sploh zacne
                 power_a_received = true;
                 power_r_received = true;
@@ -763,11 +769,8 @@ namespace MT_300_TFA_application
             }
             else
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                    Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                    serial_com.COMMAND_TYPE_NAMES[8], serial_com.ANALYZE_COMMAND_NAMES[16], "", "");
+                Serial_object.transmittComand((int)serial_com.funcEnums.__POWER, (int)serial_com.commandEnums.__STOP, (int)serial_com.stdEnums.__WELD, "", "");
                 clearAnalyzeStarted();
-                task3.Abort();
             }
         }
 
@@ -857,6 +860,12 @@ namespace MT_300_TFA_application
             PF2textBox.AppendText("0.0");
             PF3textBox.AppendText("0.0");
             PF3PtextBox.AppendText("0.0");
+        }
+        private string getCableTypeComboValue()
+        {
+            string krneki = null;
+            this.Invoke(new MethodInvoker(delegate() { krneki = Cable_type_comboBox.Text; }));
+            return krneki;
         }
         
 

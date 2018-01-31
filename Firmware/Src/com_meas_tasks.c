@@ -7,13 +7,24 @@
 #include "serial_com.h"
 #include "do_task.h"
 #include "sdadc.h"
+#include "cord.h"
+#include "machines.h"
+#include "welding.h"
 #include <stdio.h>
+#include "tasks.h"
+#include "os.h"
+#include "stm32f3xx_hal.h"
+#include "stm32f3xx.h"
+#include "stm32f3xx_it.h"
 
 extern uint32_t global_control;
 extern uint32_t meas_control;
 uint32_t current_URES_measurement=0;
 static struct connected_device device;
 extern uint32_t meas_task_control;
+extern uint32_t cord_task_control;
+extern uint32_t mach_task_control;
+extern uint32_t weld_task_control;
 
 static void returnMeasueredCurrent(void);
 static void returnMeasueredVoltage(void);
@@ -22,7 +33,10 @@ static void returnMeasueredTHD_V(void);
 static void returnMeasueredPowerS(void);
 static void returnMeasueredPowerR(void);
 static void returnMeasueredPF(void);
-
+static void deinitCurrentMeasTask(void);
+extern uint32_t start_cord_count;
+extern uint32_t start_weld_count;
+extern uint32_t start_mach_count;
 
 //funkcijo je potrebno klicati po power_on_testu
 void setNormal(void)
@@ -131,57 +145,81 @@ void WeldMachMt310_RelInit(void)
 
 void startMainsMeasurement(void)
 {
-	meas_control = 0;
-	synchroSetContactor(__SET_L1_CONTACTOR);
-	synchroSetContactor(__SET_L2_CONTACTOR);
-	synchroSetContactor(__SET_L3_CONTACTOR);
-	synchroSetContactor(__SET_N_CONTACTOR);
-	synchroSetContactor(__SET_PE_CONTACTOR);
-	start_measure();
-	device = get_connected_device();
-	if(meas_task_control & __MACH_MEAS_IN_PROG)
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__ANALYZE_STARTED__,"","",device.device_dir);
-	else if(meas_task_control & __CORD_MEAS_IN_PROG)
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__ANALYZE_STARTED__,"","",device.device_dir);
-	else if(meas_task_control & __WELD_MEAS_IN_PROG)
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__ANALYZE_STARTED__,"","",device.device_dir);
+	int temp_int;
+	if(mach_task_control & __MACH_POWER_START_REQUESTED)
+	{	
+		temp_int = __MACHINES;
+	}
+	else if(weld_task_control & __WELD_POWER_START_REQUESTED)
+	{	
+		temp_int = __WELDING;
+	}
+	if(checkAndChangeMeasurement(temp_int))
+	{
+		weld_task_control &= ~__WELD_POWER_START_REQUESTED;
+		mach_task_control &= ~__MACH_POWER_START_REQUESTED;
+		meas_control = 0;
+		synchroSetContactor(__SET_L1_CONTACTOR);
+		synchroSetContactor(__SET_L2_CONTACTOR);
+		synchroSetContactor(__SET_L3_CONTACTOR);
+		synchroSetContactor(__SET_N_CONTACTOR);
+		synchroSetContactor(__SET_PE_CONTACTOR);
+		start_measure();
+		device = get_connected_device();
+		if(meas_task_control & __MACH_MEAS_IN_PROG)
+			SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__ANALYZE_STARTED__,"","",device.device_dir);
+		else if(meas_task_control & __CORD_MEAS_IN_PROG)
+			SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__ANALYZE_STARTED__,"","",device.device_dir);
+		else if(meas_task_control & __WELD_MEAS_IN_PROG)
+			SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__ANALYZE_STARTED__,"","",device.device_dir);
+	}
+	else
+		set_timer(MAINS_ANALYZE_MEAS_START,5,startMainsMeasurement);
 }
+//starta se vsake 10ms toliko casa da se oddajo vse zastavice
 void returnMeasuredTask(void)
 {
 	if(meas_task_control & __RETURN_CURRENT)
 	{
 		meas_task_control &= ~__RETURN_CURRENT;
 		returnMeasueredCurrent();
+		restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
 	}
-	if(meas_task_control & __RETURN_VOLTAGE)
+	else if(meas_task_control & __RETURN_VOLTAGE)
 	{
 		meas_task_control &= ~__RETURN_VOLTAGE;
 		returnMeasueredVoltage();
+		restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
 	}
-	if(meas_task_control & __RETURN_THD_C)
+	else if(meas_task_control & __RETURN_THD_C)
 	{
 		meas_task_control &= ~__RETURN_THD_C;
 		returnMeasueredTHD_C();
+		restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
 	}
-	if(meas_task_control & __RETURN_THD_V)
+	else if(meas_task_control & __RETURN_THD_V)
 	{
 		meas_task_control &= ~__RETURN_THD_V;
 		returnMeasueredTHD_V();
+		restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
 	}
-	if(meas_task_control & __RETURN_POWER_R)
+	else if(meas_task_control & __RETURN_POWER_R)
 	{
 		meas_task_control &= ~__RETURN_POWER_R;
 		returnMeasueredPowerR();
+		restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
 	}
-	if(meas_task_control & __RETURN_POWER_A)
+	else if(meas_task_control & __RETURN_POWER_A)
 	{
 		meas_task_control &= ~__RETURN_POWER_A;
 		returnMeasueredPowerS();
+		restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
 	}
-	if(meas_task_control & __RETURN_PF)
+	else if(meas_task_control & __RETURN_PF)
 	{
 		meas_task_control &= ~__RETURN_PF;
 		returnMeasueredPF();
+		restart_timer(RETURN_MEASURED_RESULT,1,returnMeasuredTask);
 	}
 }
 static void returnMeasueredCurrent(void)
@@ -207,11 +245,11 @@ static void returnMeasueredVoltage(void)
 	char temp_buff[50];
 	snprintf(temp_buff,50,"ULN1|%.3f,ULN2|%.3f,ULN3|%.3f,UNPE|%.3f",ULN1,ULN2,ULN3,UNPE);
 	if(meas_task_control & __MACH_MEAS_IN_PROG)
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__RETURN_VOLTAGE__,temp_buff,"krneki",device.device_dir);
+		SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__RETURN_VOLTAGE__,temp_buff,"",device.device_dir);
 	else if(meas_task_control & __CORD_MEAS_IN_PROG)
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__RETURN_VOLTAGE__,temp_buff,"krneki",device.device_dir);
+		SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__RETURN_VOLTAGE__,temp_buff,"",device.device_dir);
 	else if(meas_task_control & __WELD_MEAS_IN_PROG)
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__RETURN_VOLTAGE__,temp_buff,"krneki",device.device_dir);//"0|0,0|0,0|0,0|0"
+		SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__RETURN_VOLTAGE__,temp_buff,"",device.device_dir);//"0|0,0|0,0|0,0|0"
 }
 static void returnMeasueredTHD_V(void)
 {
@@ -277,11 +315,11 @@ static void returnMeasueredPF(void)
 	char temp_buff[50];
 	snprintf(temp_buff,50,"PF1|%.3f,PF2|%.3f,PF3|%.3f",PF1,PF2,PF3);
 	if(meas_task_control & __MACH_MEAS_IN_PROG)
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__RETURN_PF__,temp_buff,"",device.device_dir);
+		SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__RETURN_PF__,temp_buff,"N",device.device_dir);
 	else if(meas_task_control & __CORD_MEAS_IN_PROG)
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__RETURN_PF__,temp_buff,"",device.device_dir);
+		SendComMessage(_ON,_ID_TFA,device.device_ID,__CORD__,__RETURN_PF__,temp_buff,"N",device.device_dir);
 	else if(meas_task_control & __WELD_MEAS_IN_PROG)
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__RETURN_PF__,temp_buff,"",device.device_dir);
+		SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__RETURN_PF__,temp_buff,"N",device.device_dir);
 }
 void stopMainsMeasurement(void)
 {
@@ -295,3 +333,87 @@ void stopMainsMeasurement(void)
 		SendComMessage(_ON,_ID_TFA,device.device_ID,__WELDING__,__ANALYZE_STOPPED__,"","",device.device_dir);
 }
 
+//returns false if measurement has changed
+//to pomeni, da je bila v teku druga meritev ali pa se nobena ni bila vklopljena
+bool checkAndChangeMeasurement(uint32_t caller)
+{
+	switch(caller)
+	{
+		case __CORD:
+			if(!(meas_task_control & __CORD_MEAS_IN_PROG))
+			{
+				deinitCurrentMeasTask();
+				if(!(cord_task_control & __CORD_REINIT))
+				{
+					start_cord_count=0;
+					set_event(INIT_CORD,init_cord);
+					cord_task_control |= __CORD_REINIT;
+				}
+				return false;
+			}
+			else
+				return true;
+		case __MACHINES:
+			if(!(meas_task_control & __MACH_MEAS_IN_PROG))
+			{
+				deinitCurrentMeasTask();
+				if(!(mach_task_control & __MACH_REINIT))
+				{
+					start_mach_count=0;
+					set_event(INIT_MACH,init_mach);
+					mach_task_control |= __MACH_REINIT;
+				}
+				return false;
+			}
+			else
+				return true;
+		case __WELDING:
+			if(!(meas_task_control & __WELD_MEAS_IN_PROG))
+			{
+				deinitCurrentMeasTask();
+				if(!(weld_task_control & __WELD_REINIT))
+				{
+					start_weld_count=0;
+					set_event(INIT_WELD,init_weld);
+					weld_task_control |= __WELD_REINIT;
+				}
+				return false;
+			}
+			else
+				return true;
+		default:
+			return true;
+	}
+}
+static void deinitCurrentMeasTask(void)
+{
+	if(meas_task_control & __CORD_MEAS_IN_PROG)
+	{
+		deinitCord();
+	}
+	else if(meas_task_control & __MACH_MEAS_IN_PROG)
+	{
+		deinitMachines();
+	}
+	else if(meas_task_control & __WELD_MEAS_IN_PROG)
+	{
+		deinitWelding();
+	}
+		
+}
+uint32_t numberOfSetBits(uint32_t i)
+{
+     i = i - ((i >> 1) & 0x55555555);
+     i = (i & 0x33333333) + ((i >> 2) & 0x33333333);
+     return (((i + (i >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
+}
+
+void printToDebugMsg(char * msg)
+{
+   while(*msg != '\0'){
+      ITM_SendChar(*msg);
+      ++msg;
+   }
+	 ITM_SendChar('\r');
+	 ITM_SendChar('\n');
+}

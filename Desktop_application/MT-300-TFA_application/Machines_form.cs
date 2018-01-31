@@ -37,16 +37,16 @@ namespace MT_300_TFA_application
             InitializeComponent();
             return_iso_ok_textbox.AppendText("10.0");
             return_iso_nok_textbox.AppendText("0.5");
+            
             Serial_object = S_object;
             reset_analyze_textbox();
+            Cable_type_comboBox.SelectedIndex = 0;
+            RisoLimitTextbox.AppendText("1.0");
             Serial_object.machReturnEventHandler += OnMachReturnResult;
             Serial_object.analyzeReturnEventHandler += AnalyzeResults;
             iso_state_combobox.SelectedIndex = 0;
             Select_measurement_comboBox.SelectedIndex = 0;
             MainForm = main_form;
-            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[7], serial_com.MACH_COMMAND_NAMES[1], "", "");
         }
 
         private void test_contactors_button_Click(object sender, EventArgs e)
@@ -105,19 +105,12 @@ namespace MT_300_TFA_application
         private void Machines_form_FormClosing(object sender, FormClosingEventArgs e)
         {
             MainForm.Enable_buttons();
-            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[7], serial_com.MACH_COMMAND_NAMES[2], "", "");
         }
         private string getMeasSelectedComboValue()
         {
             string krneki = null;
             this.Invoke(new MethodInvoker(delegate() { krneki = Select_measurement_comboBox.Text; }));
             return krneki;
-        }
-        private void Cable_type_comboBox_SelectedIndexChanged(object sender, EventArgs e)
-        {
-
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -126,18 +119,16 @@ namespace MT_300_TFA_application
             {
                 string temp_str;
                 temp_str = getSetURES();
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[7], serial_com.MACH_COMMAND_NAMES[0], temp_str, "");
+
+                Serial_object.transmittComand((int)serial_com.funcEnums.__M_URES, (int)serial_com.commandEnums.__INIT, (int)serial_com.stdEnums.__MACH, "", "");
+                mach_ures_count = 0;
                 task1 = new Thread(UREStask);
                 task1.Start();
                 mach_ures_in_prog = true;
             }
             else
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[7], serial_com.MACH_COMMAND_NAMES[6], "", "");
+                Serial_object.transmittComand((int)serial_com.funcEnums.__M_URES, (int)serial_com.commandEnums.__STOP, (int)serial_com.stdEnums.__MACH, "", "");
                 clearURESstarted();
             }
 
@@ -147,8 +138,7 @@ namespace MT_300_TFA_application
         {
             //this.Invoke(new MethodInvoker(delegate() { button1.Text = "URES_STOP"; }));
             mach_ures_started = true;
-            rpe_button.Enabled = false;
-            riso_button.Enabled = false;
+
         }
         private void clearURESstarted()
         {
@@ -164,33 +154,25 @@ namespace MT_300_TFA_application
         {
             do
             {
-                Thread.Sleep(100);
+                Thread.Sleep(200);
                 switch (mach_ures_count)
                 {
                     case 0:
                         if (mach_ures_started)
                         {
-                            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[7], serial_com.MACH_COMMAND_NAMES[7], "", "");
+                            Serial_object.transmittComand((int)serial_com.funcEnums.__M_URES, (int)serial_com.commandEnums.__OPEN, (int)serial_com.stdEnums.__MACH, "", "");
                             mach_ures_count++;
                         }
                         break;
                     case 1:
                         if (mach_ures_finished)
                         {
-                            Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[7], serial_com.MACH_COMMAND_NAMES[7], "", "");
                             mach_ures_count++;
                         }
                         break;
                     case 2:
-                        Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[7], serial_com.MACH_COMMAND_NAMES[5], "", "");
                         mach_ures_count++;
-                        //clearURESstarted(); sele ko dobimo stopped
+                        clearURESstarted();
                         break;
                     default:
                         break;
@@ -203,55 +185,43 @@ namespace MT_300_TFA_application
             clearURESstarted();
         }
 
-        public void OnMachReturnResult(object sender, string returned_string, string command)
+        public void OnMachReturnResult(object sender, string returned_string, string command, string leftover)
         {
-            if (String.Equals(command, serial_com.MACH_COMMAND_NAMES[3])) //URES STARTED
+            if (String.Equals(command, serial_com.FUNCTION_COMMUNICATON_NAMES[8])) //URES
             {
-                setURESstarted();
+                if (String.Equals(returned_string, serial_com.MACH_COMMAND_NAMES[9])) //INITIATED
+                {
+                    setURESstarted();
+                }
+                if (String.Equals(returned_string, serial_com.COMMAND_COMMUNICATON_NAMES[3])) //OPENED
+                {
+                    mach_ures_finished = true;
+                }
             }
-            else if (String.Equals(command, serial_com.MACH_COMMAND_NAMES[6])) //STOP
+            else if (String.Equals(command, serial_com.FUNCTION_COMMUNICATON_NAMES[2])) //ALL-PE
             {
-                stop_mach();
+                if (String.Equals(returned_string, serial_com.COMMAND_COMMUNICATON_NAMES2[1])) //RESULT
+                {
+                    clearALL_PEStarted();
+                }
             }
-            else if (String.Equals(command, serial_com.MACH_COMMAND_NAMES[8])) //URES OPENED
+            else if (String.Equals(command, serial_com.FUNCTION_COMMUNICATON_NAMES[3])) //ONE-PE
             {
-                mach_ures_finished = true;
+                if (String.Equals(returned_string, serial_com.COMMAND_COMMUNICATON_NAMES2[1])) //RESULT
+                {
+                    clearONE_PEStarted();
+                }
             }
-            else if (String.Equals(command, serial_com.MACH_COMMAND_NAMES[4])) //URES STOPPED
+            else if (String.Equals(command, serial_com.FUNCTION_COMMUNICATON_NAMES[6]))//RISO
             {
-                clearURESstarted();
-            }
-            else if (String.Equals(command, serial_com.MACH_COMMAND_NAMES[13])) //RPE STARTED
-            {
-                setRPEStarted();
-            }
-            else if (String.Equals(command, serial_com.MACH_COMMAND_NAMES[14])) //RPE STOPPED
-            {
-                clearRPEStarted();
-            }
-            else if (String.Equals(command, serial_com.MACH_COMMAND_NAMES[17])) //ALL-PE RESULT
-            {
-                clearALL_PEStarted();
-            }
-            else if (String.Equals(command, serial_com.MACH_COMMAND_NAMES[18])) //ONE-PE RESULT
-            {
-                clearONE_PEStarted();
-            }
-            else if (String.Equals(command, serial_com.MACH_COMMAND_NAMES[19])) //start RISO START
-            {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                               Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                               serial_com.COMMAND_TYPE_NAMES[7], serial_com.MACH_COMMAND_NAMES[20], "", "");
-            }
-            else if (String.Equals(command, serial_com.MACH_COMMAND_NAMES[21])) //start RISO STOP
-            {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                               Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                               serial_com.COMMAND_TYPE_NAMES[7], serial_com.MACH_COMMAND_NAMES[22], "", "");
-            }
-            else if (String.Equals(command, serial_com.MACH_COMMAND_NAMES[23])) //get RISO resistance
-            {
-                mach_return_RISO_result(returned_string);
+                if (String.Equals(returned_string, serial_com.COMMAND_COMMUNICATON_NAMES[0]))
+                {
+                    mach_return_RISO_result(leftover);
+                }
+                else if (String.Equals(returned_string, serial_com.COMMAND_COMMUNICATON_NAMES[2]))
+                {
+                    mach_return_RISO_result(leftover);
+                }
             }
             
 
@@ -280,21 +250,22 @@ namespace MT_300_TFA_application
                 switch (getCableInsulationComboValue())
                 {
                     case "L1 - PE":
-                        temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
+                        temp_str = _failTempString;
                         break;
                     case "L3 - PE":
-                        temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
+                        temp_str = _failTempString;
                         break;
                     case "L1,N -PE":
-                        temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
+                        temp_str = _failTempString;
                         break;
                     case "N - PE":
-                        temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
+                        temp_str = _failTempString;
                         break;
                     default:
-                        temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString;
+                        temp_str = _passTempString;
                         break;
                 }
+                clearALL_PEStarted();
             }
             else if (riso_one_pe_in_prog)
             {
@@ -302,30 +273,30 @@ namespace MT_300_TFA_application
                 {
                     case "L1 - PE":
                         if (String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[1]))
-                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString;
+                            temp_str = _passTempString;
                         else
-                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
+                            temp_str = _failTempString;
                         break;
                     case "L3 - PE":
                         if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[1])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[2])))
-                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
+                            temp_str = _failTempString;
                         else
-                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString;
+                            temp_str = _passTempString;
                         break;
                     case "L1,N -PE":
                         if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[1])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[2])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[3])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[6])))
-                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
+                            temp_str = _failTempString;
                         else
-                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString;
+                            temp_str = _passTempString;
                         break;
                     case "N - PE":
                         if ((String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[1])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[2])) || (String.Equals(current_meas, serial_com.CORD_LEFTOVER_RISO_NAMES[3])))
-                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _failTempString;
+                            temp_str = _failTempString;
                         else
-                            temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString;
+                            temp_str = _passTempString;
                         break;
                     default:
-                        temp_str = serial_com.CORD_CODE_NAMES[29] + delimiter + _passTempString;
+                        temp_str = _passTempString;
                         break;
                 }
             }
@@ -333,10 +304,7 @@ namespace MT_300_TFA_application
             {
                 temp_str = "";
             }
-            Serial_object.Send_protocol_message(
-                                Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT,
-                                Settings1.Default._ID_TFA, serial_com.COMMAND_TYPE_NAMES[7],
-                                serial_com.MACH_COMMAND_NAMES[24], temp_str, "");
+            Serial_object.returnRisoRes(temp_str);
         }
 
         private string getIsoOKValue()
@@ -448,16 +416,12 @@ namespace MT_300_TFA_application
         {
             if (rpe_in_prog == false)
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[7], serial_com.MACH_COMMAND_NAMES[11], "" ,"");
+                Serial_object.transmittComand((int)serial_com.funcEnums.__M_RPE, (int)serial_com.commandEnums.__START, (int)serial_com.stdEnums.__MACH, "", "");
                 rpe_in_prog = true;
             }
             else
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[7], serial_com.MACH_COMMAND_NAMES[12], "", "");
+                Serial_object.transmittComand((int)serial_com.funcEnums.__M_RPE, (int)serial_com.commandEnums.__STOP, (int)serial_com.stdEnums.__MACH, "", "");
                 clearURESstarted();
                 rpe_in_prog = false;
             }
@@ -466,19 +430,23 @@ namespace MT_300_TFA_application
 
         private void riso_button_Click(object sender, EventArgs e)
         {
+            
+            string temp_str;
+            string temp_str2;
             if (riso_all_pe_in_prog == false)
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[7], serial_com.MACH_COMMAND_NAMES[15], "", "");
+                if (String.Equals(getCableTypeComboValue(), "1 PHASE"))
+                    temp_str = Serial_object.buildPhaseStr(true);
+                else
+                    temp_str = Serial_object.buildPhaseStr(false);
+                temp_str2 = String.Format("{0},LIMIT|{1}", temp_str, RisoLimitTextbox.Text);
+                Serial_object.transmittComand((int)serial_com.funcEnums.__ALL_PE, (int)serial_com.commandEnums.__START, (int)serial_com.stdEnums.__MACH, temp_str2, "");
                 riso_all_pe_in_prog = true;
                 setALL_PEStarted();
             }
             else
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[7], serial_com.MACH_COMMAND_NAMES[6], "", "");
+                Serial_object.transmittComand((int)serial_com.funcEnums.__ALL_PE, (int)serial_com.commandEnums.__STOP, (int)serial_com.stdEnums.__MACH, "", "");
                 riso_all_pe_in_prog = false;
                 clearALL_PEStarted();
             }
@@ -486,20 +454,23 @@ namespace MT_300_TFA_application
 
         private void riso_button2_Click(object sender, EventArgs e)
         {
+            string temp_str;
+            string temp_str2;
             if (riso_one_pe_in_prog == false)
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[7], serial_com.MACH_COMMAND_NAMES[16], "", "");
+                if (String.Equals(getCableTypeComboValue(), "1 PHASE"))
+                    temp_str = Serial_object.buildPhaseStr(true);
+                else
+                    temp_str = Serial_object.buildPhaseStr(false);
+                temp_str2 = String.Format("{0},LIMIT|{1}", temp_str, RisoLimitTextbox.Text);
+                Serial_object.transmittComand((int)serial_com.funcEnums.__ONE_PE, (int)serial_com.commandEnums.__START, (int)serial_com.stdEnums.__MACH, temp_str2, "");
                 riso_one_pe_in_prog = true;
                 setONE_PEStarted();
             }
             else
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                                Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                                serial_com.COMMAND_TYPE_NAMES[7], serial_com.MACH_COMMAND_NAMES[6], "", "");
-                clearURESstarted();
+                Serial_object.transmittComand((int)serial_com.funcEnums.__ONE_PE, (int)serial_com.commandEnums.__STOP, (int)serial_com.stdEnums.__MACH, "", "");
+                //clearURESstarted();
                 riso_one_pe_in_prog = false;
                 clearONE_PEStarted();
             }
@@ -519,14 +490,10 @@ namespace MT_300_TFA_application
         {
             if (analyze_in_prog == false)
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                    Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                    serial_com.COMMAND_TYPE_NAMES[7], serial_com.ANALYZE_COMMAND_NAMES[0], "", "");
+                Serial_object.transmittComand((int)serial_com.funcEnums.__POWER, (int)serial_com.commandEnums.__START, (int)serial_com.stdEnums.__MACH, "", "");
                 setAnalyzeStarted();
                 analyze_state = 0;
                 analyze_in_prog = true;
-                task3 = new Thread(MainsAnalyzeTask);
-                task3.Start();
                 //naslednje je zato, da se sploh zacne
                 power_a_received = true;
                 power_r_received = true;
@@ -534,11 +501,9 @@ namespace MT_300_TFA_application
             }
             else
             {
-                Serial_object.Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1,
-                    Settings1.Default._ID_MT, Settings1.Default._ID_TFA,
-                    serial_com.COMMAND_TYPE_NAMES[7], serial_com.ANALYZE_COMMAND_NAMES[16], "", "");
+                Serial_object.transmittComand((int)serial_com.funcEnums.__POWER, (int)serial_com.commandEnums.__STOP, (int)serial_com.stdEnums.__MACH, "", "");
                 clearAnalyzeStarted();
-                task3.Abort();
+                //task3.Abort();
             }
         }
 
@@ -687,6 +652,11 @@ namespace MT_300_TFA_application
             PF3textBox.AppendText("0.0");
             PF3PtextBox.AppendText("0.0");
         }
-
+        private string getCableTypeComboValue()
+        {
+            string krneki = null;
+            this.Invoke(new MethodInvoker(delegate() { krneki = Cable_type_comboBox.Text; }));
+            return krneki;
+        }
     }
 }

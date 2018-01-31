@@ -24,9 +24,12 @@ extern uint32_t SDADC1_ch_cnt;
 extern uint32_t SDADC2_ch_cnt;
 extern uint32_t current_THD_sampling;
 extern uint32_t last_THD_MEASURED;
-uint32_t init_test_counter=0;
-uint32_t meas_task_control=0;
-uint32_t synchro_interrupt_control=0;
+
+uint32_t init_test_counter;
+uint32_t meas_task_control;
+uint32_t synchro_interrupt_control;
+uint32_t result_transmitt_control;
+
 #if THD_COMPUTATION_METHOD
 extern float32_t THD_buffer1[CORELATION_THD_BUFFER_SIZE];
 float THD_correlation_buffer[CORELATION_THD_BUFFER_SIZE];
@@ -93,6 +96,7 @@ void start_measure(void)
 {
 	if(!(meas_control & __MEAS_IN_PROGRESS))
 	{
+		result_transmitt_control=0;
 		meas_control |= __ULN1_MASK; //postavi zastavico za meritev
 		meas_control |= __ULN2_MASK; //postavi zastavico za meritev
 		meas_control |= __ULN3_MASK; //postavi zastavico za meritev
@@ -126,13 +130,14 @@ void start_measure(void)
 		current_THD_sampling = __IL1_THD_SAMPLING;
 		enable_sinchro_interrupt(__VOLTAGE_MEAS_SYNCHRO);	//vklopi interrupt na sinhronizacijo
 		//zarnkrat tole - pol bo treba vretn zbrisat
-		//set_timer(TRANSMIT_RESULTS,30,Transmit_results_task);
+		set_timer(TRANSMIT_RESULTS,TRANSMITT_RESULT_TIME,Transmit_results_task);
 	}
 }
 void start_measure_no_THD(void)
 {
 	if(!(meas_control & __MEAS_IN_PROGRESS))
 	{
+		result_transmitt_control=0;
 		meas_control |= __ULN1_MASK; //postavi zastavico za meritev
 		meas_control |= __ULN2_MASK; //postavi zastavico za meritev
 		meas_control |= __ULN3_MASK; //postavi zastavico za meritev
@@ -186,6 +191,7 @@ void stop_measure(void)
 	compute_control2 &= (~__POWER_MEAS_ON);
 	compute_control=0;
 	last_THD_MEASURED=0;
+	meas_control &= ~__MEAS_IN_PROGRESS;
 	#if THD_COMPUTATION_METHOD == CORELATION
 		if(meas_control & __THD_MEASURING)	
 		{
@@ -203,8 +209,13 @@ void stop_measure(void)
 		meas_control = 0;
 		input_STOP_measure();
 	#endif
+	result_transmitt_control=0;
 	disable_sinchro_interrupt(__VOLTAGE_MEAS_SYNCHRO);
 	end_task(TRANSMIT_RESULTS);
+	end_task(MEASURING_TASK_NO_THD);
+	end_task(COMPUTE_RMS);
+	end_task(MEASURING_TASK_FFT);
+	end_task(MEASURING_TASK);
 }
 static void measuring_task_no_THD(void)
 {
@@ -484,33 +495,45 @@ void compute_THD_with_FFT(void)
 			meas_control &= (~__ULN_THD_MEASURED);
 			write_THD(calculated_THD,ULN1_THD);
 			current_THD_sampling=__ULN2_THD_SAMPLING;
-			if(meas_control & __THD_SYNCHRO_ON) compute_control |= __ULN2_THD_START;
-			else compute_control |= __ULN2_THD_SAMPLING;
+			if(meas_control & __THD_SYNCHRO_ON) 
+				compute_control |= __ULN2_THD_START;
+			else 
+				compute_control |= __ULN2_THD_SAMPLING;
 			compute_control &= (~__ULN1_THD_SAMPLED);
+			result_transmitt_control|=TUL1N_TRANSMITT_READY;
   		break;
   	case __ULN2_THD_SAMPLING:
 			meas_control &= (~__ULN_THD_MEASURED);
 			write_THD(calculated_THD,ULN2_THD);
 			current_THD_sampling=__ULN3_THD_SAMPLING;
-			if(meas_control & __THD_SYNCHRO_ON) compute_control |= __ULN3_THD_START;
-			else compute_control |= __ULN3_THD_SAMPLING;
+			if(meas_control & __THD_SYNCHRO_ON) 
+				compute_control |= __ULN3_THD_START;
+			else 
+				compute_control |= __ULN3_THD_SAMPLING;
 			compute_control &= (~__ULN2_THD_SAMPLED);
+			result_transmitt_control|=TUL2N_TRANSMITT_READY;
   		break;
 		case __ULN3_THD_SAMPLING:
 			meas_control &= (~__ULN_THD_MEASURED);
 			write_THD(calculated_THD,ULN3_THD);
 			current_THD_sampling=__IL1_THD_SAMPLING;
-			if(meas_control & __THD_SYNCHRO_ON) compute_control |= __IL1_THD_START;
-			else compute_control |= __IL1_THD_SAMPLING;
+			if(meas_control & __THD_SYNCHRO_ON) 
+				compute_control |= __IL1_THD_START;
+			else 
+				compute_control |= __IL1_THD_SAMPLING;
 			compute_control &= (~__ULN3_THD_SAMPLED);
+			result_transmitt_control|=TUL3N_TRANSMITT_READY;
   		break;
 		case __IL1_THD_SAMPLING:
 			meas_control &= (~__IL_THD_MEASURED);
 			write_THD(calculated_THD,IL1_THD);
 			current_THD_sampling=__IL2_THD_SAMPLING;
-			if(meas_control & __THD_SYNCHRO_ON) compute_control |= __IL2_THD_START;
-			else compute_control |= __IL2_THD_SAMPLING;
+			if(meas_control & __THD_SYNCHRO_ON) 
+				compute_control |= __IL2_THD_START;
+			else 
+				compute_control |= __IL2_THD_SAMPLING;
 			compute_control &= (~__IL1_THD_SAMPLED);
+			result_transmitt_control|=TIL1_TRANSMITT_READY;
   		break;
 		case __IL2_THD_SAMPLING:
 			meas_control &= (~__IL_THD_MEASURED);
@@ -519,6 +542,7 @@ void compute_THD_with_FFT(void)
 			if(meas_control & __THD_SYNCHRO_ON) compute_control |= __IL3_THD_START;
 			else compute_control |= __IL3_THD_SAMPLING;
 			compute_control &= (~__IL2_THD_SAMPLED);
+			result_transmitt_control|=TIL2_TRANSMITT_READY;
   		break;
 		case __IL3_THD_SAMPLING:
 			meas_control &= (~__IL_THD_MEASURED);
@@ -527,6 +551,7 @@ void compute_THD_with_FFT(void)
 			if(meas_control & __THD_SYNCHRO_ON) compute_control |= __ULN1_THD_START;
 			else compute_control |= __ULN1_THD_SAMPLING;
 			compute_control &= (~__IL3_THD_SAMPLED);
+			result_transmitt_control|=TIL3_TRANSMITT_READY;
   		break;
   	default:
   		break;

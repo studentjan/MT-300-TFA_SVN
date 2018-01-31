@@ -51,6 +51,12 @@
             this.return_iso_nok_textbox = new System.Windows.Forms.TextBox();
             this.label9 = new System.Windows.Forms.Label();
             this.return_iso_ok_textbox = new System.Windows.Forms.TextBox();
+            this.CwLimitTextbox = new System.Windows.Forms.TextBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.ContLimitTextbox = new System.Windows.Forms.TextBox();
+            this.RisoLimitTextbox = new System.Windows.Forms.TextBox();
+            this.label11 = new System.Windows.Forms.Label();
+            this.label12 = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
             // polarity_test_start_button
@@ -269,11 +275,65 @@
             this.return_iso_ok_textbox.Size = new System.Drawing.Size(83, 20);
             this.return_iso_ok_textbox.TabIndex = 20;
             // 
+            // CwLimitTextbox
+            // 
+            this.CwLimitTextbox.Location = new System.Drawing.Point(333, 24);
+            this.CwLimitTextbox.Name = "CwLimitTextbox";
+            this.CwLimitTextbox.Size = new System.Drawing.Size(83, 20);
+            this.CwLimitTextbox.TabIndex = 23;
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(343, 8);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(56, 13);
+            this.label10.TabIndex = 24;
+            this.label10.Text = "CW LIMIT";
+            // 
+            // ContLimitTextbox
+            // 
+            this.ContLimitTextbox.Location = new System.Drawing.Point(441, 24);
+            this.ContLimitTextbox.Name = "ContLimitTextbox";
+            this.ContLimitTextbox.Size = new System.Drawing.Size(83, 20);
+            this.ContLimitTextbox.TabIndex = 25;
+            // 
+            // RisoLimitTextbox
+            // 
+            this.RisoLimitTextbox.Location = new System.Drawing.Point(544, 24);
+            this.RisoLimitTextbox.Name = "RisoLimitTextbox";
+            this.RisoLimitTextbox.Size = new System.Drawing.Size(83, 20);
+            this.RisoLimitTextbox.TabIndex = 26;
+            // 
+            // label11
+            // 
+            this.label11.AutoSize = true;
+            this.label11.Location = new System.Drawing.Point(456, 8);
+            this.label11.Name = "label11";
+            this.label11.Size = new System.Drawing.Size(68, 13);
+            this.label11.TabIndex = 27;
+            this.label11.Text = "CONT LIMIT";
+            // 
+            // label12
+            // 
+            this.label12.AutoSize = true;
+            this.label12.Location = new System.Drawing.Point(553, 8);
+            this.label12.Name = "label12";
+            this.label12.Size = new System.Drawing.Size(64, 13);
+            this.label12.TabIndex = 28;
+            this.label12.Text = "RISO LIMIT";
+            // 
             // Cord_form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(644, 287);
+            this.Controls.Add(this.label12);
+            this.Controls.Add(this.label11);
+            this.Controls.Add(this.RisoLimitTextbox);
+            this.Controls.Add(this.ContLimitTextbox);
+            this.Controls.Add(this.label10);
+            this.Controls.Add(this.CwLimitTextbox);
             this.Controls.Add(this.return_iso_nok_textbox);
             this.Controls.Add(this.label9);
             this.Controls.Add(this.return_iso_ok_textbox);
@@ -331,5 +391,11 @@
         private System.Windows.Forms.TextBox return_iso_nok_textbox;
         private System.Windows.Forms.Label label9;
         private System.Windows.Forms.TextBox return_iso_ok_textbox;
+        private System.Windows.Forms.TextBox CwLimitTextbox;
+        private System.Windows.Forms.Label label10;
+        private System.Windows.Forms.TextBox ContLimitTextbox;
+        private System.Windows.Forms.TextBox RisoLimitTextbox;
+        private System.Windows.Forms.Label label11;
+        private System.Windows.Forms.Label label12;
     }
 }

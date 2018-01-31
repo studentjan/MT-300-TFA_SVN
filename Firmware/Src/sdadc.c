@@ -13,7 +13,7 @@
  #include "comunication.h"
  #include "stm32f3xx_hal_conf.h"
  #include <string.h>
-
+	 #include "com_meas_tasks.h"
 //---------------------------GLOBAL VARIABLES------------------------------------
 struct MEAS_struct{
 	float k;
@@ -74,9 +74,12 @@ struct POWER_struct PHASE3;
 struct FilterStruct IL1_LPF_TRMS;
 struct FilterStruct IL2_LPF_TRMS;
 struct FilterStruct IL3_LPF_TRMS;
+struct FilterStruct IDIFF_LPF_TRMS;
 struct FilterStruct ULN1_LPF_TRMS;
 struct FilterStruct ULN2_LPF_TRMS;
 struct FilterStruct ULN3_LPF_TRMS;
+struct FilterStruct UNPE_LPF_TRMS;
+struct FilterStruct UL1PE_LPF_TRMS;
 enum IL_GAIN IL1_GAIN;
 enum IL_GAIN IL2_GAIN;
 enum IL_GAIN IL3_GAIN;
@@ -84,6 +87,7 @@ enum IL_GAIN IL3_GAIN;
 extern TIM_HandleTypeDef htim6;
 extern uint32_t meas_control;
 extern uint32_t global_control;
+extern uint32_t result_transmitt_control;
 uint32_t compute_control = 0;
 uint32_t compute_control2 = 0;
 uint32_t interrupt_control = 0;
@@ -93,7 +97,7 @@ uint32_t last_THD_MEASURED;
 uint32_t last_IL_MEASURED;
 uint32_t SDADC1_ch_cnt=0;
 uint32_t SDADC2_ch_cnt=0;
-int16_t krneki[2250];
+float krneki[1111];
 //float32_t krneki2[2250];
 //float32_t krneki_THD[1020];
 int16_t reskrneki;
@@ -126,6 +130,7 @@ static void measure_UL1PE(int16_t ConvertionResult);
 static void measure_UNPE(int16_t ConvertionResult);
 static void SDADC2_THD_channel(void);
 static void SDADC1_THD_channel(void);
+static void resetFilters(void);
 //----------------------------------------------------------------------------------
 
 //----------------------------------FILTERS-----------------------------------------
@@ -967,6 +972,10 @@ float get_value(uint32_t param)
 		case __IL1_N:return IL1.n;
 		case __IL2_N:return IL2.n;
 		case __IL3_N:return IL3.n;
+		case __UL1PE_N:return UL1PE.n;
+		case __UNPE_N:return UNPE.n;
+		case __UL1PE_K:return UL1PE.k;
+		case __UNPE_K:return UNPE.k;
 		default: return 0;
 	}
 }
@@ -1037,6 +1046,22 @@ void setConstant(char* constant, char* value)
 	else if(!strcmp(constant,__CALIB_IL3N__))
 	{
 			IL3.n= temp;
+	}
+	else if(!strcmp(constant,__CALIB_UL1PEN__))
+	{
+			UL1PE.n= temp;
+	}
+	else if(!strcmp(constant,__CALIB_UNPEN__))
+	{
+			UNPE.n= temp;
+	}
+	else if(!strcmp(constant,__CALIB_UL1PEK__))
+	{
+			UL1PE.k= temp;
+	}
+	else if(!strcmp(constant,__CALIB_UNPEK__))
+	{
+			UNPE.k= temp;
 	}
 }
 void SDADC1_Handler(void)
@@ -1166,6 +1191,7 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 	{
 		case ULN1_CHANNEL: 
 		{
+			test1_on;
 			SDADC1_sample = ConvertionResult*uln1_temp;
 			#if	THD_COMPUTATION_METHOD == CORELATION
 			if(meas_control & __THD_MEASURING)
@@ -1314,10 +1340,8 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 				}
 				if(SDADC1_low_pass_filter==_ON)
 				{
-					test2_on;
 					SDADC1_sample2=SDADC1_sample;
 					arm_biquad_cascade_df1_f32(&INST_ULN2_LPF, &SDADC1_sample2, &SDADC1_sample,1);
-					test2_off;
 				}
 			}
 			break;
@@ -1413,8 +1437,10 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 				{
 					//koda za detektiranje faznega zaporedja napetosti
 					//if(SDADC1_CH1s.sample_count==0) test1_on;
+					SDADC1_CH1s.sempl=SDADC1_sample;
 					if((SDADC1_CH1s.sample_count<(PHASE_AVARAGE_CNT*(uint32_t)(ULN_MEAS_FS*0.02f)))&&(compute_control2 & __GET_PHASES)&&(!(compute_control2 & __PHASE1_MEASURED)))//samo 1. periodo gledamo za maksimum
 					{
+						
 						if(SDADC1_CH1s.sempl > SDADC1_CH1s.max_float)
 						{
 							SDADC1_CH1s.peak_at = (htim6.Instance -> CNT)+12;//timer ki steje tece na 10 us ker je frekvenca vzorcenja 16,666 za vse kanale je 60us zakasnitve med vzorcenji kanalov
@@ -1441,19 +1467,20 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 						SDADC1_CH1s.peak_at=SDADC1_CH1s.peak_sum/PHASE_AVARAGE_CNT;//izracunamo povprecje
 						SDADC1_CH1s.peak_sum=0;
 					}
-					SDADC1_CH1s.sempl=SDADC1_sample;
-//					//filtriranje in mnozenje za izracun TRMS (DC vrednost je ze odrezana z HPF
-//					#if COMPUTE_TRMS == _ON
-//					ULN1_LPF_TRMS.x0=SDADC1_CH1s.sempl*SDADC1_CH1s.sempl;
-//					temp_semp = (ULN1_LPF_TRMS.x0* IIR_LPF_TRMS_coeffs[0]) + (ULN1_LPF_TRMS.x1 * IIR_LPF_TRMS_coeffs[1]) + (ULN1_LPF_TRMS.x2 * IIR_LPF_TRMS_coeffs[2]) + (ULN1_LPF_TRMS.y1 * IIR_LPF_TRMS_coeffs[3]) + (ULN1_LPF_TRMS.y2 * IIR_LPF_TRMS_coeffs[4]);
-//					ULN1_LPF_TRMS.x2=ULN1_LPF_TRMS.x1;
-//					ULN1_LPF_TRMS.x1= ULN1_LPF_TRMS.x0;
-//					ULN1_LPF_TRMS.y2 = ULN1_LPF_TRMS.y1;
-//					ULN1_LPF_TRMS.y1 = temp_semp;
-//					SDADC1_CH1s.sum += temp_semp;
-//					#else
+					
+					//filtriranje in mnozenje za izracun TRMS (DC vrednost je ze odrezana z HPF
+					#if COMPUTE_TRMS == _ON
+					ULN1_LPF_TRMS.x0=SDADC1_CH1s.sempl*SDADC1_CH1s.sempl;
+					temp_semp = (ULN1_LPF_TRMS.x0* IIR_LPF_TRMS_coeffs[0]) + (ULN1_LPF_TRMS.x1 * IIR_LPF_TRMS_coeffs[1]) + (ULN1_LPF_TRMS.x2 * IIR_LPF_TRMS_coeffs[2]) + (ULN1_LPF_TRMS.y1 * IIR_LPF_TRMS_coeffs[3]) + (ULN1_LPF_TRMS.y2 * IIR_LPF_TRMS_coeffs[4]);
+					ULN1_LPF_TRMS.x2 = ULN1_LPF_TRMS.x1;
+					ULN1_LPF_TRMS.x1 = ULN1_LPF_TRMS.x0;
+					ULN1_LPF_TRMS.y2 = ULN1_LPF_TRMS.y1;
+					ULN1_LPF_TRMS.y1 = temp_semp;
+					SDADC1_CH1s.sum += temp_semp;
+					krneki[SDADC1_CH1s.sample_count]= temp_semp;
+					#else
 					SDADC1_CH1s.sum += (SDADC1_CH1s.sempl*SDADC1_CH1s.sempl);
-//					#endif
+					#endif
 					if(SDADC1_CH1s.sample_count>=SDADC1_ULN_SAMPLE_CNT)
 					{
 						if(!(compute_control & __ULN1_SAMPLED))ULN1.avarage_sq = SDADC1_CH1s.sum/(SDADC1_CH1s.sample_count+1);
@@ -1464,6 +1491,7 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 					}
 					else SDADC1_CH1s.sample_count++;
 				}
+				test1_off;
 				break;
 			}
 			case ULN2_CHANNEL: 
@@ -1499,7 +1527,6 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 						SDADC1_CH2s.peak_at=SDADC1_CH2s.peak_sum/PHASE_AVARAGE_CNT;//izracunamo povprecje
 						SDADC1_CH2s.peak_sum=0;
 					}
-					test1_on;
 					SDADC1_CH2s.sempl=SDADC1_sample;
 					//filtriranje in mnozenje za izracun TRMS (DC vrednost je ze odrezana z HPF
 					#if COMPUTE_TRMS == _ON
@@ -1513,7 +1540,6 @@ static void measure_ULN_Voltage(int16_t ConvertionResult, uint32_t channel)
 					#else
 					SDADC1_CH2s.sum += (SDADC1_CH2s.sempl*SDADC1_CH2s.sempl);
 					#endif
-					test1_off;
 					if(SDADC1_CH2s.sample_count>=SDADC1_ULN_SAMPLE_CNT)
 					{
 						if(!(compute_control & __ULN2_SAMPLED))ULN2.avarage_sq = (SDADC1_CH2s.sum/(SDADC1_CH2s.sample_count+1));
@@ -2154,12 +2180,14 @@ void compute_rms(void)
 		arm_sqrt_f32(ULN1.avarage_sq, &ULN1.effective);
 		ULN1.effective = ULN1.effective*ULN1.k+ULN1.n;
 		compute_control |= __ULN1_EFF_COMPUTED;
+		result_transmitt_control|=UL1N_TRANSMITT_READY;
 		compute_control&=(~__ULN1_SAMPLED);
 	}
 	if(compute_control & __ULN2_SAMPLED)	
 	{
 		arm_sqrt_f32(ULN2.avarage_sq, &ULN2.effective);
 		ULN2.effective = ULN2.effective*ULN2.k+ULN2.n;
+		result_transmitt_control|=UL2N_TRANSMITT_READY;
 		compute_control2 |= __ULN2_EFF_COMPUTED;
 		compute_control&=(~__ULN2_SAMPLED);
 	}
@@ -2167,6 +2195,7 @@ void compute_rms(void)
 	{
 		arm_sqrt_f32(ULN3.avarage_sq, &ULN3.effective);	
 		ULN3.effective = ULN3.effective*ULN3.k+ULN3.n;
+		result_transmitt_control|=UL3N_TRANSMITT_READY;
 		compute_control2 |= __ULN3_EFF_COMPUTED;		
 		compute_control&=(~__ULN3_SAMPLED);
 	}
@@ -2176,6 +2205,7 @@ void compute_rms(void)
 		IL1.effective = IL1.effective*IL1.k+IL1.n;
 		compute_control |= __IL1_EFF_COMPUTED;
 		compute_control&=(~__IL1_SAMPLED);
+		result_transmitt_control|=IL1_TRANSMITT_READY;
 	}
 	if(compute_control & __IL2_SAMPLED)	
 	{
@@ -2183,6 +2213,7 @@ void compute_rms(void)
 		IL2.effective = IL2.effective*IL2.k+IL2.n;
 		compute_control |= __IL2_EFF_COMPUTED;
 		compute_control&=(~__IL2_SAMPLED);
+		result_transmitt_control|=IL2_TRANSMITT_READY;
 	}
 	if(compute_control & __IL3_SAMPLED)	
 	{
@@ -2190,6 +2221,7 @@ void compute_rms(void)
 		IL3.effective = IL3.effective*IL3.k+IL3.n;
 		compute_control |= __IL3_EFF_COMPUTED;
 		compute_control&=(~__IL3_SAMPLED);
+		result_transmitt_control|=IL3_TRANSMITT_READY;
 	}
 	if(compute_control & __IDIFF_SAMPLED)	
 	{
@@ -2219,16 +2251,21 @@ void compute_rms(void)
 //			IDIFF.effective=(IDIFF.effective*IDIFF_Khigh+IDIFF_Nhigh);
 //		}
 		compute_control&=(~__IDIFF_SAMPLED);
+		result_transmitt_control|=IDIFF_TRANSMITT_READY;
 	}
 	if(compute_control & __UL1PE_SAMPLED)	
 	{
 		arm_sqrt_f32(UL1PE.avarage_sq, &UL1PE.effective);
+		UL1PE.effective = UL1PE.effective*UL1PE.k+UL1PE.n;
 		compute_control&=(~__UL1PE_SAMPLED);
+		result_transmitt_control|=UL1PE_TRANSMITT_READY;
 	}
 	if(compute_control & __UNPE_SAMPLED)	
 	{
 		arm_sqrt_f32(UNPE.avarage_sq, &UNPE.effective);
+		UNPE.effective = UNPE.effective*UNPE.k+UNPE.n;
 		compute_control&=(~__UNPE_SAMPLED);
+		result_transmitt_control|=UNPE_TRANSMITT_READY;
 	}
 	//racunanje navidezne moci in faznega kota
 	if(compute_control2 & __POWER_MEAS_ON)
@@ -2239,6 +2276,9 @@ void compute_rms(void)
 			PHASE1.PF = PHASE1.real_power/PHASE1.apparent_power;
 			compute_control &= (~__IL1_EFF_COMPUTED);
 			compute_control &= (~__ULN1_EFF_COMPUTED);
+			result_transmitt_control|=SL1_TRANSMITT_READY;
+			result_transmitt_control|=PF1_TRANSMITT_READY;
+			result_transmitt_control|=PL1_TRANSMITT_READY;
 		}
 		if((compute_control & __IL2_EFF_COMPUTED) && (compute_control2 & __ULN2_EFF_COMPUTED))
 		{
@@ -2246,6 +2286,9 @@ void compute_rms(void)
 			PHASE2.PF = PHASE2.real_power/PHASE2.apparent_power;
 			compute_control &= (~__IL2_EFF_COMPUTED);
 			compute_control2 &= (~__ULN2_EFF_COMPUTED);
+			result_transmitt_control|=SL2_TRANSMITT_READY;
+			result_transmitt_control|=PF2_TRANSMITT_READY;
+			result_transmitt_control|=PL2_TRANSMITT_READY;
 		}
 		if((compute_control & __IL3_EFF_COMPUTED) && (compute_control2 & __ULN3_EFF_COMPUTED))
 		{
@@ -2253,6 +2296,13 @@ void compute_rms(void)
 			PHASE3.PF = PHASE3.real_power/PHASE3.apparent_power;
 			compute_control &= (~__IL3_EFF_COMPUTED);
 			compute_control2 &= (~__ULN3_EFF_COMPUTED);
+			result_transmitt_control|=SL3_TRANSMITT_READY;
+			result_transmitt_control|=PF3_TRANSMITT_READY;
+			result_transmitt_control|=PL3_TRANSMITT_READY;
+			//zaenkrat tle, pol postavi vn
+			result_transmitt_control|=P3P_TRANSMITT_READY;
+			result_transmitt_control|=S3P_TRANSMITT_READY;
+			result_transmitt_control|=PF3P_TRANSMITT_READY;
 		}
 	}
 	//ce so fazna zaporedja izmerjena
@@ -2371,9 +2421,20 @@ static void measure_IDIFF(int16_t ConvertionResult)
 //	{
 //		SDADC3_CH1s.sempl=(SDADC3_CH1s.sempl*IDIFF_Khigh+IDIFF_Nhigh);
 //	}
+	
 	if((!(meas_control & __IDIFF_MEASURED))||(meas_control & __NO_THD_MEAS))
 	{
+		#if COMPUTE_TRMS == _ON
+		IDIFF_LPF_TRMS.x0 = SDADC3_CH1s.sempl*SDADC3_CH1s.sempl;
+		idiff1_temp = (IDIFF_LPF_TRMS.x0* IIR_LPF_TRMS_coeffs[0]) + (IDIFF_LPF_TRMS.x1 * IIR_LPF_TRMS_coeffs[1]) + (IDIFF_LPF_TRMS.x2 * IIR_LPF_TRMS_coeffs[2]) + (IDIFF_LPF_TRMS.y1 * IIR_LPF_TRMS_coeffs[3]) + (IDIFF_LPF_TRMS.y2 * IIR_LPF_TRMS_coeffs[4]);
+		IDIFF_LPF_TRMS.x2=IDIFF_LPF_TRMS.x1;
+		IDIFF_LPF_TRMS.x1= IDIFF_LPF_TRMS.x0;
+		IDIFF_LPF_TRMS.y2 = IDIFF_LPF_TRMS.y1;
+		IDIFF_LPF_TRMS.y1 = idiff1_temp;
+		SDADC3_CH1s.sum += idiff1_temp;
+		#else
 		SDADC3_CH1s.sum += (SDADC3_CH1s.sempl*SDADC3_CH1s.sempl);
+		#endif
 		if(SDADC3_CH1s.sample_count>=SDADC3_IDIFF_SAMPLE_CNT)
 		{
 			if(!(compute_control & __IDIFF_SAMPLED))IDIFF.avarage_sq = SDADC3_CH1s.sum/SDADC3_CH1s.sample_count;
@@ -2406,9 +2467,18 @@ static void measure_UL1PE(int16_t ConvertionResult)
 		SDADC3_sample2=SDADC3_sample;
 		arm_biquad_cascade_df1_f32(&INST_UL1PE_LPF, &SDADC3_sample2, &SDADC3_sample,1);
 	}
-
 	SDADC3_CH2s.sempl=SDADC3_sample;
+	#if COMPUTE_TRMS == _ON
+	UL1PE_LPF_TRMS.x0 = SDADC3_CH2s.sempl*SDADC3_CH2s.sempl;
+	ul1pe_temp = (UL1PE_LPF_TRMS.x0* IIR_LPF_TRMS_coeffs[0]) + (UL1PE_LPF_TRMS.x1 * IIR_LPF_TRMS_coeffs[1]) + (UL1PE_LPF_TRMS.x2 * IIR_LPF_TRMS_coeffs[2]) + (UL1PE_LPF_TRMS.y1 * IIR_LPF_TRMS_coeffs[3]) + (UL1PE_LPF_TRMS.y2 * IIR_LPF_TRMS_coeffs[4]);
+	UL1PE_LPF_TRMS.x2=UL1PE_LPF_TRMS.x1;
+	UL1PE_LPF_TRMS.x1= UL1PE_LPF_TRMS.x0;
+	UL1PE_LPF_TRMS.y2 = UL1PE_LPF_TRMS.y1;
+	UL1PE_LPF_TRMS.y1 = ul1pe_temp;
+	SDADC3_CH2s.sum += ul1pe_temp;
+	#else
 	SDADC3_CH2s.sum += (SDADC3_CH2s.sempl*SDADC3_CH2s.sempl);
+	#endif
 	if(SDADC3_CH2s.sample_count>=SDADC3_UL1PE_SAMPLE_CNT)
 	{
 		if(!(compute_control & __UL1PE_SAMPLED))UL1PE.avarage_sq = SDADC3_CH2s.sum/SDADC3_CH2s.sample_count;
@@ -2437,9 +2507,18 @@ static void measure_UNPE(int16_t ConvertionResult)
 		SDADC3_sample2=SDADC3_sample;
 		arm_biquad_cascade_df1_f32(&INST_UNPE_LPF, &SDADC3_sample2, &SDADC3_sample,1);
 	}
-
 	SDADC3_CH3s.sempl=SDADC3_sample;
+	#if COMPUTE_TRMS == _ON
+	UNPE_LPF_TRMS.x0 = SDADC3_CH3s.sempl*SDADC3_CH3s.sempl;
+	unpe_temp = (UNPE_LPF_TRMS.x0* IIR_LPF_TRMS_coeffs[0]) + (UNPE_LPF_TRMS.x1 * IIR_LPF_TRMS_coeffs[1]) + (UNPE_LPF_TRMS.x2 * IIR_LPF_TRMS_coeffs[2]) + (UNPE_LPF_TRMS.y1 * IIR_LPF_TRMS_coeffs[3]) + (UNPE_LPF_TRMS.y2 * IIR_LPF_TRMS_coeffs[4]);
+	UNPE_LPF_TRMS.x2=UNPE_LPF_TRMS.x1;
+	UNPE_LPF_TRMS.x1= UNPE_LPF_TRMS.x0;
+	UNPE_LPF_TRMS.y2 = UNPE_LPF_TRMS.y1;
+	UNPE_LPF_TRMS.y1 = unpe_temp;
+	SDADC3_CH3s.sum += unpe_temp;
+	#else
 	SDADC3_CH3s.sum += (SDADC3_CH3s.sempl*SDADC3_CH3s.sempl);
+	#endif
 	if(SDADC3_CH3s.sample_count>=SDADC3_UNPE_SAMPLE_CNT)
 	{
 		if(!(compute_control & __UNPE_SAMPLED))UNPE.avarage_sq = SDADC3_CH3s.sum/SDADC3_CH3s.sample_count;
@@ -2518,6 +2597,7 @@ void set_SDADC_zero(void)
 	SDADC3_CH1s.sum=0;
 	SDADC3_CH2s.sum=0;
 	SDADC3_CH3s.sum=0;
+	resetFilters();
 //	for(i=0;i<4;i++) 
 //	{
 //		IL1_IIR_state[i]=0;
@@ -2569,16 +2649,77 @@ void write_THD(float32_t value, uint32_t place)
 }
 void setInitConstants(void)
 {
-	ULN1.k=1;
-	ULN1.n=0;
-	ULN2.k=1;//2.369;
-	ULN2.n=0;//-17.016;
-	ULN3.k=1;//2.369;
-	ULN3.n=0;//-17.016;
-	IL1.k=1;
-	IL1.n=0;
-	IL2.k=1;
-	IL2.n=0;
-	IL3.k=1;
-	IL3.n=0;
+	ULN1.k=ULN1_K_;
+	ULN1.n=ULN1_N_;
+	ULN2.k=ULN2_K_;//2.369;
+	ULN2.n=ULN2_N_;//-17.016;
+	ULN3.k=ULN3_K_;//2.369;
+	ULN3.n=ULN3_N_;//-17.016;
+	UL1PE.k = UL1PE_K_;
+	UNPE.k = UNPE_K_;
+	UL1PE.n = UL1PE_N_;
+	UNPE.n = UNPE_N_;
+	IL1.k=IL1_K_;
+	IL1.n=IL1_N_;
+	IL2.k=IL2_K_;
+	IL2.n=IL2_N_;
+	IL3.k=IL3_K_;
+	IL3.n=IL3_N_;
+}
+
+static void resetFilters(void)
+{
+	IL1_LPF_TRMS.x0=0;
+	IL1_LPF_TRMS.x1=0;
+	IL1_LPF_TRMS.x2=0;
+	IL1_LPF_TRMS.y1=0;
+	IL1_LPF_TRMS.y2=0;
+	
+	IL2_LPF_TRMS.x0=0;
+	IL2_LPF_TRMS.x1=0;
+	IL2_LPF_TRMS.x2=0;
+	IL2_LPF_TRMS.y1=0;
+	IL2_LPF_TRMS.y2=0;
+	
+	IL3_LPF_TRMS.x0=0;
+	IL3_LPF_TRMS.x1=0;
+	IL3_LPF_TRMS.x2=0;
+	IL3_LPF_TRMS.y1=0;
+	IL3_LPF_TRMS.y2=0;
+	
+	IDIFF_LPF_TRMS.x0=0;
+	IDIFF_LPF_TRMS.x1=0;
+	IDIFF_LPF_TRMS.x2=0;
+	IDIFF_LPF_TRMS.y1=0;
+	IDIFF_LPF_TRMS.y2=0;
+	
+	ULN1_LPF_TRMS.x0=0;
+	ULN1_LPF_TRMS.x1=0;
+	ULN1_LPF_TRMS.x2=0;
+	ULN1_LPF_TRMS.y1=0;
+	ULN1_LPF_TRMS.y2=0;
+	
+	ULN2_LPF_TRMS.x0=0;
+	ULN2_LPF_TRMS.x1=0;
+	ULN2_LPF_TRMS.x2=0;
+	ULN2_LPF_TRMS.y1=0;
+	ULN2_LPF_TRMS.y2=0;
+	
+	ULN3_LPF_TRMS.x0=0;
+	ULN3_LPF_TRMS.x1=0;
+	ULN3_LPF_TRMS.x2=0;
+	ULN3_LPF_TRMS.y1=0;
+	ULN3_LPF_TRMS.y2=0;
+	
+	UNPE_LPF_TRMS.x0=0;
+	UNPE_LPF_TRMS.x1=0;
+	UNPE_LPF_TRMS.x2=0;
+	UNPE_LPF_TRMS.y1=0;
+	UNPE_LPF_TRMS.y2=0;
+	
+	UL1PE_LPF_TRMS.x0=0;
+	UL1PE_LPF_TRMS.x1=0;
+	UL1PE_LPF_TRMS.x2=0;
+	UL1PE_LPF_TRMS.y1=0;
+	UL1PE_LPF_TRMS.y2=0;
 }

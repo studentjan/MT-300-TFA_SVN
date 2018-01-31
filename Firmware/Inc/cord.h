@@ -9,8 +9,14 @@
 #define CORD_RISO_LIMIT				1.0f	//n*Mohm
 #define RPE_CONTINUITY_FAIL_LIMIT	20.0f 		//n*ohm
 
-//funkcije
 
+enum CordLimits
+{
+	SET_CORD_RPE_LIM,
+	SET_CORD_RISO_LIM,
+	SET_CORD_CONT_LIM,
+};
+//funkcije
 void stop_cord_and_transmitt(uint32_t dir, char device_ID);
 void cord_global_init_set(void);
 void cord_correct_wiring_init(void);
@@ -19,6 +25,8 @@ void cord_RISO_init(void);
 void set_RPE_cord_resistance(char* value);
 void set_RISO_cord_resistance(char* value);
 void set_phase_num(int phase_num);
+void deinitCord(void);
+void SetCordLimit(uint32_t limit, char * lim_str);
 //taski
 void init_cord(void);
 void deinitCord(void);
@@ -28,6 +36,9 @@ void cord_meas_correct_wiring(void);
 void cord_RISO_phasesToPE(void);
 void cord_RISO_phaseToPhase(void);
 void cord_continuity_test(void);
+void CordRPEStart(void);
+void CordRPEStop(void);
+
 
 
 //ne spreminjaj makrojev!!!
@@ -237,10 +248,13 @@ void cord_continuity_test(void);
 #define __CORD_RISO_STARTED												0x00008000
 #define __CORD_RPE_L_STARTED											0x00010000
 #define __CORD_RPE_H_STARTED											0x00020000
+#define __CORD_REINIT															0x00040000
+#define __CORD_RPE_M_STARTED											0x00080000
+#define __CORD_RPE_IN_PROGRESS										0x00100000
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
-#define CORD_MEAS_IN_PROG_MASK			0x00007C00				
+#define CORD_MEAS_IN_PROG_MASK			0x00107C00				
 #define CORD_RISO_MASKS							0x000038E4
 #define CORD_MEAS_MASKS							0x0003FCFE
 

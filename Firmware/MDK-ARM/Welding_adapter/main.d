@@ -46,6 +46,7 @@ welding_adapter\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
 welding_adapter\main.o: ../Inc/gpio.h
 welding_adapter\main.o: ../Inc/comunication.h
 welding_adapter\main.o: ../Inc/defines.h
+welding_adapter\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 welding_adapter\main.o: ../Inc/timer.h
 welding_adapter\main.o: ../Inc/usb_device.h
 welding_adapter\main.o: ../Middlewares/ST/STM32_USB_Device_Library/Core/Inc/usbd_def.h
@@ -62,6 +63,5 @@ welding_adapter\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\limits.h
 welding_adapter\main.o: ../Inc/rel_driver.h
 welding_adapter\main.o: ../Inc/do_task.h
 welding_adapter\main.o: ../Inc/serial_com.h
-welding_adapter\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 welding_adapter\main.o: ../Inc/com_meas_tasks.h
 welding_adapter\main.o: ../Inc/stm32f3xx_it.h

@@ -90,6 +90,10 @@
             this.UL2textBox = new System.Windows.Forms.TextBox();
             this.UL1textBox = new System.Windows.Forms.TextBox();
             this.MainsAnalyzeButton = new System.Windows.Forms.Button();
+            this.label27 = new System.Windows.Forms.Label();
+            this.RisoLimitTextbox = new System.Windows.Forms.TextBox();
+            this.label28 = new System.Windows.Forms.Label();
+            this.Cable_type_comboBox = new System.Windows.Forms.ComboBox();
             this.SuspendLayout();
             // 
             // test_contactors_button
@@ -616,11 +620,51 @@
             this.MainsAnalyzeButton.UseVisualStyleBackColor = true;
             this.MainsAnalyzeButton.Click += new System.EventHandler(this.MainsAnalyzeButton_Click);
             // 
+            // label27
+            // 
+            this.label27.AutoSize = true;
+            this.label27.Location = new System.Drawing.Point(70, 131);
+            this.label27.Name = "label27";
+            this.label27.Size = new System.Drawing.Size(64, 13);
+            this.label27.TabIndex = 161;
+            this.label27.Text = "RISO LIMIT";
+            // 
+            // RisoLimitTextbox
+            // 
+            this.RisoLimitTextbox.Location = new System.Drawing.Point(48, 147);
+            this.RisoLimitTextbox.Name = "RisoLimitTextbox";
+            this.RisoLimitTextbox.Size = new System.Drawing.Size(114, 20);
+            this.RisoLimitTextbox.TabIndex = 160;
+            // 
+            // label28
+            // 
+            this.label28.AutoSize = true;
+            this.label28.Location = new System.Drawing.Point(200, 131);
+            this.label28.Name = "label28";
+            this.label28.Size = new System.Drawing.Size(72, 13);
+            this.label28.TabIndex = 163;
+            this.label28.Text = "CABLE TYPE";
+            // 
+            // Cable_type_comboBox
+            // 
+            this.Cable_type_comboBox.FormattingEnabled = true;
+            this.Cable_type_comboBox.Items.AddRange(new object[] {
+            "1 PHASE",
+            "3 PHASE"});
+            this.Cable_type_comboBox.Location = new System.Drawing.Point(175, 147);
+            this.Cable_type_comboBox.Name = "Cable_type_comboBox";
+            this.Cable_type_comboBox.Size = new System.Drawing.Size(121, 21);
+            this.Cable_type_comboBox.TabIndex = 162;
+            // 
             // Machines_form
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(878, 337);
+            this.Controls.Add(this.label28);
+            this.Controls.Add(this.Cable_type_comboBox);
+            this.Controls.Add(this.label27);
+            this.Controls.Add(this.RisoLimitTextbox);
             this.Controls.Add(this.label21);
             this.Controls.Add(this.label22);
             this.Controls.Add(this.label23);
@@ -755,5 +799,9 @@
         private System.Windows.Forms.TextBox UL2textBox;
         private System.Windows.Forms.TextBox UL1textBox;
         private System.Windows.Forms.Button MainsAnalyzeButton;
+        private System.Windows.Forms.Label label27;
+        private System.Windows.Forms.TextBox RisoLimitTextbox;
+        private System.Windows.Forms.Label label28;
+        private System.Windows.Forms.ComboBox Cable_type_comboBox;
     }
 }

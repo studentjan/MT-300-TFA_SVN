@@ -2,6 +2,7 @@ welding_adapter\comunication.o: ..\Src\comunication.c
 welding_adapter\comunication.o: ../Inc/comunication.h
 welding_adapter\comunication.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 welding_adapter\comunication.o: ../Inc/defines.h
+welding_adapter\comunication.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 welding_adapter\comunication.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
 welding_adapter\comunication.o: ../Inc/usbd_cdc_if.h
 welding_adapter\comunication.o: ../Middlewares/ST/STM32_USB_Device_Library/Class/CDC/Inc/usbd_cdc.h
@@ -63,5 +64,11 @@ welding_adapter\comunication.o: ../Inc/sdadc.h
 welding_adapter\comunication.o: ../Drivers/CMSIS/Include/arm_math.h
 welding_adapter\comunication.o: ../Drivers/CMSIS/Include/core_cm4.h
 welding_adapter\comunication.o: ../Inc/serial_com.h
-welding_adapter\comunication.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 welding_adapter\comunication.o: ../Inc/usb_device.h
+welding_adapter\comunication.o: ../Inc/cord.h
+welding_adapter\comunication.o: ../Inc/machines.h
+welding_adapter\comunication.o: ../Inc/calibration.h
+welding_adapter\comunication.o: ../Inc/com_meas_tasks.h
+welding_adapter\comunication.o: ../Inc/do_task.h
+welding_adapter\comunication.o: ../Inc/rel_driver.h
+welding_adapter\comunication.o: ../Inc/welding.h

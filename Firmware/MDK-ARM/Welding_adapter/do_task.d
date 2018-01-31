@@ -50,5 +50,5 @@ welding_adapter\do_task.o: ../Drivers/CMSIS/Include/arm_const_structs.h
 welding_adapter\do_task.o: ../Drivers/CMSIS/Include/arm_common_tables.h
 welding_adapter\do_task.o: ../Inc/rel_driver.h
 welding_adapter\do_task.o: ../Inc/comunication.h
-welding_adapter\do_task.o: ../Inc/serial_com.h
 welding_adapter\do_task.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
+welding_adapter\do_task.o: ../Inc/serial_com.h

@@ -74,6 +74,36 @@
             this.ULN2computeButton = new System.Windows.Forms.Button();
             this.ULN3computeButton = new System.Windows.Forms.Button();
             this.getConstantsButton = new System.Windows.Forms.Button();
+            this.UL1PEcomputeButton = new System.Windows.Forms.Button();
+            this.UL1PEsaveButton = new System.Windows.Forms.Button();
+            this.label16 = new System.Windows.Forms.Label();
+            this.UL1PEhighRetTextBox = new System.Windows.Forms.TextBox();
+            this.UL1PEhighTextbox = new System.Windows.Forms.TextBox();
+            this.UL1PEhighButton = new System.Windows.Forms.Button();
+            this.label17 = new System.Windows.Forms.Label();
+            this.label18 = new System.Windows.Forms.Label();
+            this.UL1PEnTextbox = new System.Windows.Forms.TextBox();
+            this.UL1PEkTextbox = new System.Windows.Forms.TextBox();
+            this.label19 = new System.Windows.Forms.Label();
+            this.label20 = new System.Windows.Forms.Label();
+            this.UL1PElowRetTextBox = new System.Windows.Forms.TextBox();
+            this.UL1PElowTextbox = new System.Windows.Forms.TextBox();
+            this.UL1PElowButton = new System.Windows.Forms.Button();
+            this.UNPEcomputeButton = new System.Windows.Forms.Button();
+            this.UNPEsaveButton = new System.Windows.Forms.Button();
+            this.label21 = new System.Windows.Forms.Label();
+            this.UNPEhighRetTextBox = new System.Windows.Forms.TextBox();
+            this.UNPEhighTextbox = new System.Windows.Forms.TextBox();
+            this.UNPEhighButton = new System.Windows.Forms.Button();
+            this.label22 = new System.Windows.Forms.Label();
+            this.label23 = new System.Windows.Forms.Label();
+            this.UNPEnTextbox = new System.Windows.Forms.TextBox();
+            this.UNPEkTextbox = new System.Windows.Forms.TextBox();
+            this.label24 = new System.Windows.Forms.Label();
+            this.label25 = new System.Windows.Forms.Label();
+            this.UNPElowRetTextBox = new System.Windows.Forms.TextBox();
+            this.UNPElowTextbox = new System.Windows.Forms.TextBox();
+            this.UNPElowButton = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // ULN1lowButton
@@ -474,11 +504,299 @@
             this.getConstantsButton.UseVisualStyleBackColor = true;
             this.getConstantsButton.Click += new System.EventHandler(this.getConstantsButton_Click);
             // 
+            // UL1PEcomputeButton
+            // 
+            this.UL1PEcomputeButton.Location = new System.Drawing.Point(685, 186);
+            this.UL1PEcomputeButton.Name = "UL1PEcomputeButton";
+            this.UL1PEcomputeButton.Size = new System.Drawing.Size(82, 23);
+            this.UL1PEcomputeButton.TabIndex = 173;
+            this.UL1PEcomputeButton.Text = "COMPUTE";
+            this.UL1PEcomputeButton.UseVisualStyleBackColor = true;
+            this.UL1PEcomputeButton.Click += new System.EventHandler(this.UL1PEcomputeButton_Click);
+            // 
+            // UL1PEsaveButton
+            // 
+            this.UL1PEsaveButton.Location = new System.Drawing.Point(685, 267);
+            this.UL1PEsaveButton.Name = "UL1PEsaveButton";
+            this.UL1PEsaveButton.Size = new System.Drawing.Size(82, 23);
+            this.UL1PEsaveButton.TabIndex = 172;
+            this.UL1PEsaveButton.Text = "SAVE";
+            this.UL1PEsaveButton.UseVisualStyleBackColor = true;
+            this.UL1PEsaveButton.Click += new System.EventHandler(this.UL1PEsaveButton_Click);
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(756, 89);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(35, 13);
+            this.label16.TabIndex = 171;
+            this.label16.Text = "240 V";
+            // 
+            // UL1PEhighRetTextBox
+            // 
+            this.UL1PEhighRetTextBox.Location = new System.Drawing.Point(728, 160);
+            this.UL1PEhighRetTextBox.Name = "UL1PEhighRetTextBox";
+            this.UL1PEhighRetTextBox.ReadOnly = true;
+            this.UL1PEhighRetTextBox.Size = new System.Drawing.Size(82, 20);
+            this.UL1PEhighRetTextBox.TabIndex = 170;
+            // 
+            // UL1PEhighTextbox
+            // 
+            this.UL1PEhighTextbox.Location = new System.Drawing.Point(728, 105);
+            this.UL1PEhighTextbox.Name = "UL1PEhighTextbox";
+            this.UL1PEhighTextbox.Size = new System.Drawing.Size(82, 20);
+            this.UL1PEhighTextbox.TabIndex = 169;
+            // 
+            // UL1PEhighButton
+            // 
+            this.UL1PEhighButton.Location = new System.Drawing.Point(728, 131);
+            this.UL1PEhighButton.Name = "UL1PEhighButton";
+            this.UL1PEhighButton.Size = new System.Drawing.Size(82, 23);
+            this.UL1PEhighButton.TabIndex = 168;
+            this.UL1PEhighButton.Text = "MEASURE";
+            this.UL1PEhighButton.UseVisualStyleBackColor = true;
+            this.UL1PEhighButton.Click += new System.EventHandler(this.UL1PEhighButton_Click);
+            // 
+            // label17
+            // 
+            this.label17.AutoSize = true;
+            this.label17.Location = new System.Drawing.Point(767, 214);
+            this.label17.Name = "label17";
+            this.label17.Size = new System.Drawing.Size(13, 13);
+            this.label17.TabIndex = 167;
+            this.label17.Text = "n";
+            // 
+            // label18
+            // 
+            this.label18.AutoSize = true;
+            this.label18.Location = new System.Drawing.Point(682, 214);
+            this.label18.Name = "label18";
+            this.label18.Size = new System.Drawing.Size(13, 13);
+            this.label18.TabIndex = 166;
+            this.label18.Text = "k";
+            // 
+            // UL1PEnTextbox
+            // 
+            this.UL1PEnTextbox.Location = new System.Drawing.Point(728, 230);
+            this.UL1PEnTextbox.Name = "UL1PEnTextbox";
+            this.UL1PEnTextbox.Size = new System.Drawing.Size(82, 20);
+            this.UL1PEnTextbox.TabIndex = 165;
+            // 
+            // UL1PEkTextbox
+            // 
+            this.UL1PEkTextbox.Location = new System.Drawing.Point(640, 230);
+            this.UL1PEkTextbox.Name = "UL1PEkTextbox";
+            this.UL1PEkTextbox.Size = new System.Drawing.Size(82, 20);
+            this.UL1PEkTextbox.TabIndex = 164;
+            // 
+            // label19
+            // 
+            this.label19.AutoSize = true;
+            this.label19.Location = new System.Drawing.Point(682, 56);
+            this.label19.Name = "label19";
+            this.label19.Size = new System.Drawing.Size(94, 13);
+            this.label19.TabIndex = 163;
+            this.label19.Text = "VOLTAGE UL1PE";
+            // 
+            // label20
+            // 
+            this.label20.AutoSize = true;
+            this.label20.Location = new System.Drawing.Point(668, 89);
+            this.label20.Name = "label20";
+            this.label20.Size = new System.Drawing.Size(35, 13);
+            this.label20.TabIndex = 162;
+            this.label20.Text = "190 V";
+            // 
+            // UL1PElowRetTextBox
+            // 
+            this.UL1PElowRetTextBox.Location = new System.Drawing.Point(640, 160);
+            this.UL1PElowRetTextBox.Name = "UL1PElowRetTextBox";
+            this.UL1PElowRetTextBox.ReadOnly = true;
+            this.UL1PElowRetTextBox.Size = new System.Drawing.Size(82, 20);
+            this.UL1PElowRetTextBox.TabIndex = 161;
+            // 
+            // UL1PElowTextbox
+            // 
+            this.UL1PElowTextbox.Location = new System.Drawing.Point(640, 105);
+            this.UL1PElowTextbox.Name = "UL1PElowTextbox";
+            this.UL1PElowTextbox.Size = new System.Drawing.Size(82, 20);
+            this.UL1PElowTextbox.TabIndex = 160;
+            // 
+            // UL1PElowButton
+            // 
+            this.UL1PElowButton.Location = new System.Drawing.Point(640, 131);
+            this.UL1PElowButton.Name = "UL1PElowButton";
+            this.UL1PElowButton.Size = new System.Drawing.Size(82, 23);
+            this.UL1PElowButton.TabIndex = 159;
+            this.UL1PElowButton.Text = "MEASURE";
+            this.UL1PElowButton.UseVisualStyleBackColor = true;
+            this.UL1PElowButton.Click += new System.EventHandler(this.UL1PElowButton_Click);
+            // 
+            // UNPEcomputeButton
+            // 
+            this.UNPEcomputeButton.Location = new System.Drawing.Point(876, 186);
+            this.UNPEcomputeButton.Name = "UNPEcomputeButton";
+            this.UNPEcomputeButton.Size = new System.Drawing.Size(82, 23);
+            this.UNPEcomputeButton.TabIndex = 188;
+            this.UNPEcomputeButton.Text = "COMPUTE";
+            this.UNPEcomputeButton.UseVisualStyleBackColor = true;
+            this.UNPEcomputeButton.Click += new System.EventHandler(this.UNPEcomputeButton_Click);
+            // 
+            // UNPEsaveButton
+            // 
+            this.UNPEsaveButton.Location = new System.Drawing.Point(876, 267);
+            this.UNPEsaveButton.Name = "UNPEsaveButton";
+            this.UNPEsaveButton.Size = new System.Drawing.Size(82, 23);
+            this.UNPEsaveButton.TabIndex = 187;
+            this.UNPEsaveButton.Text = "SAVE";
+            this.UNPEsaveButton.UseVisualStyleBackColor = true;
+            this.UNPEsaveButton.Click += new System.EventHandler(this.UNPEsaveButton_Click);
+            // 
+            // label21
+            // 
+            this.label21.AutoSize = true;
+            this.label21.Location = new System.Drawing.Point(947, 89);
+            this.label21.Name = "label21";
+            this.label21.Size = new System.Drawing.Size(35, 13);
+            this.label21.TabIndex = 186;
+            this.label21.Text = "240 V";
+            // 
+            // UNPEhighRetTextBox
+            // 
+            this.UNPEhighRetTextBox.Location = new System.Drawing.Point(919, 160);
+            this.UNPEhighRetTextBox.Name = "UNPEhighRetTextBox";
+            this.UNPEhighRetTextBox.ReadOnly = true;
+            this.UNPEhighRetTextBox.Size = new System.Drawing.Size(82, 20);
+            this.UNPEhighRetTextBox.TabIndex = 185;
+            // 
+            // UNPEhighTextbox
+            // 
+            this.UNPEhighTextbox.Location = new System.Drawing.Point(919, 105);
+            this.UNPEhighTextbox.Name = "UNPEhighTextbox";
+            this.UNPEhighTextbox.Size = new System.Drawing.Size(82, 20);
+            this.UNPEhighTextbox.TabIndex = 184;
+            // 
+            // UNPEhighButton
+            // 
+            this.UNPEhighButton.Location = new System.Drawing.Point(919, 131);
+            this.UNPEhighButton.Name = "UNPEhighButton";
+            this.UNPEhighButton.Size = new System.Drawing.Size(82, 23);
+            this.UNPEhighButton.TabIndex = 183;
+            this.UNPEhighButton.Text = "MEASURE";
+            this.UNPEhighButton.UseVisualStyleBackColor = true;
+            this.UNPEhighButton.Click += new System.EventHandler(this.UNPEhighButton_Click);
+            // 
+            // label22
+            // 
+            this.label22.AutoSize = true;
+            this.label22.Location = new System.Drawing.Point(958, 214);
+            this.label22.Name = "label22";
+            this.label22.Size = new System.Drawing.Size(13, 13);
+            this.label22.TabIndex = 182;
+            this.label22.Text = "n";
+            // 
+            // label23
+            // 
+            this.label23.AutoSize = true;
+            this.label23.Location = new System.Drawing.Point(873, 214);
+            this.label23.Name = "label23";
+            this.label23.Size = new System.Drawing.Size(13, 13);
+            this.label23.TabIndex = 181;
+            this.label23.Text = "k";
+            // 
+            // UNPEnTextbox
+            // 
+            this.UNPEnTextbox.Location = new System.Drawing.Point(919, 230);
+            this.UNPEnTextbox.Name = "UNPEnTextbox";
+            this.UNPEnTextbox.Size = new System.Drawing.Size(82, 20);
+            this.UNPEnTextbox.TabIndex = 180;
+            // 
+            // UNPEkTextbox
+            // 
+            this.UNPEkTextbox.Location = new System.Drawing.Point(831, 230);
+            this.UNPEkTextbox.Name = "UNPEkTextbox";
+            this.UNPEkTextbox.Size = new System.Drawing.Size(82, 20);
+            this.UNPEkTextbox.TabIndex = 179;
+            // 
+            // label24
+            // 
+            this.label24.AutoSize = true;
+            this.label24.Location = new System.Drawing.Point(873, 56);
+            this.label24.Name = "label24";
+            this.label24.Size = new System.Drawing.Size(90, 13);
+            this.label24.TabIndex = 178;
+            this.label24.Text = "VOLTAGE UNPE";
+            // 
+            // label25
+            // 
+            this.label25.AutoSize = true;
+            this.label25.Location = new System.Drawing.Point(859, 89);
+            this.label25.Name = "label25";
+            this.label25.Size = new System.Drawing.Size(35, 13);
+            this.label25.TabIndex = 177;
+            this.label25.Text = "190 V";
+            // 
+            // UNPElowRetTextBox
+            // 
+            this.UNPElowRetTextBox.Location = new System.Drawing.Point(831, 160);
+            this.UNPElowRetTextBox.Name = "UNPElowRetTextBox";
+            this.UNPElowRetTextBox.ReadOnly = true;
+            this.UNPElowRetTextBox.Size = new System.Drawing.Size(82, 20);
+            this.UNPElowRetTextBox.TabIndex = 176;
+            // 
+            // UNPElowTextbox
+            // 
+            this.UNPElowTextbox.Location = new System.Drawing.Point(831, 105);
+            this.UNPElowTextbox.Name = "UNPElowTextbox";
+            this.UNPElowTextbox.Size = new System.Drawing.Size(82, 20);
+            this.UNPElowTextbox.TabIndex = 175;
+            // 
+            // UNPElowButton
+            // 
+            this.UNPElowButton.Location = new System.Drawing.Point(831, 131);
+            this.UNPElowButton.Name = "UNPElowButton";
+            this.UNPElowButton.Size = new System.Drawing.Size(82, 23);
+            this.UNPElowButton.TabIndex = 174;
+            this.UNPElowButton.Text = "MEASURE";
+            this.UNPElowButton.UseVisualStyleBackColor = true;
+            this.UNPElowButton.Click += new System.EventHandler(this.UNPElowButton_Click);
+            // 
             // Calibration
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(676, 337);
+            this.ClientSize = new System.Drawing.Size(1065, 337);
+            this.Controls.Add(this.UNPEcomputeButton);
+            this.Controls.Add(this.UNPEsaveButton);
+            this.Controls.Add(this.label21);
+            this.Controls.Add(this.UNPEhighRetTextBox);
+            this.Controls.Add(this.UNPEhighTextbox);
+            this.Controls.Add(this.UNPEhighButton);
+            this.Controls.Add(this.label22);
+            this.Controls.Add(this.label23);
+            this.Controls.Add(this.UNPEnTextbox);
+            this.Controls.Add(this.UNPEkTextbox);
+            this.Controls.Add(this.label24);
+            this.Controls.Add(this.label25);
+            this.Controls.Add(this.UNPElowRetTextBox);
+            this.Controls.Add(this.UNPElowTextbox);
+            this.Controls.Add(this.UNPElowButton);
+            this.Controls.Add(this.UL1PEcomputeButton);
+            this.Controls.Add(this.UL1PEsaveButton);
+            this.Controls.Add(this.label16);
+            this.Controls.Add(this.UL1PEhighRetTextBox);
+            this.Controls.Add(this.UL1PEhighTextbox);
+            this.Controls.Add(this.UL1PEhighButton);
+            this.Controls.Add(this.label17);
+            this.Controls.Add(this.label18);
+            this.Controls.Add(this.UL1PEnTextbox);
+            this.Controls.Add(this.UL1PEkTextbox);
+            this.Controls.Add(this.label19);
+            this.Controls.Add(this.label20);
+            this.Controls.Add(this.UL1PElowRetTextBox);
+            this.Controls.Add(this.UL1PElowTextbox);
+            this.Controls.Add(this.UL1PElowButton);
             this.Controls.Add(this.getConstantsButton);
             this.Controls.Add(this.ULN3computeButton);
             this.Controls.Add(this.ULN2computeButton);
@@ -581,5 +899,35 @@
         private System.Windows.Forms.Button ULN2computeButton;
         private System.Windows.Forms.Button ULN3computeButton;
         private System.Windows.Forms.Button getConstantsButton;
+        private System.Windows.Forms.Button UL1PEcomputeButton;
+        private System.Windows.Forms.Button UL1PEsaveButton;
+        private System.Windows.Forms.Label label16;
+        private System.Windows.Forms.TextBox UL1PEhighRetTextBox;
+        private System.Windows.Forms.TextBox UL1PEhighTextbox;
+        private System.Windows.Forms.Button UL1PEhighButton;
+        private System.Windows.Forms.Label label17;
+        private System.Windows.Forms.Label label18;
+        private System.Windows.Forms.TextBox UL1PEnTextbox;
+        private System.Windows.Forms.TextBox UL1PEkTextbox;
+        private System.Windows.Forms.Label label19;
+        private System.Windows.Forms.Label label20;
+        private System.Windows.Forms.TextBox UL1PElowRetTextBox;
+        private System.Windows.Forms.TextBox UL1PElowTextbox;
+        private System.Windows.Forms.Button UL1PElowButton;
+        private System.Windows.Forms.Button UNPEcomputeButton;
+        private System.Windows.Forms.Button UNPEsaveButton;
+        private System.Windows.Forms.Label label21;
+        private System.Windows.Forms.TextBox UNPEhighRetTextBox;
+        private System.Windows.Forms.TextBox UNPEhighTextbox;
+        private System.Windows.Forms.Button UNPEhighButton;
+        private System.Windows.Forms.Label label22;
+        private System.Windows.Forms.Label label23;
+        private System.Windows.Forms.TextBox UNPEnTextbox;
+        private System.Windows.Forms.TextBox UNPEkTextbox;
+        private System.Windows.Forms.Label label24;
+        private System.Windows.Forms.Label label25;
+        private System.Windows.Forms.TextBox UNPElowRetTextBox;
+        private System.Windows.Forms.TextBox UNPElowTextbox;
+        private System.Windows.Forms.Button UNPElowButton;
     }
 }

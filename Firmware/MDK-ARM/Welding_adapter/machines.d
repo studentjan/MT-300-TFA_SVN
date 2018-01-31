@@ -48,3 +48,4 @@ welding_adapter\machines.o: ../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_ti
 welding_adapter\machines.o: ../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_tim_ex.h
 welding_adapter\machines.o: ../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart.h
 welding_adapter\machines.o: ../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal_uart_ex.h
+welding_adapter\machines.o: ../Inc/comunication.h

@@ -4,6 +4,7 @@ welding_adapter\rel_driver.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 welding_adapter\rel_driver.o: ../Inc/defines.h
 welding_adapter\rel_driver.o: ../Inc/timer.h
 welding_adapter\rel_driver.o: ../Inc/comunication.h
+welding_adapter\rel_driver.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdbool.h
 welding_adapter\rel_driver.o: ../Drivers/STM32F3xx_HAL_Driver/Inc/stm32f3xx_hal.h
 welding_adapter\rel_driver.o: ../Inc/stm32f3xx_hal_conf.h
 welding_adapter\rel_driver.o: ../Inc/main.h

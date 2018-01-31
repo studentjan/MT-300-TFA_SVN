@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Security.AccessControl;
 using System.Text;
 using System.Threading;
@@ -19,6 +20,7 @@ namespace MT_300_TFA_application
         public Thread task1;
         public Thread task2;
         public Thread task3;
+        public Thread task4;
         //++++++++++++++++++++++++++++++++++++++++++++++NASTAVITVE+++++++++++++++++++++++++++++++++++++++++++++++++++++++
         private const int QUEUE_COMMAND_BUFFER_SIZE = 300;
             //velikost char[] bufferja v katerega se shrani prispela komanda pred parsanjem sporocila
@@ -55,7 +57,7 @@ namespace MT_300_TFA_application
 
         //spremenljivke
         private int ID;
-        private char transmitter_ID;
+        private char transmitter_ID;// = Settings1.Default._ID_TFA;//na zacetku je tklop
         private char reciever_ID;
         public string m_start_tag;
         public string m_msg_ID;
@@ -91,9 +93,18 @@ namespace MT_300_TFA_application
 
         //+++++++++++++++++++++++++++++++++++++++++KOMANDE ZA PREJEMANJE IN POSILJANJE+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
         private const int MAX_VALID_COMMANDS = 50;
-        //                                                  0           1           2           3           4           5           6           7           8           9           10          11          12          13          14          15          16          17          18          19          20          21          22          23          24          25          26          27          28          29          30          31          32          33          34          35          36       
-        public static String[] FUNCTION_COMMUNICATON_NAMES = {"MT-300-TFA"};
-            //                                                   0          1       2       3           4       5       6        7       8      9
+        //                                                      0      1       2       3        4       5     6      7       8        9      10          11          12          13          14          15          16          17          18          19          20          21          22          23          24          25          26          27          28          29          30          31          32          33          34          35          36       
+        public static String[] FUNCTION_COMMUNICATON_NAMES = {"C_W","CONT","ALL-PE","ONE-PE","PH-PH","RPE","RISO","EVENT","M_URES","M_RPE","POWER","MAINS-CLASS2","MAINS-WELD","WELD-PE","UNL_RMS","UNL_PEAK"};
+        //                                                       0       1       2       3       4      5
+        public static String[] COMMAND_COMMUNICATON_NAMES = { "START", "STOP", "GET", "OPENED","OPEN","INIT" };
+        //                                                          0       1           2
+        public static String[] COMMAND_COMMUNICATON_NAMES2 = { "VALUE", "RESULT", "RESISTANCE" };
+        //                              
+        public static String[] STD_COMMUNICATON_NAMES = { "CORD", "MACH", "WELD" };
+        public static String[] ADD_COMMUNICATON_NAMES = { "1W", "3W"};
+
+        public static String[] EVENT_COMMUNICATON_NAMES = { "STOPPED" };
+        //                                                      0          1       2       3           4       5       6        7       8      9
         public static String[] COMMAND_TYPE_NAMES =  {        "POWER", "RELAY", "WARNING", "TEST", "COMMUN", "CORD", "STATUS" ,"MACH", "WELD","CALIB" };
 
         public static String[] CONNECTION_CODE_NAMES = {"CONNECT_REQUEST", "CONNECTION_ESTABLED", "CONNECTION_CHECK"};
@@ -111,10 +122,10 @@ namespace MT_300_TFA_application
         //                                                  0           1       2           3               4               5            6           7           8                9         10        11          12           13          14               15              16                  17                  18                  19              20           21             22          23              24
         public static String[] MACH_COMMAND_NAMES = { "START_URES", "INIT", "DEINIT", "URES_STARTED", "URES_STOPPED", "URES_FINISHED", "STOP", "URES_OPEN", "URES_OPENED", "INITIATED", "TEST", "START_RPE", "STOP_RPE", "RPE_STARTED", "RPE_STOPPED", "START_ALL-PE", "START_ONE-PE", "RISO_ALL-PE_RESULT", "RISO_ONE-PE_RESULT", "RISO_START", "RISO_STARTED", "RISO_STOP", "RISO_STOPPED", "RISO_RES_GET", "RISO_RES" };
         public static String[] MACH_ADD_NAMES = { "TEST" };
-        //                                                  0               1           2               3               4               5
-        public static String[] CALIB_COMMAND_NAMES = { "MEASURE_ULN1", "VOLTAGE", "MEASURE_ULN2", "MEASURE_ULN3" , "GET_CONSTANTS", "CONSTANTS"};
-        //                                            0      1       2           3       4           5       6           7       8
-        public static String[] CALIB_ADD_NAMES = { "ULN1", "ULN2", "ULN3", "ULN1_K", "ULN1_N", "ULN2_K", "ULN2_N", "ULN3_K", "ULN3_N" };
+        //                                                  0               1           2               3               4               5               6               7
+        public static String[] CALIB_COMMAND_NAMES = { "MEASURE_ULN1", "VOLTAGE", "MEASURE_ULN2", "MEASURE_ULN3", "GET_CONSTANTS", "CONSTANTS", "MEASURE_UL1PE", "MEASURE_UNPE" };
+        //                                            0      1       2           3       4           5       6           7       8       9      10        11        12          13          14
+        public static String[] CALIB_ADD_NAMES = { "ULN1", "ULN2", "ULN3", "ULN1_K", "ULN1_N", "ULN2_K", "ULN2_N", "ULN3_K", "ULN3_N", "UNPE", "UL1PE", "UNPE_K", "UL1PE_K", "UNPE_N", "UL1PE_N" };
         public static String[] STATUS_CODE_NAMES = {""};
         public static String[] STATUS_VALUE_NAMES = {""};
         public static String[] WARNING_CODE_NAMES = {"COMMAND_SEND_ERROR"};
@@ -290,25 +301,30 @@ namespace MT_300_TFA_application
         private void OnSynchtoTimedEvent(Object source, ElapsedEventArgs e)
         {
             string temp_str;
+            synchroTimer.Stop();
             if (TransmittSynchroQueue.Count > 0)
             {
-                transmittOutBuffer temp_struct;
-                temp_struct = TransmittSynchroQueue.Dequeue();
-                temp_str = temp_struct.out_str;
-                if (temp_struct.out_dir == Settings1.Default._COMMUNICATION_DIR_PORT1)
+                while (TransmittSynchroQueue.Count > 0)
                 {
-                    try
+                    transmittOutBuffer temp_struct;
+                    temp_struct = TransmittSynchroQueue.Dequeue();
+                    temp_str = temp_struct.out_str;
+                    if (temp_struct.out_dir == Settings1.Default._COMMUNICATION_DIR_PORT1)
                     {
-                        mainForm.serialPort1.Write(temp_str);
+                        try
+                        {
+                            mainForm.serialPort1.Write(temp_str);
+                        }
+                        catch (System.InvalidOperationException)
+                        {
+                            MessageBox.Show("COM port closed!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
+                        catch (System.IO.IOException)
+                        {
+                            MessageBox.Show("COM port terminated!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        }
                     }
-                    catch (System.InvalidOperationException)
-                    {
-                        MessageBox.Show("COM port closed!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                    catch (System.IO.IOException)
-                    {
-                        MessageBox.Show("COM port terminated!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
+                    mainForm.write_to_send_textbox(temp_str);
                 }
 
             }
@@ -330,8 +346,9 @@ namespace MT_300_TFA_application
                         MessageBox.Show("COM port terminated!", "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
                 }
+                mainForm.write_to_send_textbox(temp_str);
             }
-            mainForm.write_to_send_textbox(temp_str);
+            synchroTimer.Start();
         }
         private void setSynchroTimer()
         {
@@ -765,98 +782,133 @@ namespace MT_300_TFA_application
                 /*******************************************************************************/
                 /**									CORD          							  **/
                 /*******************************************************************************/
-                else if (String.Equals(m_function, COMMAND_TYPE_NAMES[5]))//cord
+                else if (String.Equals(m_function, FUNCTION_COMMUNICATON_NAMES[0])) //CW
                 {
-                    if (String.Equals(m_command, CORD_CODE_NAMES[3])) //get resistance
+                    if (String.Equals(m_command, COMMAND_COMMUNICATON_NAMES2[1])) //RESULT
                     {
-                        cord_return_event(m_leftover, m_command);
-                    }
-                    else if (String.Equals(m_command, CORD_CODE_NAMES[5])) //stopped
-                    {
-                        cord_return_event(m_leftover, m_command);
-                    }
-                    else if (String.Equals(m_command, CORD_CODE_NAMES[6])) //initiated
-                    {
-                        cord_return_event("", m_command);
-                    }
-                    else if (String.Equals(m_command, CORD_CODE_NAMES[7])) //RISO_ALL-PE
-                    {
-                        if ((String.Equals(additionalCode[0, 0], "PASS"))||(String.Equals(additionalCode[0, 0], "FAIL")))
-                            cord_return_event(additionalCode[0, 0], m_command);
-                        else
-                            cord_return_event("", m_command);
-                    }
-                    else if (String.Equals(m_command, CORD_CODE_NAMES[8])) //RISO_ONE-PE
-                    {
-                        if ((String.Equals(additionalCode[0, 0], "PASS")) || (String.Equals(additionalCode[0, 0], "FAIL")))
-                            cord_return_event(additionalCode[0, 0], m_command);
-                        else
-                            cord_return_event("", m_command);
-                    }
-                    else if (String.Equals(m_command, CORD_CODE_NAMES[9])) //RISO_PH-PH
-                    {
-                        if ((String.Equals(additionalCode[0, 0], "PASS")) || (String.Equals(additionalCode[0, 0], "FAIL")))
-                            cord_return_event(additionalCode[0, 0], m_command);
-                        else
-                            cord_return_event("", m_command); cord_return_event("", m_command);
-                    }
-                    else if (String.Equals(m_command, CORD_CODE_NAMES[17])) //get RISO resistance
-                    {
-                        cord_return_event(m_leftover, m_command);
-                    }
-                    else
-                    {
-                        cord_return_event("", m_command);
+                        cord_return_event(m_command, m_function,additionalCode[1, 0]);
                     }
                 }
-                /*******************************************************************************/
-                /**								MACHINES         							  **/
-                /*******************************************************************************/
+                else if (String.Equals(m_function, FUNCTION_COMMUNICATON_NAMES[1])) //CONT
+                {
+                    if (String.Equals(m_command, COMMAND_COMMUNICATON_NAMES2[1])) //RESULT
+                    {
+                        cord_return_event(m_command, m_function,additionalCode[1, 0]);
+                        mach_return_event(m_command, m_function, additionalCode[1, 0]);
+                    }
+                }
+                else if (String.Equals(m_function, FUNCTION_COMMUNICATON_NAMES[3])) //ONE-PE
+                {
+                    if (String.Equals(m_command, COMMAND_COMMUNICATON_NAMES2[1])) //RESULT
+                    {
+                        cord_return_event(m_command, m_function,additionalCode[1, 0]);
+                        mach_return_event(m_command, m_function, additionalCode[1, 0]);
+                    }
+                }
+                else if (String.Equals(m_function, FUNCTION_COMMUNICATON_NAMES[4])) //PH-PH
+                {
+                    if (String.Equals(m_command, COMMAND_COMMUNICATON_NAMES2[1])) //RESULT
+                    {
+                        cord_return_event(m_command, m_function,additionalCode[1, 0]);
+                    }
+                }
+                //else if (String.Equals(m_function, COMMAND_TYPE_NAMES[5])) //cord
+                //{
+                //    if (String.Equals(m_command, CORD_CODE_NAMES[3])) //get resistance
+                //    {
+                //        cord_return_event(m_leftover, m_command,"");
+                //    }
+                //    else if (String.Equals(m_command, CORD_CODE_NAMES[5])) //stopped
+                //    {
+                //        cord_return_event(m_leftover, m_command,"");
+                //    }
+                //    else if (String.Equals(m_command, CORD_CODE_NAMES[6])) //initiated
+                //    {
+                //        cord_return_event("", m_command,"");
+                //    }
+                //    else if (String.Equals(m_command, CORD_CODE_NAMES[7])) //RISO_ALL-PE
+                //    {
+                //        if ((String.Equals(additionalCode[0, 0], "PASS")) ||
+                //            (String.Equals(additionalCode[0, 0], "FAIL")))
+                //            cord_return_event(additionalCode[0, 0], m_command,"");
+                //        else
+                //            cord_return_event("", m_command,"");
+                //    }
+                //    else if (String.Equals(m_command, CORD_CODE_NAMES[8])) //RISO_ONE-PE
+                //    {
+                //        if ((String.Equals(additionalCode[0, 0], "PASS")) ||
+                //            (String.Equals(additionalCode[0, 0], "FAIL")))
+                //            cord_return_event(additionalCode[0, 0], m_command,"");
+                //        else
+                //            cord_return_event("", m_command,"");
+                //    }
+                //    else if (String.Equals(m_command, CORD_CODE_NAMES[9])) //RISO_PH-PH
+                //    {
+                //        if ((String.Equals(additionalCode[0, 0], "PASS")) ||
+                //            (String.Equals(additionalCode[0, 0], "FAIL")))
+                //            cord_return_event(additionalCode[0, 0], m_command,"");
+                //        else
+                //            cord_return_event("", m_command,"");
+                //        cord_return_event("", m_command,"");
+                //    }
+                //    else if (String.Equals(m_command, CORD_CODE_NAMES[17])) //get RISO resistance
+                //    {
+                //        cord_return_event(m_leftover, m_command, "");
+                //    }
+                //    else
+                //    {
+                //        cord_return_event("", m_command, "");
+                //    }
+                //}
+                    /*******************************************************************************/
+                    /**								MACHINES         							  **/
+                    /*******************************************************************************/
                 else if (String.Equals(m_function, COMMAND_TYPE_NAMES[7])) //mach
                 {
                     if (String.Equals(m_command, MACH_COMMAND_NAMES[6])) //STOP
                     {
-                        mach_return_event(m_leftover, m_command);
+                        mach_return_event(m_leftover, m_command,"");
                     }
                     else if (String.Equals(m_command, MACH_COMMAND_NAMES[9])) //INITIATED
                     {
-                        mach_return_event(m_leftover, m_command);
+                        mach_return_event(m_leftover, m_command, "");
                     }
                     else if (String.Equals(m_command, MACH_COMMAND_NAMES[3])) //URES STARTED
                     {
-                        mach_return_event(m_leftover, m_command);
+                        mach_return_event(m_leftover, m_command, "");
                     }
                     else if (String.Equals(m_command, MACH_COMMAND_NAMES[4])) //URES STOPPED
                     {
-                        mach_return_event(m_leftover, m_command);
+                        mach_return_event(m_leftover, m_command, "");
                     }
                     else if (String.Equals(m_command, MACH_COMMAND_NAMES[8])) //URES OPENED
                     {
-                        mach_return_event(m_leftover, m_command);
+                        mach_return_event(m_leftover, m_command, "");
                     }
                     else if (String.Equals(m_command, MACH_COMMAND_NAMES[13])) //RPE STARTED
                     {
-                        mach_return_event(m_leftover, m_command);
+                        mach_return_event(m_leftover, m_command, "");
                     }
                     else if (String.Equals(m_command, MACH_COMMAND_NAMES[14])) //RPE STOPPED
                     {
-                        mach_return_event(m_leftover, m_command);
+                        mach_return_event(m_leftover, m_command, "");
                     }
                     else if (String.Equals(m_command, MACH_COMMAND_NAMES[17])) //ALL-PE RESULT
                     {
-                        mach_return_event(m_leftover, m_command);
+                        mach_return_event(m_leftover, m_command, "");
                     }
                     else if (String.Equals(m_command, MACH_COMMAND_NAMES[18])) //ONE-PE RESULT
                     {
-                        mach_return_event(m_leftover, m_command);
+                        mach_return_event(m_leftover, m_command, "");
                     }
                     else if (String.Equals(m_command, MACH_COMMAND_NAMES[23])) //get RISO resistance
                     {
-                        mach_return_event(m_leftover, m_command);
+                        mach_return_event(m_leftover, m_command, "");
                     }
                     else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[3])) //VOLTAGE
                     {
-                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], additionalCode[1, 3]);
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2],
+                            additionalCode[1, 3]);
                     }
                     else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[5])) //CURRENT
                     {
@@ -872,69 +924,73 @@ namespace MT_300_TFA_application
                     }
                     else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[11])) //POWER R
                     {
-                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], additionalCode[1, 3]);
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2],
+                            additionalCode[1, 3]);
                     }
                     else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[13])) //POWER A
                     {
-                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], additionalCode[1, 3]);
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2],
+                            additionalCode[1, 3]);
                     }
                     else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[15])) //PF
                     {
-                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], additionalCode[1, 3]);
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2],
+                            additionalCode[1, 3]);
                     }
                     else
                     {
-                       mach_return_event("", m_command);
+                        mach_return_event("", m_command, "");
                     }
                 }
-                /*******************************************************************************/
-                /**								WELDING         							  **/
-                /*******************************************************************************/
+                    /*******************************************************************************/
+                    /**								WELDING         							  **/
+                    /*******************************************************************************/
                 else if (String.Equals(m_function, COMMAND_TYPE_NAMES[8])) //weld
                 {
                     if (String.Equals(m_command, WELD_COMMAND_NAMES[6])) //STOP
                     {
-                        weld_return_event(m_leftover, m_command);
+                        weld_return_event(m_leftover, m_command,"");
                     }
                     else if (String.Equals(m_command, WELD_COMMAND_NAMES[9])) //INITIATED
                     {
-                        weld_return_event(m_leftover, m_command);
+                        weld_return_event(m_leftover, m_command, "");
                     }
                     else if (String.Equals(m_command, WELD_COMMAND_NAMES[3])) //URES STARTED
                     {
-                        weld_return_event(m_leftover, m_command);
+                        weld_return_event(m_leftover, m_command, "");
                     }
                     else if (String.Equals(m_command, WELD_COMMAND_NAMES[4])) //URES STOPPED
                     {
-                        weld_return_event(m_leftover, m_command);
+                        weld_return_event(m_leftover, m_command, "");
                     }
                     else if (String.Equals(m_command, WELD_COMMAND_NAMES[8])) //URES OPENED
                     {
-                        weld_return_event(m_leftover, m_command);
+                        weld_return_event(m_leftover, m_command, "");
                     }
                     else if (String.Equals(m_command, WELD_COMMAND_NAMES[13])) //RPE STARTED
                     {
-                        weld_return_event(m_leftover, m_command);
+                        weld_return_event(m_leftover, m_command, "");
                     }
                     else if (String.Equals(m_command, WELD_COMMAND_NAMES[14])) //RPE STOPPED
                     {
-                        weld_return_event(m_leftover, m_command);
+                        weld_return_event(m_leftover, m_command, "");
                     }
                     else if (String.Equals(m_command, WELD_COMMAND_NAMES[17])) //ALL-PE RESULT
                     {
-                        weld_return_event(m_leftover, m_command);
+                        weld_return_event(m_leftover, m_command, "");
                     }
                     else if (String.Equals(m_command, WELD_COMMAND_NAMES[18])) //ONE-PE RESULT
                     {
-                        weld_return_event(m_leftover, m_command);
+                        weld_return_event(m_leftover, m_command, "");
                     }
                     else if (String.Equals(m_command, WELD_COMMAND_NAMES[23])) //get RISO resistance
                     {
-                        weld_return_event(m_leftover, m_command);
+                        weld_return_event(m_leftover, m_command, "");
                     }
                     else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[3])) //VOLTAGE
                     {
-                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], additionalCode[1, 3]);
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2],
+                            additionalCode[1, 3]);
                     }
                     else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[5])) //CURRENT
                     {
@@ -950,24 +1006,27 @@ namespace MT_300_TFA_application
                     }
                     else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[11])) //POWER R
                     {
-                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], additionalCode[1, 3]);
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2],
+                            additionalCode[1, 3]);
                     }
                     else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[13])) //POWER A
                     {
-                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], additionalCode[1, 3]);
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2],
+                            additionalCode[1, 3]);
                     }
                     else if (String.Equals(m_command, ANALYZE_COMMAND_NAMES[15])) //PF
                     {
-                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2], additionalCode[1, 3]);
+                        analyze_event(m_command, additionalCode[1, 0], additionalCode[1, 1], additionalCode[1, 2],
+                            additionalCode[1, 3]);
                     }
                     else
                     {
-                        weld_return_event("", m_command);
+                        weld_return_event("", m_command, "");
                     }
                 }
-                /*******************************************************************************/
-                /**								CALIBRATION        							  **/
-                /*******************************************************************************/
+                    /*******************************************************************************/
+                    /**								CALIBRATION        							  **/
+                    /*******************************************************************************/
                 else if (String.Equals(m_function, COMMAND_TYPE_NAMES[9])) //CALIBRATION
                 {
                     if (String.Equals(m_command, CALIB_COMMAND_NAMES[1])) //VOLTAGE
@@ -985,29 +1044,73 @@ namespace MT_300_TFA_application
                     }
                     else
                     {
-                        calib_event(m_command,"","");
+                        calib_event(m_command, "", "");
+                    }
+                }
+                    /*******************************************************************************/
+                    /**					    	COMMON FUNCTIONS      							  **/
+                    /*******************************************************************************/
+                else if (String.Equals(m_function, FUNCTION_COMMUNICATON_NAMES[5])) //RPE
+                {
+                    if (String.Equals(m_command, COMMAND_COMMUNICATON_NAMES[2])) //GET
+                    {
+                        cord_return_event(m_command, m_function, m_leftover);
+                    }
+                    else if (String.Equals(m_command, COMMAND_COMMUNICATON_NAMES[0])) //START
+                    {
+                        cord_return_event(m_command, m_function, m_leftover);
+                    }
+                }
+                else if (String.Equals(m_function, FUNCTION_COMMUNICATON_NAMES[6])) //RISO
+                {
+                    if (String.Equals(m_command, COMMAND_COMMUNICATON_NAMES[2])) //GET
+                    {
+                        cord_return_event(m_command, m_function, m_leftover);
+                        mach_return_event(m_command, m_function, m_leftover);
+                        weld_return_event(m_command, m_function, m_leftover);
+                    }
+                    else if (String.Equals(m_command, COMMAND_COMMUNICATON_NAMES[0])) //START
+                    {
+                        cord_return_event(m_command, m_function, m_leftover);
+                        mach_return_event(m_command, m_function, m_leftover);
+                        weld_return_event(m_command, m_function, m_leftover);
+                    }
+                }
+                else if (String.Equals(m_function, FUNCTION_COMMUNICATON_NAMES[8])) //M_URES
+                {
+                    mach_return_event(m_command, m_function, "");
+                }
+            /*******************************************************************************/
+            /**					    	EVENT FUNCTIONS      							  **/
+            /*******************************************************************************/
+                else if (String.Equals(m_function, FUNCTION_COMMUNICATON_NAMES[7])) //EVENT
+                {
+                    if (String.Equals(additionalCode[1, 0], STD_COMMUNICATON_NAMES[0])) //CORD
+                    {
+                        cord_return_event(m_command, m_function, m_leftover);
+                       
                     }
                 }
         }
-        public delegate void cord_return_result(object sender, string meas_con, string cmd);
+        public delegate void cord_return_result(object sender, string meas_con, string cmd, string leftover);
         public event cord_return_result cordReturnEventHandler = delegate { };
-        public void cord_return_event(string return_string, string cmd)
+        public void cord_return_event(string return_string, string cmd, string leftover)
         {
-            this.cordReturnEventHandler(this, return_string,cmd);
+            this.cordReturnEventHandler(this, return_string,cmd,leftover);
         }
 
-        public delegate void mach_return_result(object sender, string meas_con, string cmd);
+        public delegate void mach_return_result(object sender, string meas_con, string cmd, string leftover);
         public event mach_return_result machReturnEventHandler = delegate { };
-        public void mach_return_event(string return_string, string cmd)
+        public void mach_return_event(string return_string, string cmd, string leftover)
         {
-            this.machReturnEventHandler(this, return_string, cmd);
+            this.machReturnEventHandler(this, return_string, cmd, leftover);
         }
 
-        public delegate void weld_return_result(object sender, string meas_con, string cmd);
+        public delegate void weld_return_result(object sender, string meas_con, string cmd, string leftover);
         public event weld_return_result weldReturnEventHandler = delegate { };
-        public void weld_return_event(string return_string, string cmd)
+        public void weld_return_event(string return_string, string cmd, string leftover)
         {
-            this.weldReturnEventHandler(this, return_string, cmd);
+            this.weldReturnEventHandler(this, return_string, cmd,leftover);
         }
         public delegate void analyze_result(object sender, string cmd, string value1, string value2, string value3, string value4);
         public event analyze_result analyzeReturnEventHandler = delegate { };
@@ -1285,6 +1388,203 @@ namespace MT_300_TFA_application
                     if(Transmitt_handle_Buffer[k].message_ID != Settings1.Default.TRANSMIT_SLOT_FREE)
                         Transmitt_handle_Buffer[k].buffer_counter++;
             } while (task2_ex_flag == true);
+        }
+
+        public enum funcEnums
+        {
+            __RPE,
+            __RISO,
+            __ALL_PE,
+            __ONE_PE,
+            __PH_PH,
+            __C_W,
+            __CONT,
+            __M_URES,
+            __M_RPE,
+            __POWER,
+            __MAINS_WELD,
+            __WELD_PE,
+            __MAINS_CLASS2,
+            __UNL_RMS,
+            __UNL_PEAK
+        }
+        public enum commandEnums
+        {
+            __START,
+            __STOP,
+            __GET,
+            __INIT,
+            __OPEN
+        };
+        public enum commandEnums2
+        {
+            __VALUE,
+            __RESULT
+            
+        };
+        public enum addEnums
+        {
+            __LOW,
+            __MID,
+            __HIGH,
+            __RESULT,
+            __500V
+        };
+
+        public enum stdEnums
+        {
+            __CORD,
+            __MACH,
+            __WELD
+        };
+
+        public void transmittComand(int func, int command, int std, string add, string leftover)
+        {
+            string temp_str1;
+            string temp_str2;
+            string temp_str3;
+            switch (func)
+            {
+                case (int)funcEnums.__C_W:
+                    temp_str1 = FUNCTION_COMMUNICATON_NAMES[0];
+                    break;
+                case (int)funcEnums.__CONT:
+                    temp_str1 = FUNCTION_COMMUNICATON_NAMES[1];
+                    break;
+                case (int)funcEnums.__ALL_PE:
+                    temp_str1 = FUNCTION_COMMUNICATON_NAMES[2];
+                    break;
+                case (int)funcEnums.__ONE_PE:
+                    temp_str1 = FUNCTION_COMMUNICATON_NAMES[3];
+                    break;
+                case (int)funcEnums.__PH_PH:
+                    temp_str1 = FUNCTION_COMMUNICATON_NAMES[4];
+                    break;
+                case (int)funcEnums.__M_URES:
+                    temp_str1 = FUNCTION_COMMUNICATON_NAMES[8];
+                    break;
+                case (int)funcEnums.__M_RPE:
+                    temp_str1 = FUNCTION_COMMUNICATON_NAMES[9];
+                    break;
+                case (int)funcEnums.__POWER:
+                    temp_str1 = FUNCTION_COMMUNICATON_NAMES[10];
+                    break;
+                case (int)funcEnums.__MAINS_CLASS2:
+                    temp_str1 = FUNCTION_COMMUNICATON_NAMES[11];
+                    break;
+                case (int)funcEnums.__MAINS_WELD:
+                    temp_str1 = FUNCTION_COMMUNICATON_NAMES[12];
+                    break;
+                case (int)funcEnums.__WELD_PE:
+                    temp_str1 = FUNCTION_COMMUNICATON_NAMES[13];
+                    break;
+                case (int)funcEnums.__UNL_RMS:
+                    temp_str1 = FUNCTION_COMMUNICATON_NAMES[14];
+                    break;
+                case (int)funcEnums.__UNL_PEAK:
+                    temp_str1 = FUNCTION_COMMUNICATON_NAMES[15];
+                    break;
+                default:
+                    temp_str1 = "";
+                    break;
+            }
+            switch (command)
+            {
+                case (int)commandEnums.__START:
+                    temp_str2 = COMMAND_COMMUNICATON_NAMES[0];
+                    break;
+                case (int)commandEnums.__STOP:
+                    temp_str2 = COMMAND_COMMUNICATON_NAMES[1];
+                    break;
+                case (int)commandEnums.__GET:
+                    temp_str2 = COMMAND_COMMUNICATON_NAMES[2];
+                    break;
+                case (int)commandEnums.__INIT:
+                    temp_str2 = COMMAND_COMMUNICATON_NAMES[5];
+                    break;
+                case (int)commandEnums.__OPEN:
+                    temp_str2 = COMMAND_COMMUNICATON_NAMES[4];
+                    break;
+                default:
+                    temp_str2 = "";
+                    break;
+            }
+            switch (std)
+            {
+                case (int)stdEnums.__CORD:
+                    temp_str3 = String.Format("STD|{0},{1}", STD_COMMUNICATON_NAMES[0], add);
+                    break;
+                case (int)stdEnums.__MACH:
+                    temp_str3 = String.Format("STD|{0},{1}", STD_COMMUNICATON_NAMES[1],add);
+                    break;
+                case (int)stdEnums.__WELD:
+                    temp_str3 = String.Format("STD|{0},{1}", STD_COMMUNICATON_NAMES[2],add);
+                    break;
+                default:
+                    temp_str3 = add;
+                    break;
+            }
+            Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, temp_str1, temp_str2, temp_str3, leftover);
+        }
+        public void transmittFuncComand(int func, int command, string add, string leftover)
+        {
+            string temp_str1;
+            string temp_str2;
+            switch (func)
+            {
+                case (int)funcEnums.__RPE:
+                    temp_str1 = FUNCTION_COMMUNICATON_NAMES[5];
+                    break;
+                case (int)funcEnums.__RISO:
+                    temp_str1 = FUNCTION_COMMUNICATON_NAMES[6];
+                    break;
+                default:
+                    temp_str1 = "";
+                    break;
+            }
+            switch (command)
+            {
+                case (int)commandEnums2.__VALUE:
+                    temp_str2 = COMMAND_COMMUNICATON_NAMES2[0];
+                    break;
+                case (int)commandEnums2.__RESULT:
+                    temp_str2 = COMMAND_COMMUNICATON_NAMES2[1];
+                    break;
+                default:
+                    temp_str2 = "";
+                    break;
+            }
+            Send_protocol_message(Settings1.Default._COMMUNICATION_DIR_PORT1, Settings1.Default._ID_MT, Settings1.Default._ID_TFA, temp_str1, temp_str2, add, leftover);
+        }
+
+        public string buildPhaseStr(bool one_phase)
+        {
+            if (one_phase)
+            {
+                return String.Format("CONN|{0}", ADD_COMMUNICATON_NAMES[0]);
+            }
+            return String.Format("CONN|{0}", ADD_COMMUNICATON_NAMES[1]);
+        }
+        public string buildLimitStr(string limit)
+        {
+            return String.Format("CONN|{0}", limit);
+        }
+
+        public void returnRpeRes(string res)
+        {
+            //task1 = new Thread(transmittTask(res));
+            transmittFuncComand((int)funcEnums.__RPE, (int)commandEnums2.__VALUE, String.Format("{0}|{1}", COMMAND_COMMUNICATON_NAMES2[2], res), "");
+        }
+        public void returnRisoRes(string res)
+        {
+            //task1 = new Thread(transmittTask(res));
+            transmittFuncComand((int)funcEnums.__RISO, (int)commandEnums2.__VALUE, String.Format("{0}|{1}", COMMAND_COMMUNICATON_NAMES2[2], res), "");
+        }
+
+        private void transmittTask(string res)
+        {
+            Thread.Sleep(100);
+            transmittFuncComand((int)funcEnums.__RPE, (int)commandEnums2.__VALUE, String.Format("{0}|{1}", COMMAND_COMMUNICATON_NAMES2[3], res), "");
         }
     }
 }

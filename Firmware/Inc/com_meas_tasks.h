@@ -1,11 +1,18 @@
 #ifndef __COM_MEAS_TASKS_H
 #define __COM_MEAS_TASKS_H
 
+#include <stdint.h>
+#include <stdbool.h>
+
+
 void setNormal(void);
 void WeldMachMt310_RelInit(void);
 void startMainsMeasurement(void);
 void returnMeasuredTask(void);
 void stopMainsMeasurement(void);
+bool checkAndChangeMeasurement(uint32_t caller);
+uint32_t numberOfSetBits(uint32_t i);
+void printToDebugMsg(char * msg);
 
 #define _1_PHASE 1
 #define _3_PHASE 3

@@ -271,12 +271,12 @@
 #define IL2_GAIN40							2.12f*0.0000305175f
 #define IL3_GAIN1								84.0f*0.0000305175f
 #define IL3_GAIN40							2.12f*0.0000305175f
-#define ULN1_GAIN1							612.5f*0.0000305175f	//*100 - prej: 0.0000305175f
+#define ULN1_GAIN1							612.5f*0.00305175f	//*100 - prej: 0.0000305175f
 #define ULN2_GAIN1							612.5f*0.00305175f	//*100 - prej: 0.0000305175f
 #define ULN3_GAIN1							612.5f*0.00305175f	//*100 - prej: 0.0000305175f
 #define IDIFF_GAIN_1						26.52f*0.0000305175f//--tole je za trafo MR-4//40.8f*0.0000305175f	//-tale je za CR8420//full scale na gain 1 je (+,-) 0,0408 A - podatek v mA
-#define UL1PE_GAIN1							613.0f*0.0000305175f
-#define UNPE_GAIN1							613.0f*0.0000305175f
+#define UL1PE_GAIN1							613.0f*0.00305175f
+#define UNPE_GAIN1							613.0f*0.00305175f
 
 		
 
@@ -338,6 +338,24 @@
 #define IDIFF_Khigh							(float)0.955
 #define IDIFF_Nhigh							(float)-0.063
 #define COS60										(float)0.5
+#define ULN1_K_									1.064376
+#define ULN1_N_									2.941662
+#define ULN2_K_									1.03757
+#define ULN2_N_									0.4128826
+#define ULN3_K_									1.045942
+#define ULN3_N_									-0.2511362
+#define UL1PE_K_								1.065666
+#define UL1PE_N_								1.591657
+#define UNPE_K_									1.055773
+#define UNPE_N_									1.827371
+#define IL1_K_									1.0
+#define IL1_N_									0.0
+#define IL2_K_									1.0
+#define IL2_N_									0.0
+#define IL3_K_									1.0
+#define IL3_N_									0.0
+
+
 //zastavice za meritve
 
 //omejitve za opravljanje zacetnega testa
@@ -485,6 +503,8 @@ enum MEAS_TASK_MASKS
 	__WELD_MEAS_IN_PROG												=0x00000004,
 	__CALIB_MEAS_IN_PROG											=0x00000008,
 	
+	__POWER_MEAS_IN_PROG											=0x00000080,
+	
 	__RETURN_CURRENT													=0x00000100,
 	__RETURN_VOLTAGE													=0x00000200,
 	__RETURN_THD_C														=0x00000400,
@@ -509,6 +529,13 @@ enum SYNCHRO_INTERRUPT_USAGE
 	__SET_L3_CONTACTOR												=0x00000020,
 	__SET_N_CONTACTOR													=0x00000040,
 	__SET_PE_CONTACTOR												=0x00000080,
+};
+
+enum FUNCTIONS_ENUM
+{
+	__CORD,
+	__MACHINES,
+	__WELDING,
 };
 
 #define SYNCHRO_INTERRUPT_MASK		0x00000007
@@ -549,6 +576,10 @@ enum SYNCHRO_INTERRUPT_USAGE
 #define __IL1_N		34
 #define __IL2_N		35
 #define __IL3_N		36
+#define __UL1PE_N	37
+#define __UNPE_N	38
+#define __UL1PE_K	39
+#define __UNPE_K	40
 
 
 //INTERRUPT MASKS
@@ -749,13 +780,13 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define __N_1P_OPEN__				"N_1P_OPEN"
 #define __PE_OPEN__					"PE_OPEN"
 #define __PE_1P_OPEN__			"PE_1P_OPEN"
-#define __PASS__						"PASS"
-#define __PASS_1P__					"PASS_1P"
-#define __FAIL__						"FAIL"
-#define __FAIL_1P__					"FAIL_1P"
+#define __PASS__						"MAIN_RES|PASS"
+#define __PASS_1P__					"MAIN_RES|PASS_1P"
+#define __FAIL__						"MAIN_RES|FAIL"
+#define __FAIL_1P__					"MAIN_RES|FAIL_1P"
 #define __STOPED_C__				"STOPPED"
-#define __1_PHASE__					"1_P"
-#define __3_PHASE__					"3_P"
+#define __1_PHASE__					"1W"
+#define __3_PHASE__					"3W"
 
 #define __MULTIFAULT__			"MULTIFLT"
 #define __CROSSED_AND_SHORTED__	"CROS_N_SHOR"
@@ -950,6 +981,8 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define __MEASURE_ULN1__				"MEASURE_ULN1"
 #define __MEASURE_ULN2__				"MEASURE_ULN2"
 #define __MEASURE_ULN3__				"MEASURE_ULN3"
+#define __MEASURE_UL1PE__				"MEASURE_UL1PE"
+#define __MEASURE_UNPE__				"MEASURE_UNPE"
 #define __MEASURE_IL1__					"MEASURE_IL1"
 #define __MEASURE_IL2__					"MEASURE_IL2"
 #define __MEASURE_IL3__					"MEASURE_IL3"
@@ -960,6 +993,8 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define __CALIB_ULN1__					"ULN1"
 #define __CALIB_ULN2__					"ULN2"
 #define __CALIB_ULN3__					"ULN3"
+#define __CALIB_UL1PE__					"UL1PE"
+#define __CALIB_UNPE__					"UNPE"
 #define __CALIB_IL1__						"IL1"
 #define __CALIB_IL2__						"IL2"
 #define __CALIB_IL3__						"IL3"
@@ -969,6 +1004,10 @@ enum IL_GAIN{__GAIN1,	__GAIN40};
 #define __CALIB_ULN1N__					"ULN1_N"
 #define __CALIB_ULN2N__					"ULN2_N"
 #define __CALIB_ULN3N__					"ULN3_N"
+#define __CALIB_UL1PEN__				"UL1PE_N"
+#define __CALIB_UNPEN__					"UNPE_N"
+#define __CALIB_UL1PEK__				"UL1PE_K"
+#define __CALIB_UNPEK__					"UNPE_K"
 #define __CALIB_IL1N__					"IL1_N"
 #define __CALIB_IL2N__					"IL2_N"
 #define __CALIB_IL3N__					"IL3_N"

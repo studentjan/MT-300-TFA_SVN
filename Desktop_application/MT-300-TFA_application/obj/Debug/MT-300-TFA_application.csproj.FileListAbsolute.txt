@@ -49,7 +49,6 @@ K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Desk
 K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT-300-TFA_application.pdb
 K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Desktop_application\MT-300-TFA_application\bin\Debug\MT-300-TFA_application.exe
 K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Desktop_application\MT-300-TFA_application\bin\Debug\MT-300-TFA_application.pdb
-K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT-300-TFA_application.csprojResolveAssemblyReference.cache
 K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT_300_TFA_application.Form1.resources
 K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT_300_TFA_application.Cord_form.resources
 K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT_300_TFA_application.Properties.Resources.resources
@@ -58,3 +57,4 @@ K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Desk
 K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT_300_TFA_application.Machines_form.resources
 K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT_300_TFA_application.Welding_form.resources
 K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT_300_TFA_application.Calibration.resources
+K:\AVSpekter\SOFTWARE Projekti\MT-300-TFA_SOFTWARE\MT-300-TFA_SVN.git\trunk\Desktop_application\MT-300-TFA_application\obj\Debug\MT-300-TFA_application.csprojResolveAssemblyReference.cache

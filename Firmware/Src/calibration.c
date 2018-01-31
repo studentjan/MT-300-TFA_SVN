@@ -29,8 +29,8 @@ void calibMeasure(void)
 			break;
 		case 1:
 			transmittRequestedResult();
-			meas_task_control &= ~__CALIB_MEAS_IN_PROG;
 			stop_measure();
+			meas_task_control &= ~__CALIB_MEAS_IN_PROG;
 			calibMeasCount++;
 			break;
 		default:
@@ -67,6 +67,16 @@ static void transmittRequestedResult(void)
 				calib_task_control &= ~__CALIB_ULN3_REQUESTED;
 				temp_float = get_value(__ULN3);
 				snprintf(temp_array,15,"%s|%.3f",__CALIB_ULN3__,temp_float);
+				break;
+			case __CALIB_UL1PE_REQUESTED:
+				calib_task_control &= ~__CALIB_UL1PE_REQUESTED;
+				temp_float = get_value(__UL1PE);
+				snprintf(temp_array,15,"%s|%.3f",__CALIB_UL1PE__,temp_float);
+				break;
+			case __CALIB_UNPE_REQUESTED:
+				calib_task_control &= ~__CALIB_UNPE_REQUESTED;
+				temp_float = get_value(__UNPE);
+				snprintf(temp_array,15,"%s|%.3f",__CALIB_UNPE__,temp_float);
 				break;
 			default:
 				snprintf(temp_array,15,"NOT_SUPPORTED");
@@ -106,7 +116,9 @@ static void transmittRequestedResult(void)
 void transmittCalibConstants(void)
 {
 	char temp_str[110];
-	snprintf(temp_str,110,"%s|%.8f,%s|%.8f,%s|%.8f,%s|%.8f,%s|%.8f,%s|%.8f",__CALIB_ULN1K__,get_value(__ULN1_K),__CALIB_ULN2K__,get_value(__ULN2_K),__CALIB_ULN3K__,get_value(__ULN3_K),__CALIB_ULN1N__,get_value(__ULN1_N),__CALIB_ULN2N__,get_value(__ULN2_N),__CALIB_ULN3N__,get_value(__ULN3_N));
+	snprintf(temp_str,110,"%s|%.8f,%s|%.8f,%s|%.8f,%s|%.8f,%s|%.8f,%s|%.8f,%s|%.8f,%s|%.8f,%s|%.8f,%s|%.8f",__CALIB_ULN1K__,get_value(__ULN1_K),__CALIB_ULN2K__,get_value(__ULN2_K),__CALIB_ULN3K__,get_value(__ULN3_K),__CALIB_ULN1N__,get_value(__ULN1_N),__CALIB_ULN2N__,get_value(__ULN2_N),__CALIB_ULN3N__,get_value(__ULN3_N),__CALIB_UL1PEK__,get_value(__UL1PE_K),__CALIB_UL1PEN__,get_value(__UL1PE_N),__CALIB_UNPEK__,get_value(__UNPE_K),__CALIB_UNPEN__,get_value(__UNPE_N));
+	SendComMessage(_ON,_ID_TFA,device.device_ID,__CALIB__,__CONSTANTS__,temp_str,"",device.device_dir);
+	snprintf(temp_str,110,"%s|%.8f,%s|%.8f,%s|%.8f,%s|%.8f",__CALIB_UL1PEK__,get_value(__UL1PE_K),__CALIB_UL1PEN__,get_value(__UL1PE_N),__CALIB_UNPEK__,get_value(__UNPE_K),__CALIB_UNPEN__,get_value(__UNPE_N));
 	SendComMessage(_ON,_ID_TFA,device.device_ID,__CALIB__,__CONSTANTS__,temp_str,"",device.device_dir);
 //	snprintf(temp_str,90,"%s|%.8f,%s|%.8f,%s|%.8f,%s|%.8f,%s|%.8f,%s|%.8f",__CALIB_IL1K__,get_value(__IL1_K),__CALIB_IL2K__,get_value(__IL2_K),__CALIB_IL3K__,get_value(__IL3_K),__CALIB_IL1N__,get_value(__IL1_N),__CALIB_IL2N__,get_value(__IL2_N),__CALIB_IL3N__,get_value(__IL3_N));
 //	SendComMessage(_ON,_ID_TFA,device.device_ID,__CALIB__,__CONSTANTS__,temp_str,"",device.device_dir);

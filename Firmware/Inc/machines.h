@@ -25,6 +25,7 @@ void disconnectURESContactors(void);
 void init_mach(void);
 void deinitMachines(void);
 void stop_mach(void);
+void SetMachLimit(char * lim_str);
 
 //---------------------------zastavice za mach_task_control------------------------------
 #define __MACH_RPE_IN_PROGRESS 									0x00000001
@@ -51,10 +52,13 @@ void stop_mach(void);
 #define __MACH_TEST_RECIEVED										0x00200000
 #define __MACH_TIMER_INIT												0x00400000
 #define __MACH_MAINS_ANALYZE_IN_PROGRESS				0x00800000
+#define __MACH_REINIT														0x01000000
+#define __MACH_POWER_START_REQUESTED						0x02000000
 
 #define MACH_MEAS_MASKS				0x001FFCFF
 #define MACH_RISO_MASKS				0x000000FC
 #define MACH_URES_MASKS				0x000FFC00
+#define MACH_IN_PROG_MASKS		0x00000451
 //++++++++++++++++++++++++++++++zastavice za mach_insolation_status+++++++++++++++++++++++++++++++
 #define L1_PE_FAIL					0x00000001
 #define L2_PE_FAIL					0x00000002

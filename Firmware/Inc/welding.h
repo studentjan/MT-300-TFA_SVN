@@ -27,6 +27,7 @@ void weld_UnlStart_RMS(void);
 void weld_UnlStop_RMS(void);
 void weld_UnlStart_peak(void);
 void weld_UnlStop_peak(void);
+void SetWeldLimit(char * lim_str);
 
 
 //---------------------------zastavice za weld_task_control------------------------------
@@ -49,9 +50,12 @@ void weld_UnlStop_peak(void);
 #define __WELD_TEST_RECIEVED										0x00200000
 #define __WELD_TIMER_INIT												0x00400000
 #define __WELD_MAINS_ANALYZE_IN_PROGRESS				0x00800000
+#define __WELD_REINIT														0x01000000
+#define __WELD_POWER_START_REQUESTED						0x02000000
 
 #define WELD_MEAS_MASKS				0x001FFCFF
 #define WELD_RISO_PE_MASKS				0x000000FC
+#define WELD_IN_PROG_MASKS		0x0000DC51
 
 
 //++++++++++++++++++++++++++++++zastavice za weld_insolation_status+++++++++++++++++++++++++++++++

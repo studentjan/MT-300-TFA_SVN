@@ -77,4 +77,6 @@
 #define MAINS_ANALYZE_MEAS_STOP								65
 #define CALIBRATION_MEAS_TASK									66
 #define TRANSMIT_CALIB_CONSTANTS							67
+#define CORD_RPE_START												68
+#define CORD_RPE_STOP													69
 #endif // __TASKS_H

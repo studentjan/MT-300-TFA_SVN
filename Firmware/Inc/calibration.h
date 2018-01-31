@@ -14,9 +14,11 @@ void transmittCalibConstants(void);
 #define __CALIB_IL1_REQUESTED					0x00000008
 #define __CALIB_IL2_REQUESTED					0x00000010
 #define __CALIB_IL3_REQUESTED					0x00000020
+#define __CALIB_UL1PE_REQUESTED				0x00000040
+#define __CALIB_UNPE_REQUESTED				0x00000080
 
 
-#define __CALIB_REQUESTED_MASKS				0x0000003F	//tuki so cist vse requested maske
-#define __CALIB_REQ_VOLTAGE_MASKS			0x00000007	//vsi requesti napetosti
+#define __CALIB_REQUESTED_MASKS				0x000000FF	//tuki so cist vse requested maske
+#define __CALIB_REQ_VOLTAGE_MASKS			0x000000C7	//vsi requesti napetosti
 #define __CALIB_REQ_CURRENT_MASKS			0x00000038	//vsi requesti tokov
 #endif

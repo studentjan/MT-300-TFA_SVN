@@ -123,11 +123,9 @@ namespace MT_300_TFA_application
         private void CodeRed()
         {
             AdapterCOM_status.BackColor = Color.Red;
-            machines_button.Enabled = false;
-            test_com_protocol_button.Enabled = false;
-            test_relays_button.Enabled = false;
-            cord_button.Enabled = false;
-            weld_button.Enabled = false;
+            Disable_buttons();
+            rescan_button.Enabled = true;
+            port_connect.Enabled = true;
         }
         private void serialPort1_DataReceived(object sender, System.IO.Ports.SerialDataReceivedEventArgs e)  //to je tvoja funkcija za com receive handler... nardis eventhandler zato da spustis funkcijo, tam notr mas pa compare (podobn k set_event v cju)
         {
@@ -238,7 +236,8 @@ namespace MT_300_TFA_application
                 string temp_str2 = new string(temp_str);//temp_str.Substring(0,(temp_str.Length));
                 temp_str3 = temp_str2.TrimStart('\0');
                 string[] temp_str4 = temp_str3.Split('\0');
-                Serial_class.add_command_to_queue(temp_str4[0], temp_str4[0].Length, serial_com.COMM_DIR_PORT1);
+                if (temp_str4[0][0].Equals('>') && temp_str4[0][2].Equals('S'))   //ce je zame in je pravilen potem ga damo v cakalno vrsto
+                    Serial_class.add_command_to_queue(temp_str4[0], temp_str4[0].Length, serial_com.COMM_DIR_PORT1);
                 terminal_textbox.AppendText(temp_str4[0]);
             }
             //for(i=0; i<recieved_num;i++)
@@ -345,9 +344,9 @@ namespace MT_300_TFA_application
         {
             machines_button.Enabled = true;
             rescan_button.Enabled = true;
+            port_connect.Enabled = true;
             test_com_protocol_button.Enabled = true;
             test_relays_button.Enabled = true;
-            port_connect.Enabled = true;
             cord_button.Enabled = true;
             weld_button.Enabled = true;
             CalibrationButton.Enabled = true;

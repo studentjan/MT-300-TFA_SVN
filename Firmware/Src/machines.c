@@ -15,6 +15,7 @@
 #include "do_task.h"
 #include "com_meas_tasks.h"
 #include "stm32f3xx_hal.h"
+#include "comunication.h"
 
 
 extern uint32_t connection_control;
@@ -44,6 +45,7 @@ uint32_t MACH_PHASE_NUM_SETTING = _3_PHASE;
 uint32_t mach_RISO_count=0;
 uint32_t start_mach_count=0;
 uint32_t mach_URES_count=0;
+float MachRisoLimit = MACH_RISO_LIMIT;
 
 static struct connected_device device;
 
@@ -94,10 +96,12 @@ void init_mach(void)
 		MachinesInit();
 		set_event(SEND_TFA_MAINS_STATUS,send_mains_status);
 		mach_task_control |= __MACH_INITIATED;
-		SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__MACH_INITIATED__,"","",device.device_dir);
+		mach_task_control &= ~__MACH_REINIT;
+		meas_task_control |= __MACH_MEAS_IN_PROG;
+		//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__MACH_INITIATED__,"","",device.device_dir);
 		//ce ne dobimo inita in hocemo direktno zagnat correct wiring se najprej izvede init nato pa gre na correct wiring
-		if((MACH_AUTO_CONTINUE_MEAS==_ON)||(!(mach_task_control & __MACH_INIT_RECIEVED)))
-			restart_timer(MACH_RPE_START,2,MachinesRPEStart);
+//		if((MACH_AUTO_CONTINUE_MEAS==_ON)||(!(mach_task_control & __MACH_INIT_RECIEVED)))
+//			restart_timer(MACH_RPE_START,2,MachinesRPEStart);
 	}
 }
 void deinitMachines(void)
@@ -115,7 +119,7 @@ void deinitMachines(void)
 	setNormal();
 	disable_sinchro_interrupt(__URES_SYNCHRO);
 	meas_task_control &= ~__MACH_MEAS_IN_PROG;
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__DEINITIATED__,"","",device.device_dir);
+	//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__DEINITIATED__,"","",device.device_dir);
 }
 void MachinesInit(void)
 {
@@ -200,7 +204,8 @@ void stop_mach(void)
 //	rst_REL(34);
 //	rst_REL(35);
 //	rst_REL(36);
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__STOPED_C__,"","",device.device_dir);
+	transmitEvent(__STOPPED_EN,__MACHINES_EN,"",device.device_dir);
+	//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__STOPED_C__,"","",device.device_dir);
 }
 //resetira tiste kontakroeje, ki se uporabljajo v tej meritvi
 void MachRstRels(void)
@@ -228,9 +233,15 @@ void MachRstRels(void)
 //++++++++++++++++++++++++++++++++++++++++++++++RPE++++++++++++++++++++++++++++++++++++++++
 void MachinesRPEStart(void)
 {
-	set_REL(8);
-	mach_task_control |= __MACH_RPE_IN_PROGRESS;
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__MECH_RPE_STARTED__,"","",device.device_dir);
+	if(checkAndChangeMeasurement(__MACHINES))
+	{
+		set_REL(8);
+		mach_task_control |= __MACH_RPE_IN_PROGRESS;
+		transmitCommFunc(__RPE,__START,__HIGH,"",device.device_dir);
+		//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__MECH_RPE_STARTED__,"","",device.device_dir);
+	}
+	else 
+		set_event(MACH_RPE_START,MachinesRPEStart);
 }
 
 void MachinesRPEStop(void)
@@ -238,7 +249,7 @@ void MachinesRPEStop(void)
 	rst_REL(8);
 	mach_task_control &= ~__MACH_RPE_IN_PROGRESS;
 	mach_task_control |= __MACH_RPE_MEASURED;
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__MECH_RPE_STOPPED__,"","",device.device_dir);
+	//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__MECH_RPE_STOPPED__,"","",device.device_dir);
 }
 //+++++++++++++++++++++++++++++++++++++++++++++++END RPE++++++++++++++++++++++++++++++++++
 
@@ -258,301 +269,279 @@ void mach_RISO_init(void)
 }
 void mach_RISO_phasesToPE(void)
 {
-	switch(mach_RISO_count)
+	if(checkAndChangeMeasurement(__MACHINES))
 	{
-		case 0:
-			mach_RISO_init();
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__PHASES_TO_PE_STARTED__,"","",device.device_dir);
-			mach_task_control |=__MACH_RISO_PHASES_TO_PE_IN_PROGRESS;
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__START_RISO__,"","",device.device_dir);
-			mach_RISO_count++;
-			break;
-		case 1:
-			if(mach_task_control & __MACH_RISO_STARTED)
-			{
-				if(MACH_PHASE_NUM_SETTING == _1_PHASE)
+		switch(mach_RISO_count)
+		{
+			case 0:
+				mach_RISO_init();
+				mach_task_control |=__MACH_RISO_PHASES_TO_PE_IN_PROGRESS;
+				mach_RISO_count++;
+				break;
+			case 1:
+					if(MACH_PHASE_NUM_SETTING == _1_PHASE)
+					{
+						CON_L1_A;
+						CON_N_A;
+						CON_PE_B;
+					}	
+					else 
+					{
+						CON_L1_A;
+						CON_L2_A;
+						CON_L3_A;
+						CON_N_A;
+						CON_PE_B;
+					}
+					mach_task_control |= __MACH_RISO_RES_REQUESTED;
+					transmitCommFunc(__RISO,__START,__500V,"PHASES_PE",device.device_dir);
+					mach_RISO_count++;
+				break;
+			case 2://L1,L2,L3,N proti PE ali L1,N proti PE za enofazin podalsek
+				if(!(mach_task_control&__MACH_RISO_RES_REQUESTED))
 				{
-					CON_L1_A;
-					CON_N_A;
-					CON_PE_B;
-				}	
-				else 
-				{
-					CON_L1_A;
-					CON_L2_A;
-					CON_L3_A;
-					CON_N_A;
-					CON_PE_B;
+					mach_RISO_count++;
 				}
-				mach_task_control |= __MACH_RISO_RES_REQUESTED;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__GET_RISO_RES__,"","PHASES_PE",device.device_dir);
-				mach_RISO_count++;
-			}
 			break;
-		case 2://L1,L2,L3,N proti PE ali L1,N proti PE za enofazin podalsek
-			if(!(mach_task_control&__MACH_RISO_RES_REQUESTED))
-			{
-				
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__STOP_RISO__,"","",device.device_dir);
-				mach_RISO_count++;
-			}
-		break;
+		}
 	}
 	if(mach_RISO_count < 3)
 		restart_timer(MACH_RISO_PHASES_TO_PE,5,mach_RISO_phasesToPE);
 	else
 	{
-		if(mach_task_control & __MACH_RISO_STARTED)
-			restart_timer(MACH_RISO_PHASES_TO_PE,5,mach_RISO_phasesToPE);
-		else if(MACH_AUTO_CONTINUE_MEAS==_ON)
-			set_timer(MACH_RISO_ONE_PHASE_TO_PE,5,mach_RISO_onePhaseToPE);
-		if(!(mach_task_control & __MACH_RISO_STARTED))
-		{
-			mach_task_control &=(~__MACH_RISO_PHASES_TO_PE_IN_PROGRESS);
-			mach_task_control |= __MACH_RISO_PHASES_TO_PE_MEASURED;
-			if(mach_check_RISO_resistance())
-			{
-				mach_transmittPhasesToPE(true);
-				mach_RISO_count=11;
-			}
-			else
-			{
-				mach_transmittPhasesToPE(false);
-			}
-		}
+		mach_task_control &=(~__MACH_RISO_PHASES_TO_PE_IN_PROGRESS);
+		mach_task_control |= __MACH_RISO_PHASES_TO_PE_MEASURED;
+		mach_task_control &= ~__MACH_RISO_STARTED;
 	}
 }
-
 // v naslednjo funkcijo pridemo samo ce je prej ze pomerjena upornost proti PE in je bila ta premajhna
 void mach_RISO_onePhaseToPE(void)
 {
-	switch (mach_RISO_count)
+	if(checkAndChangeMeasurement(__MACHINES))
 	{
-		case 0:
-			mach_RISO_init();
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__PHASES_TO_PE_STARTED__,"","",device.device_dir);
-			mach_task_control |=__MACH_RISO_PHASES_TO_PE_IN_PROGRESS;
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__START_RISO__,"","",device.device_dir);
-			mach_RISO_count++;
-			break;
-		case 1:
-			if(!(mach_task_control & __MACH_RISO_STARTED))
-			{
+		switch (mach_RISO_count)
+		{
+			case 0:
+				mach_RISO_count = 3;
+			case 1:
+				mach_RISO_count = 3;
+			case 2://L1,L2,L3,N proti PE ali L1,N proti PE za enofazin podalsek
+				mach_RISO_count = 3;
+			case 3://uporablja se sele od tle naprej
+				mach_task_control |= __MACH_RISO_ONE_PHASE_TO_PE_IN_PROGRESS;
 				if(MACH_PHASE_NUM_SETTING == _1_PHASE)
+						{
+							CON_L1_A;
+							CON_N_A;
+							CON_PE_B;
+							DIS_PE_A;
+							DIS_L1_B;
+							DIS_L2_B;
+							DIS_L3_B;
+							DIS_N_B;
+							DIS_L2_A;
+							DIS_L3_A;
+						}	
+						else 
+						{
+							CON_L1_A;
+							CON_L2_A;
+							CON_L3_A;
+							CON_N_A;
+							CON_PE_B;
+							DIS_PE_A;
+							DIS_L1_B;
+							DIS_L2_B;
+							DIS_L3_B;
+							DIS_N_B;
+						}
+						mach_task_control |= __MACH_RISO_RES_REQUESTED;
+						transmitCommFunc(__RISO,__START,__500V,"PHASES_PE",device.device_dir);
+						mach_RISO_count++;
+				break;
+			case 4:	
+				if(!(mach_task_control&__MACH_RISO_RES_REQUESTED))
 				{
-					CON_L1_A;
-					CON_N_A;
-					CON_PE_B;
-				}	
-				else 
-				{
-					CON_L1_A;
-					CON_L2_A;
-					CON_L3_A;
-					CON_N_A;
-					CON_PE_B;
+					if(mach_check_RISO_resistance())
+					{
+						mach_RISO_count=11;
+					}
+					else
+					{
+						if(MACH_PHASE_NUM_SETTING == _1_PHASE)
+						{
+							DIS_PE_A;
+							DIS_L1_A;
+							DIS_L1_B;
+							DIS_L2_B;
+							DIS_L3_B;
+							DIS_N_B;
+							DIS_L2_A;
+							DIS_L3_A;
+							CON_N_A;
+							CON_PE_B;
+							mach_RISO_count=7;
+							mach_task_control |= __MACH_RISO_RES_REQUESTED;
+							transmitCommFunc(__RISO,__GET,__RESULT,"N_PE",device.device_dir);
+							//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__GET_RISO_RES__,"","N_PE",device.device_dir);
+						}
+						else
+						{
+							DIS_PE_A;
+							DIS_L1_A;
+							DIS_L1_B;
+							DIS_L2_B;
+							DIS_L3_B;
+							DIS_N_B;
+							CON_L2_A;
+							CON_L3_A;
+							CON_N_A;
+							CON_PE_B;
+							mach_RISO_count++;
+							mach_task_control |= __MACH_RISO_RES_REQUESTED;
+							transmitCommFunc(__GET,__RESULT,__500V,"L2-L3-N_PE",device.device_dir);
+							//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__GET_RISO_RES__,"","L2-L3-N_PE",device.device_dir);
+						}
+					}
 				}
-				mach_task_control |= __MACH_RISO_RES_REQUESTED;
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__GET_RISO_RES__,"","PHASES_PE",device.device_dir);
-				mach_RISO_count++;
-			}
-			break;
-		case 2://L1,L2,L3,N proti PE ali L1,N proti PE za enofazin podalsek
-			if(mach_task_control & __MACH_RISO_STARTED)
-			{
-				if(mach_check_RISO_resistance())
-				{
-					mach_transmittPhasesToPE(true);
-				}
-				else
-				{
-					mach_transmittPhasesToPE(false);
-				}
-				mach_RISO_count++;
-				mach_task_control &=(~__MACH_RISO_PHASES_TO_PE_IN_PROGRESS);
-				mach_task_control |= __MACH_RISO_PHASES_TO_PE_MEASURED;
-			}
-		break;
-		case 3:
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__ONE_PHASE_TO_PE_STARTED__,"","",device.device_dir);
-			mach_task_control |= __MACH_RISO_ONE_PHASE_TO_PE_IN_PROGRESS;
-			if(!(mach_task_control & __MACH_RISO_STARTED))
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__START_RISO__,"","",device.device_dir);
-			//mach_task_control |= __MACH_RISO_RES_REQUESTED;
-			mach_RISO_count++;
-			//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__START_RISO__,"","",device.device_dir);
-			break;
-		case 4:	
-			if(mach_task_control & __MACH_RISO_STARTED)
-			{
-				if(MACH_PHASE_NUM_SETTING == _1_PHASE)
-				{
-					DIS_PE_A;
-					DIS_L1_A;
-					DIS_L1_B;
-					DIS_L2_B;
-					DIS_L3_B;
-					DIS_N_B;
-					DIS_L2_A;
-					DIS_L3_A;
-					CON_N_A;
-					CON_PE_B;
-					mach_RISO_count=7;
-					mach_task_control |= __MACH_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__GET_RISO_RES__,"","N_PE",device.device_dir);
-				}
-				else
-				{
-					DIS_PE_A;
-					DIS_L1_A;
-					DIS_L1_B;
-					DIS_L2_B;
-					DIS_L3_B;
-					DIS_N_B;
-					CON_L2_A;
-					CON_L3_A;
-					CON_N_A;
-					CON_PE_B;
-					mach_RISO_count++;
-					mach_task_control |= __MACH_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__GET_RISO_RES__,"","L2-L3-N_PE",device.device_dir);
-				}
-			}
-			break;
-		case 5:	//L2,L3,N proti PE
-			if(!(mach_task_control&__MACH_RISO_RES_REQUESTED))
-			{
-				if(mach_check_RISO_resistance())
-				{
-					mach_RISO_count=11;
-					mach_insolation_status |= L1_PE_FAIL;
-					DIS_PE_B;
-					DIS_N_A;
-					CON_L1_A;
-					CON_N_B;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__STOP_RISO__,"","",device.device_dir);
-				}
-				else
-				{
-					DIS_L2_A;
-					mach_RISO_count++;
-					mach_task_control |= __MACH_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__GET_RISO_RES__,"","L3-N_PE",device.device_dir);
-				}
-				
-			}
-			break;
-		case 6:	//L3,N proti PE
-			if(!(mach_task_control&__MACH_RISO_RES_REQUESTED))
-			{
-				if(mach_check_RISO_resistance())
-				{
-					mach_RISO_count=10;
-					mach_insolation_status |= L2_PE_FAIL;
-					DIS_L3_A;
-					DIS_N_A;
-					CON_L1_A;
-					mach_task_control |= __MACH_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__GET_RISO_RES__,"","L1_PE",device.device_dir);
-				}
-				else
-				{
-					DIS_L3_A;
-					mach_RISO_count++;
-					mach_task_control |= __MACH_RISO_RES_REQUESTED;
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__GET_RISO_RES__,"","N_PE",device.device_dir);
-				}
-				
-			}
-			break;
-		case 7:	//N proti PE
-			if(!(mach_task_control&__MACH_RISO_RES_REQUESTED))
-			{
-				if(MACH_PHASE_NUM_SETTING == _1_PHASE)
+				break;
+			case 5:	//L2,L3,N proti PE
+				if(!(mach_task_control&__MACH_RISO_RES_REQUESTED))
 				{
 					if(mach_check_RISO_resistance())
 					{
 						mach_RISO_count=11;
 						mach_insolation_status |= L1_PE_FAIL;
+						DIS_PE_B;
+						DIS_N_A;
+						CON_L1_A;
+						CON_N_B;
+						//transmitCommFunc(__RISO,__START,__500V,"",device.device_dir);
+						//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__STOP_RISO__,"","",device.device_dir);
 					}
 					else
 					{
-						mach_insolation_status |= N_PE_FAIL;
-						mach_RISO_count=11;
+						DIS_L2_A;
+						mach_RISO_count++;
+						mach_task_control |= __MACH_RISO_RES_REQUESTED;
+						transmitCommFunc(__RISO,__GET,__RESULT,"L3-N_PE",device.device_dir);
+						//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__GET_RISO_RES__,"","L3-N_PE",device.device_dir);
 					}
-					SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__STOP_RISO__,"","",device.device_dir);
-					DIS_N_A;
-					DIS_PE_B;
-					CON_L1_A;
-					CON_N_B;
+					
 				}
-				else
+				break;
+			case 6:	//L3,N proti PE
+				if(!(mach_task_control&__MACH_RISO_RES_REQUESTED))
 				{
 					if(mach_check_RISO_resistance())
 					{
-						mach_RISO_count=9;
-						mach_insolation_status |= L3_PE_FAIL;
+						mach_RISO_count=10;
+						mach_insolation_status |= L2_PE_FAIL;
+						DIS_L3_A;
 						DIS_N_A;
-						CON_L2_A;
+						CON_L1_A;
 						mach_task_control |= __MACH_RISO_RES_REQUESTED;
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__GET_RISO_RES__,"","L2_PE",device.device_dir);
+						transmitCommFunc(__RISO,__GET,__RESULT,"L1_PE",device.device_dir);
+						//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__GET_RISO_RES__,"","L1_PE",device.device_dir);
 					}
 					else
 					{
-						mach_insolation_status |= N_PE_FAIL;
-						DIS_N_A;
-						CON_L3_A;
+						DIS_L3_A;
 						mach_RISO_count++;
 						mach_task_control |= __MACH_RISO_RES_REQUESTED;
-						SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__GET_RISO_RES__,"","L3_PE",device.device_dir);
+						transmitCommFunc(__RISO,__GET,__RESULT,"N_PE",device.device_dir);
+						//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__GET_RISO_RES__,"","N_PE",device.device_dir);
 					}
-				}	
+					
+				}
+				break;
+			case 7:	//N proti PE
+				if(!(mach_task_control&__MACH_RISO_RES_REQUESTED))
+				{
+					if(MACH_PHASE_NUM_SETTING == _1_PHASE)
+					{
+						if(mach_check_RISO_resistance())
+						{
+							mach_RISO_count=11;
+							mach_insolation_status |= L1_PE_FAIL;
+						}
+						else
+						{
+							mach_insolation_status |= N_PE_FAIL;
+							mach_RISO_count=11;
+						}
+						//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__STOP_RISO__,"","",device.device_dir);
+						DIS_N_A;
+						DIS_PE_B;
+						CON_L1_A;
+						CON_N_B;
+					}
+					else
+					{
+						if(mach_check_RISO_resistance())
+						{
+							mach_RISO_count=9;
+							mach_insolation_status |= L3_PE_FAIL;
+							DIS_N_A;
+							CON_L2_A;
+							mach_task_control |= __MACH_RISO_RES_REQUESTED;
+							transmitCommFunc(__RISO,__GET,__RESULT,"L2_PE",device.device_dir);
+							//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__GET_RISO_RES__,"","L2_PE",device.device_dir);
+						}
+						else
+						{
+							mach_insolation_status |= N_PE_FAIL;
+							DIS_N_A;
+							CON_L3_A;
+							mach_RISO_count++;
+							mach_task_control |= __MACH_RISO_RES_REQUESTED;
+							transmitCommFunc(__RISO,__GET,__RESULT,"L3_PE",device.device_dir);
+							//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__GET_RISO_RES__,"","L3_PE",device.device_dir);
+						}
+					}	
+				}
+				break;
+			case 8:	//L3 proti PE
+			if(!(mach_task_control&__MACH_RISO_RES_REQUESTED))
+			{
+				if(!(mach_check_RISO_resistance()))
+					mach_insolation_status |= L3_PE_FAIL;
+				mach_RISO_count++;
+				DIS_L3_A;
+				CON_L2_A;
+				transmitCommFunc(__RISO,__GET,__RESULT,"L2_PE",device.device_dir);
+			}
+			case 9:	//L2 proti PE
+			if(!(mach_task_control&__MACH_RISO_RES_REQUESTED))
+			{
+				if(!(mach_check_RISO_resistance()))
+					mach_insolation_status |= L2_PE_FAIL;
+				mach_RISO_count++;
+				DIS_L2_A;
+				CON_L1_A;
+				mach_task_control |= __MACH_RISO_RES_REQUESTED;
+				transmitCommFunc(__RISO,__GET,__RESULT,"L1_PE",device.device_dir);
+				//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__GET_RISO_RES__,"","L1_PE",device.device_dir);
 			}
 			break;
-		case 8:	//L3 proti PE
-		if(!(mach_task_control&__MACH_RISO_RES_REQUESTED))
-		{
-			if(!(mach_check_RISO_resistance()))
-				mach_insolation_status |= L3_PE_FAIL;
-			mach_RISO_count++;
-			DIS_L3_A;
-			CON_L2_A;
+			case 10:	//L1 proti PE
+			if(!(mach_task_control&__MACH_RISO_RES_REQUESTED))
+			{
+				if(!(mach_check_RISO_resistance()))
+					mach_insolation_status |= L1_PE_FAIL;
+				mach_RISO_count++;
+				//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__STOP_RISO__,"","",device.device_dir);
+			}
+			break;
 		}
-		case 9:	//L2 proti PE
-		if(!(mach_task_control&__MACH_RISO_RES_REQUESTED))
-		{
-			if(!(mach_check_RISO_resistance()))
-				mach_insolation_status |= L2_PE_FAIL;
-			mach_RISO_count++;
-			DIS_L2_A;
-			CON_L1_A;
-			mach_task_control |= __MACH_RISO_RES_REQUESTED;
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__GET_RISO_RES__,"","L1_PE",device.device_dir);
-		}
-		break;
-		case 10:	//L1 proti PE
-		if(!(mach_task_control&__MACH_RISO_RES_REQUESTED))
-		{
-			if(!(mach_check_RISO_resistance()))
-				mach_insolation_status |= L1_PE_FAIL;
-			mach_RISO_count++;
-			SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__STOP_RISO__,"","",device.device_dir);
-		}
-		break;
 	}
 	if(mach_RISO_count <= 10)
 		restart_timer(MACH_RISO_ONE_PHASE_TO_PE,5,mach_RISO_onePhaseToPE);
 	else
 	{
-		//rezultat poslejmo sele ko nam vrne riso stopped
-		if(mach_task_control & __MACH_RISO_STARTED)
-			restart_timer(MACH_RISO_ONE_PHASE_TO_PE,5,mach_RISO_onePhaseToPE);
-		else
-		{
-			mach_transmittOnePhaseToPE();
-			mach_task_control |= __MACH_RISO_ONE_PHASE_TO_PE_MEASURED;
-			mach_task_control &= (~__MACH_RISO_ONE_PHASE_TO_PE_IN_PROGRESS);
-		}
+		mach_transmittOnePhaseToPE();
+		mach_task_control |= __MACH_RISO_ONE_PHASE_TO_PE_MEASURED;
+		mach_task_control &= (~__MACH_RISO_ONE_PHASE_TO_PE_IN_PROGRESS);
 	}
 }
 
@@ -567,7 +556,8 @@ void mach_transmittPhasesToPE(bool pass)
 	{
 		sprintf(temp_str,__FAIL__);
 	}
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__RISO_PHASES_TO_PE__,temp_str,"",device.device_dir);
+	transmitFunc(__ALL_PE, __RESULT ,temp_str,"", device.device_dir);
+	//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__RISO_PHASES_TO_PE__,temp_str,"",device.device_dir);
 } 
 void mach_transmittOnePhaseToPE(void)
 {
@@ -600,7 +590,8 @@ void mach_transmittOnePhaseToPE(void)
 	{
 		sprintf(temp_str,__PASS__);
 	}
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__RISO_ONE_PHASE_TO_PE__,temp_str,"",device.device_dir);
+	transmitFunc(__ONE_PE, __RESULT ,temp_str,"", device.device_dir);
+	//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__RISO_ONE_PHASE_TO_PE__,temp_str,"",device.device_dir);
 }
 
 
@@ -611,7 +602,7 @@ void set_RISO_mach_resistance(char* value)
 }
 bool mach_check_RISO_resistance(void)
 {
-	if(mach_riso_resistance < MACH_RISO_LIMIT)
+	if(mach_riso_resistance < MachRisoLimit)
 		return false;
 	else
 		return true;
@@ -657,155 +648,159 @@ void mach_URES_init(void)
 	
 void mach_URES(void)
 {
-	switch(mach_URES_count)
+	if(checkAndChangeMeasurement(__MACHINES))
 	{
-		case 0:
-			mach_URES_init();
-			mach_task_control |= __MACH_URES_IN_PROGRESS;
-			mach_URES_count++;
-			switch(current_URES_measurement)
-			{
-				case __L1_PE:
-					rst_REL(11);
-					rst_REL(12);
-					rst_REL(13);
-					rst_REL(33);
-					rst_REL(34);
-					rst_REL(35);
-					rst_REL(36);
-					rst_REL(20);
-					set_REL(15);
-					set_REL(10);
-					break;
-				case __L2_PE:
-					rst_REL(10);
-					rst_REL(12);
-					rst_REL(13);
-					rst_REL(33);
-					rst_REL(34);
-					rst_REL(35);
-					rst_REL(36);
-					rst_REL(20);
-					set_REL(15);
-					set_REL(11);
-					break;
-				case __L3_PE: 
-					rst_REL(10);
-					rst_REL(11);
-					rst_REL(13);
-					rst_REL(33);
-					rst_REL(34);
-					rst_REL(35);
-					rst_REL(36);
-					rst_REL(20);
-					set_REL(15);
-					set_REL(12);
-					break;
-				case __L1_N: 
-					rst_REL(11);
-					rst_REL(12);
-					rst_REL(13);
-					rst_REL(33);
-					rst_REL(34);
-					rst_REL(35);
-					rst_REL(36);
-					rst_REL(15);
-					set_REL(20);
-					set_REL(10);
-					break;
-				case __L2_N: 
-					rst_REL(10);
-					rst_REL(12);
-					rst_REL(13);
-					rst_REL(33);
-					rst_REL(34);
-					rst_REL(35);
-					rst_REL(36);
-					rst_REL(15);
-					set_REL(20);
-					set_REL(11);
-					break;
-				case __L3_N: 
-					rst_REL(11);
-					rst_REL(10);
-					rst_REL(13);
-					rst_REL(33);
-					rst_REL(34);
-					rst_REL(35);
-					rst_REL(36);
-					rst_REL(15);
-					set_REL(20);
-					set_REL(12);
-					break;
-				case __L1_L2: 
-					rst_REL(11);
-					rst_REL(12);
-					rst_REL(13);
-					rst_REL(33);
-					rst_REL(34);
-					rst_REL(35);
-					rst_REL(36);
-					rst_REL(15);
-					rst_REL(17);
-					rst_REL(19);
-					rst_REL(20);
-					set_REL(10);
-					set_REL(18);
-					break;
-				case __L1_L3: 
-					rst_REL(11);
-					rst_REL(12);
-					rst_REL(13);
-					rst_REL(33);
-					rst_REL(34);
-					rst_REL(35);
-					rst_REL(36);
-					rst_REL(15);
-					rst_REL(18);
-					rst_REL(17);
-					rst_REL(20);
-					set_REL(10);
-					set_REL(19);
-					break;
-				case __L2_L3: 
-					rst_REL(10);
-					rst_REL(12);
-					rst_REL(13);
-					rst_REL(33);
-					rst_REL(34);
-					rst_REL(35);
-					rst_REL(36);
-					rst_REL(15);
-					rst_REL(18);
-					rst_REL(17);
-					rst_REL(20);
-					set_REL(11);
-					set_REL(19);
-					break;
-				default: break;
-			}
-			break;
-		case 1:
-			connectURESContactors();
-			if(mach_task_control & __MACH_TEST_RECIEVED)
-			{
-				//mach_task_control |= __MACH_URES_DISCONNECT_PS; 
-				set_timer(MACH_URES_STOP,100,mach_URES_Stop);
-			}
-			else
+		switch(mach_URES_count)
+		{
+			case 0:
+				mach_URES_init();
+				mach_task_control |= __MACH_URES_IN_PROGRESS;
 				mach_URES_count++;
-			break;
-		case 2:
-			//ko se vsi kontaktorji vklopijo, se pobrisejo zastavice za set (N in PE se vklopita takoj, brez sinhronizacije)
-			if(!(synchro_interrupt_control & (__SET_L1_CONTACTOR | __SET_L2_CONTACTOR | __SET_L2_CONTACTOR)))
-			{
-				//nastavljanje koncano, posljemo started
-				SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__MACH_URES_STARTED__,"","",device.device_dir);
-				mach_URES_count++;
-			}
-			break;
-		default:
-			break;
+				switch(current_URES_measurement)
+				{
+					case __L1_PE:
+						rst_REL(11);
+						rst_REL(12);
+						rst_REL(13);
+						rst_REL(33);
+						rst_REL(34);
+						rst_REL(35);
+						rst_REL(36);
+						rst_REL(20);
+						set_REL(15);
+						set_REL(10);
+						break;
+					case __L2_PE:
+						rst_REL(10);
+						rst_REL(12);
+						rst_REL(13);
+						rst_REL(33);
+						rst_REL(34);
+						rst_REL(35);
+						rst_REL(36);
+						rst_REL(20);
+						set_REL(15);
+						set_REL(11);
+						break;
+					case __L3_PE: 
+						rst_REL(10);
+						rst_REL(11);
+						rst_REL(13);
+						rst_REL(33);
+						rst_REL(34);
+						rst_REL(35);
+						rst_REL(36);
+						rst_REL(20);
+						set_REL(15);
+						set_REL(12);
+						break;
+					case __L1_N: 
+						rst_REL(11);
+						rst_REL(12);
+						rst_REL(13);
+						rst_REL(33);
+						rst_REL(34);
+						rst_REL(35);
+						rst_REL(36);
+						rst_REL(15);
+						set_REL(20);
+						set_REL(10);
+						break;
+					case __L2_N: 
+						rst_REL(10);
+						rst_REL(12);
+						rst_REL(13);
+						rst_REL(33);
+						rst_REL(34);
+						rst_REL(35);
+						rst_REL(36);
+						rst_REL(15);
+						set_REL(20);
+						set_REL(11);
+						break;
+					case __L3_N: 
+						rst_REL(11);
+						rst_REL(10);
+						rst_REL(13);
+						rst_REL(33);
+						rst_REL(34);
+						rst_REL(35);
+						rst_REL(36);
+						rst_REL(15);
+						set_REL(20);
+						set_REL(12);
+						break;
+					case __L1_L2: 
+						rst_REL(11);
+						rst_REL(12);
+						rst_REL(13);
+						rst_REL(33);
+						rst_REL(34);
+						rst_REL(35);
+						rst_REL(36);
+						rst_REL(15);
+						rst_REL(17);
+						rst_REL(19);
+						rst_REL(20);
+						set_REL(10);
+						set_REL(18);
+						break;
+					case __L1_L3: 
+						rst_REL(11);
+						rst_REL(12);
+						rst_REL(13);
+						rst_REL(33);
+						rst_REL(34);
+						rst_REL(35);
+						rst_REL(36);
+						rst_REL(15);
+						rst_REL(18);
+						rst_REL(17);
+						rst_REL(20);
+						set_REL(10);
+						set_REL(19);
+						break;
+					case __L2_L3: 
+						rst_REL(10);
+						rst_REL(12);
+						rst_REL(13);
+						rst_REL(33);
+						rst_REL(34);
+						rst_REL(35);
+						rst_REL(36);
+						rst_REL(15);
+						rst_REL(18);
+						rst_REL(17);
+						rst_REL(20);
+						set_REL(11);
+						set_REL(19);
+						break;
+					default: break;
+				}
+				break;
+			case 1:
+				connectURESContactors();
+				if(mach_task_control & __MACH_TEST_RECIEVED)
+				{
+					//mach_task_control |= __MACH_URES_DISCONNECT_PS; 
+					set_timer(MACH_URES_STOP,100,mach_URES_Stop);
+				}
+				else
+					mach_URES_count++;
+				break;
+			case 2:
+				//ko se vsi kontaktorji vklopijo, se pobrisejo zastavice za set (N in PE se vklopita takoj, brez sinhronizacije)
+				if(!(synchro_interrupt_control & (__SET_L1_CONTACTOR | __SET_L2_CONTACTOR | __SET_L2_CONTACTOR)))
+				{
+					//nastavljanje koncano, posljemo started
+					transmitFunc(__M_URES, __INITIATED ,"","", device.device_dir);
+					//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__MACH_URES_STARTED__,"","",device.device_dir);
+					mach_URES_count++;
+				}
+				break;
+			default:
+				break;
+		}
 	}
 	//za test kontaktorjev
 	if(mach_task_control & __MACH_TEST_RECIEVED)
@@ -847,7 +842,9 @@ void disconnectURESContactors(void)
 	RST_L2_CONTACTOR;
 	RST_L3_CONTACTOR;
 	RST_N_CONTACTOR;
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__MACH_URES_OPENED__,"","",device.device_dir);
+	transmitFunc(__M_URES, __OPENED ,"","", device.device_dir);
+	set_event(MACH_URES_STOP,mach_URES_Stop);
+	//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__MACH_URES_OPENED__,"","",device.device_dir);
 }
 void mach_URES_Stop(void)
 {
@@ -870,7 +867,12 @@ void mach_URES_Stop(void)
 	mach_task_control &= ~__MACH_TEST_RECIEVED;
 	mach_task_control &= ~__MACH_URES_DISCONNECT_PS;
 	mach_task_control &= ~__MACH_URES_IN_PROGRESS;
-	SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__MACH_URES_STOPPED__,"","",device.device_dir);
+	//SendComMessage(_ON,_ID_TFA,device.device_ID,__MACHINES__,__MACH_URES_STOPPED__,"","",device.device_dir);
+}
+
+void SetMachLimit(char * lim_str)
+{
+	MachRisoLimit = atof(lim_str);
 }
 //++++++++++++++++++++++++++++++++++++++++++++++END URES+++++++++++++++++++++++++++++++++++++++++++++++
 
